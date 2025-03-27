@@ -1,8 +1,8 @@
-// lib/views/signup_view.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import 'package:project491/components/custom_button.dart';
 
 class SignupView extends StatefulWidget {
   const SignupView({Key? key}) : super(key: key);
@@ -13,6 +13,26 @@ class SignupView extends StatefulWidget {
 
 class _SignupViewState extends State<SignupView> {
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
+
+  // For displaying an error popup (like in LoginView)
+  String? _errorMessage;
+  bool _showErrorPopup = false;
+
+  // Add a variable to store the selected birthday
+  String? _selectedBirthday;
+
+  void _showError(String message) {
+    setState(() {
+      _errorMessage = message;
+      _showErrorPopup = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () {
+      setState(() {
+        _showErrorPopup = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,49 +40,286 @@ class _SignupViewState extends State<SignupView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
+        title: null,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: Stack(
             children: [
-              // Email field
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Email'),
-                onChanged: authViewModel.updateEmail,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  // Additional email validation could go here
-                  return null;
-                },
+              // Main column of content
+              Column(
+                children: [
+                  // Calendar icon
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 48,
+                    color: Color(0xFF375DFB),
+                  ),
+                  const SizedBox(height: 20),
+                  // "Create Account" text
+                  const Text(
+                    'Create Account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // "Already have an account? Log in" row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Already have an account?",
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // Navigate back to the previous page
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Log in',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: Color(0xFF4D81E7),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // White container for name, email, birthday, phone number, and password
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 12.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Name field
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z\s]'),
+                            ), // Allow only alphabetic letters and spaces
+                          ],
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: 'full name',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          onChanged:
+                              authViewModel
+                                  .updateName, // Add this method in AuthViewModel
+                        ),
+                        const SizedBox(height: 10),
+                        // Email field
+                        TextFormField(
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.mail,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: 'email',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          onChanged: authViewModel.updateEmail,
+                        ),
+                        const SizedBox(height: 10),
+                        // Birthday field
+                        TextFormField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(
+                              Icons.calendar_today,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: _selectedBirthday ?? 'select birthday',
+                            hintStyle: const TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          onTap: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(1900),
+                              lastDate: DateTime.now(),
+                            );
+                            if (pickedDate != null) {
+                              setState(() {
+                                _selectedBirthday =
+                                    "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                              });
+                              authViewModel.updateBirthday(pickedDate);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        // Phone number field
+                        TextFormField(
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ], // Restrict input to digits only
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.phone,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: 'phone number',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          onChanged:
+                              authViewModel
+                                  .updatePhoneNumber, // Add this method in AuthViewModel
+                        ),
+                        const SizedBox(height: 10),
+                        // Password field
+                        TextFormField(
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: 'password',
+                            hintStyle: const TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          obscureText: _obscurePassword,
+                          onChanged: authViewModel.updatePassword,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Sign Up button
+                  CustomButton(
+                    text: 'Register',
+                    onPressed: () {
+                      if (authViewModel.email.isEmpty ||
+                          authViewModel.password.isEmpty) {
+                        _showError('Please enter valid email and password.');
+                      } else {
+                        setState(() {
+                          _errorMessage = null;
+                        });
+                        // TODO: Call authViewModel.signUp() once Firebase is implemented
+                      }
+                    },
+                    buttonType: 'main', // if you're using a param for styling
+                  ),
+                ],
               ),
-              // Password field
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                onChanged: authViewModel.updatePassword,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  // Additional password validation could go here
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              // Sign Up button
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // TODO: Call authViewModel.signUp() once Firebase is implemented
-                  }
-                },
-                child: const Text('Sign Up'),
-              ),
+              // Popup error message (appears at the top of the Stack)
+              if (_showErrorPopup)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Text(
+                      _errorMessage ?? '',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

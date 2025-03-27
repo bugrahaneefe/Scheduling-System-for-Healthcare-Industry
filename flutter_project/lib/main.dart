@@ -21,6 +21,10 @@ class MyApp extends StatelessWidget {
         title: 'Flutter MVVM Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: Color(0xFF0D0D1B), // Set background color
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color(0xFF0D0D1B), // Set navigation bar color
+          ),
         ),
         // Start with the Log In page
         home: const LoginView(),
