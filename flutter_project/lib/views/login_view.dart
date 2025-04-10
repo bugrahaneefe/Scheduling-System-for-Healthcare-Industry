@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'signup_view.dart';
 import 'package:flutter/services.dart';
+import 'room_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -84,7 +85,9 @@ class _LoginViewState extends State<LoginView> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SignupView()),
+                            MaterialPageRoute(
+                              builder: (_) => const SignupView(),
+                            ),
                           );
                         },
                         child: const Text(
@@ -103,7 +106,10 @@ class _LoginViewState extends State<LoginView> {
                   // Combined email and password fields
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 12.0,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8.0),
@@ -121,11 +127,17 @@ class _LoginViewState extends State<LoginView> {
                         // Email field
                         TextFormField(
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.mail, color: Color(0xFF375DFB)), // Changed to blue
-                            hintText: 'email or phone number',
+                            prefixIcon: const Icon(
+                              Icons.mail,
+                              color: Color(0xFF375DFB),
+                            ), // Changed to blue
+                            hintText: 'eng491', // Changed this line
                             hintStyle: const TextStyle(color: Colors.grey),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
                           ),
                           style: const TextStyle(color: Colors.black),
                           onChanged: authViewModel.updateEmail,
@@ -134,14 +146,22 @@ class _LoginViewState extends State<LoginView> {
                         // Password field
                         TextFormField(
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.lock, color: Color(0xFF375DFB)), // Changed to blue
-                            hintText: '********',
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: Color(0xFF375DFB),
+                            ), // Changed to blue
+                            hintText: '123456', // Changed this line
                             hintStyle: const TextStyle(color: Colors.grey),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.grey,
                               ),
                               onPressed: () {
@@ -181,15 +201,21 @@ class _LoginViewState extends State<LoginView> {
                   CustomButton(
                     text: 'Log In',
                     onPressed: () {
-                      if (authViewModel.email.isEmpty || authViewModel.password.isEmpty) {
+                      if (authViewModel.email.isEmpty ||
+                          authViewModel.password.isEmpty) {
                         _showError('Please enter valid email and password.');
                       } else {
                         setState(() {
                           _errorMessage = null;
                         });
-                        // TODO: Call authViewModel.signIn() once Firebase is implemented
+                        // Navigate to RoomView
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RoomView()),
+                        );
                       }
-                    }, buttonType: 'main',
+                    },
+                    buttonType: 'main',
                   ),
                 ],
               ),
