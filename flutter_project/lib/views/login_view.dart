@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:project491/components/custom_button.dart';
+import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'signup_view.dart';
 import 'package:flutter/services.dart';
@@ -20,15 +22,32 @@ class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
   String? _errorMessage;
   bool _showErrorPopup = false;
+  bool _isSuccess = false;
+  bool _isLoading = false; // Add this line after other state variables
 
   void _showError(String message) {
     setState(() {
       _errorMessage = message;
       _showErrorPopup = true;
+      _isSuccess = false;
     });
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
         _showErrorPopup = false;
+      });
+    });
+  }
+
+  void _showSuccess(String message) {
+    setState(() {
+      _errorMessage = message;
+      _showErrorPopup = true;
+      _isSuccess = true;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _showErrorPopup = false;
+        _isSuccess = false;
       });
     });
   }
@@ -200,19 +219,47 @@ class _LoginViewState extends State<LoginView> {
                   // Log In button
                   CustomButton(
                     text: 'Log In',
-                    onPressed: () {
+                    onPressed: () async {
                       if (authViewModel.email.isEmpty ||
                           authViewModel.password.isEmpty) {
                         _showError('Please enter valid email and password.');
                       } else {
                         setState(() {
                           _errorMessage = null;
+                          _isLoading = true; // Show loading
                         });
-                        // Navigate to RoomView
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const RoomView()),
-                        );
+
+                        try {
+                          await authService.value.signIn(
+                            email: authViewModel.email,
+                            password: authViewModel.password,
+                          );
+
+                          setState(() {
+                            _isLoading = false; // Hide loading
+                          });
+
+                          _showSuccess('Login successful!');
+                          await Future.delayed(
+                            const Duration(seconds: 1),
+                          ); // Reduced delay
+
+                          if (mounted) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RoomView(),
+                              ),
+                            );
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          setState(() {
+                            _isLoading = false; // Hide loading
+                          });
+                          _showError(
+                            e.message ?? 'Login failed. Please try again.',
+                          );
+                        }
                       }
                     },
                     buttonType: 'main',
@@ -229,7 +276,7 @@ class _LoginViewState extends State<LoginView> {
                     padding: const EdgeInsets.all(10.0),
                     margin: const EdgeInsets.symmetric(horizontal: 16.0),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: _isSuccess ? Colors.green : Colors.red,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Text(
@@ -240,6 +287,18 @@ class _LoginViewState extends State<LoginView> {
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              // Add this at the end of the Stack children list
+              if (_isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black54,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     ),
                   ),
                 ),

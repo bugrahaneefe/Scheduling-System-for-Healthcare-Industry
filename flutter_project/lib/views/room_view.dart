@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'login_view.dart'; // Add this import
+import 'package:provider/provider.dart';
+import '../viewmodels/auth_viewmodel.dart';
+import 'package:project491/managers/auth_services.dart';
+import 'login_view.dart';
 
 class RoomView extends StatelessWidget {
   const RoomView({Key? key}) : super(key: key);
@@ -12,27 +15,32 @@ class RoomView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center, // Changed to center
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Back button and centered title
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.start, // Align items to start
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () {
-                      Navigator.pushReplacement(
+                    onPressed: () async {
+                      final authViewModel = Provider.of<AuthViewModel>(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginView(),
-                        ),
+                        listen: false,
                       );
+                      await authService.value.signOut();
+                      authViewModel.clearUserData();
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginView(),
+                          ),
+                        );
+                      }
                     },
                   ),
                   Expanded(
                     child: Center(
-                      // Center the title
                       child: const Text(
                         'Room-01',
                         style: TextStyle(
@@ -44,12 +52,10 @@ class RoomView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Add invisible icon button to balance the layout
-                  const SizedBox(width: 48), // Same width as IconButton
+                  const SizedBox(width: 48),
                 ],
               ),
               const SizedBox(height: 20),
-              // Preview Schedule button
               ElevatedButton(
                 onPressed: () {
                   // TODO: Implement preview schedule functionality
@@ -66,13 +72,12 @@ class RoomView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              // Centered Participants title
               const Center(
                 child: Text(
                   'Participants',
                   style: TextStyle(
                     fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500, // Medium weight
+                    fontWeight: FontWeight.w500,
                     fontSize: 20,
                     color: Colors.white,
                     decoration: TextDecoration.underline,
@@ -80,7 +85,6 @@ class RoomView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              // Scrollable participant list
               Expanded(
                 child: ListView(
                   children: [

@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'package:project491/components/custom_button.dart';
@@ -22,14 +24,33 @@ class _SignupViewState extends State<SignupView> {
   // Add a variable to store the selected birthday
   String? _selectedBirthday;
 
+  // Add this boolean to track if it's a success message
+  bool _isSuccess = false;
+
+  bool _isLoading = false;
+
   void _showError(String message) {
     setState(() {
       _errorMessage = message;
       _showErrorPopup = true;
     });
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _showErrorPopup = false;
+      });
+    });
+  }
+
+  void _showSuccess(String message) {
+    setState(() {
+      _errorMessage = message;
+      _showErrorPopup = true;
+      _isSuccess = true; // Set success state to true
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _showErrorPopup = false;
+        _isSuccess = false; // Reset success state
       });
     });
   }
@@ -281,18 +302,46 @@ class _SignupViewState extends State<SignupView> {
                   // Sign Up button
                   CustomButton(
                     text: 'Register',
-                    onPressed: () {
+                    onPressed: () async {
                       if (authViewModel.email.isEmpty ||
                           authViewModel.password.isEmpty) {
                         _showError('Please enter valid email and password.');
                       } else {
                         setState(() {
                           _errorMessage = null;
+                          _isLoading = true; // Show loading
                         });
-                        // TODO: Call authViewModel.signUp() once Firebase is implemented
+
+                        try {
+                          await authService.value.signUp(
+                            email: authViewModel.email,
+                            password: authViewModel.password,
+                          );
+
+                          setState(() {
+                            _isLoading = false; // Hide loading
+                          });
+
+                          _showSuccess('Registration successful!');
+                          authViewModel
+                              .clearUserData(); // Clear user data after successful registration
+
+                          await Future.delayed(const Duration(seconds: 1));
+
+                          if (mounted) {
+                            Navigator.pop(context);
+                          }
+                        } on FirebaseAuthException catch (e) {
+                          setState(() {
+                            _isLoading = false; // Hide loading
+                          });
+                          _showError(
+                            e.message ?? 'An error occurred. Please try again.',
+                          );
+                        }
                       }
                     },
-                    buttonType: 'main', // if you're using a param for styling
+                    buttonType: 'main',
                   ),
                 ],
               ),
@@ -306,7 +355,10 @@ class _SignupViewState extends State<SignupView> {
                     padding: const EdgeInsets.all(10.0),
                     margin: const EdgeInsets.symmetric(horizontal: 16.0),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color:
+                          _isSuccess
+                              ? Colors.green
+                              : Colors.red, // Change color based on state
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Text(
@@ -317,6 +369,18 @@ class _SignupViewState extends State<SignupView> {
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              // Add loading indicator overlay
+              if (_isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black54,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     ),
                   ),
                 ),
