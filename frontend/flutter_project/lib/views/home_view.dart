@@ -114,14 +114,15 @@ class _HomeViewState extends State<HomeView>
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
-                  children: const [
+                  children: [
                     Center(
                       child: Text(
-                        'Home Content',
-                        style: TextStyle(color: Colors.white),
+                        authVM.currentUser?.rooms.join(', ') ??
+                            'No rooms assigned',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
-                    Center(
+                    const Center(
                       child: Text(
                         'Notifications Content',
                         style: TextStyle(color: Colors.white),

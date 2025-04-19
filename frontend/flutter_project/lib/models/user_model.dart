@@ -6,6 +6,7 @@ class UserModel {
   final String title;
   final DateTime birthday;
   final String phoneNumber;
+  final List<String> rooms;
 
   UserModel({
     required this.name,
@@ -13,6 +14,7 @@ class UserModel {
     required this.title,
     required this.birthday,
     required this.phoneNumber,
+    required this.rooms,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -22,6 +24,7 @@ class UserModel {
       title: map['title'] ?? '',
       birthday: (map['birthday'] as Timestamp).toDate(),
       phoneNumber: map['phoneNumber'] ?? '',
+      rooms: List<String>.from(map['rooms'] ?? []),
     );
   }
 }

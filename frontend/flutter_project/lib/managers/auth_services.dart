@@ -55,6 +55,7 @@ class AuthServices {
         'title': title,
         'birthday': birthday,
         'phoneNumber': phoneNumber,
+        'rooms': [], // Initialize empty rooms array
         'createdAt': FieldValue.serverTimestamp(),
       });
 

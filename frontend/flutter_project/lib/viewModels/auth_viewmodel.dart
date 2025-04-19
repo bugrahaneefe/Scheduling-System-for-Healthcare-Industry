@@ -10,6 +10,7 @@ class AuthViewModel extends ChangeNotifier {
   DateTime? _birthday;
   String _phoneNumber = '';
   String _title = '';
+  List<String> _rooms = [];
 
   UserModel? _currentUser;
   UserModel? get currentUser => _currentUser;
@@ -21,6 +22,7 @@ class AuthViewModel extends ChangeNotifier {
   DateTime? get birthday => _birthday;
   String get phoneNumber => _phoneNumber;
   String get title => _title;
+  List<String> get rooms => _rooms;
 
   // Setters
   void updateEmail(String value) {
@@ -60,6 +62,7 @@ class AuthViewModel extends ChangeNotifier {
     _birthday = null;
     _phoneNumber = '';
     _title = '';
+    _rooms = [];
     notifyListeners();
   }
 
