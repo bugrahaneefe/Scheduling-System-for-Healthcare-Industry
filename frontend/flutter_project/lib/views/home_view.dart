@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project491/views/create_room_sheet.dart';
 import 'package:project491/views/profile_edit_view.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -34,171 +35,217 @@ class _HomeViewState extends State<HomeView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      bottomNavigationBar: TabBar(
-        controller: _tabController,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
-        tabs: const [Tab(text: 'Home'), Tab(text: 'Notifications')],
-      ),
-      body: Consumer<AuthViewModel>(
-        builder: (context, authVM, child) {
-          return Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          authVM.currentUser?.name != null
-                              ? Text(
-                                authVM.currentUser!.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                              : const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                          authVM.currentUser?.title != null
-                              ? Text(
-                                authVM.currentUser!.title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                              )
-                              : const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                          TextButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                builder:
-                                    (context) => ProfileEditView(
-                                      user: authVM.currentUser!,
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+          bottomNavigationBar: TabBar(
+            controller: _tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: const [Tab(text: 'Home'), Tab(text: 'Notifications')],
+          ),
+          body: Consumer<AuthViewModel>(
+            builder: (context, authVM, child) {
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              authVM.currentUser?.name != null
+                                  ? Text(
+                                    authVM.currentUser!.name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
+                                  )
+                                  : const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                              authVM.currentUser?.title != null
+                                  ? Text(
+                                    authVM.currentUser!.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                  : const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                              TextButton(
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder:
+                                        (context) => ProfileEditView(
+                                          user: authVM.currentUser!,
+                                        ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Edit Profile',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.logout, color: Colors.white),
+                          onPressed: () async {
+                            await authService.value.signOut();
+                            authVM.clearUserData();
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginView(),
+                                ),
                               );
-                            },
-                            child: const Text(
-                              'Edit Profile',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ),
-                        ],
-                      ),
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: Colors.white),
-                      onPressed: () async {
-                        await authService.value.signOut();
-                        authVM.clearUserData();
-                        if (context.mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginView(),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    RefreshIndicator(
-                      onRefresh: () async {
-                        await Provider.of<AuthViewModel>(
-                          context,
-                          listen: false,
-                        ).loadCurrentUser();
-                        setState(() {});
-                      },
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: FutureBuilder<List<Widget>>(
-                              future: _buildRoomsList(
-                                authVM.currentUser?.rooms ?? [],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        RefreshIndicator(
+                          onRefresh: () async {
+                            await Provider.of<AuthViewModel>(
+                              context,
+                              listen: false,
+                            ).loadCurrentUser();
+                            setState(() {});
+                          },
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
+                                child: FutureBuilder<List<Widget>>(
+                                  future: _buildRoomsList(
+                                    authVM.currentUser?.rooms ?? [],
+                                  ),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const SizedBox(
+                                        height: 200,
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    }
+
+                                    if (authVM.currentUser?.rooms.isEmpty ??
+                                        true) {
+                                      return const SizedBox(
+                                        height: 200,
+                                        child: Center(
+                                          child: Text(
+                                            'No room assigned',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: snapshot.data ?? [],
+                                    );
+                                  },
+                                ),
                               ),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const SizedBox(
-                                    height: 200,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-
-                                if (authVM.currentUser?.rooms.isEmpty ?? true) {
-                                  return const SizedBox(
-                                    height: 200,
-                                    child: Center(
-                                      child: Text(
-                                        'No room assigned',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: snapshot.data ?? [],
-                                );
-                              },
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const Center(
+                          child: Text(
+                            'Notifications Content',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
-                    const Center(
-                      child: Text(
-                        'Notifications Content',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 30,
+          child: Container(
+            alignment: Alignment.center,
+            child: FloatingActionButton(
+              mini: true,
+              elevation: 4,
+              onPressed: () async {
+                final authVM = Provider.of<AuthViewModel>(
+                  context,
+                  listen: false,
+                );
+                if (authVM.currentUser != null) {
+                  final result = await showModalBottomSheet<bool>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder:
+                        (context) => CreateRoomSheet(
+                          hostId: authService.value.currentUser!.uid,
+                          hostName: authVM.currentUser!.name,
+                        ),
+                  );
+
+                  if (result == true) {
+                    // Refresh the rooms list
+                    await Provider.of<AuthViewModel>(
+                      context,
+                      listen: false,
+                    ).loadCurrentUser();
+                    setState(() {});
+                  }
+                }
+              },
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
