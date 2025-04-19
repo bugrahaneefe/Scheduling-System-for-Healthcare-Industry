@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../managers/auth_services.dart';
 
 class CreateRoomSheet extends StatefulWidget {
   final String hostId;
@@ -90,155 +89,173 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF5F5F5), // Light gray background
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Create New Room',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Room Name',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-              ),
-              validator:
-                  (value) =>
-                      value?.isEmpty == true ? 'Room name is required' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              validator:
-                  (value) =>
-                      value?.isEmpty == true ? 'Description is required' : null,
-            ),
-            const SizedBox(height: 16),
-            Row(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF5F5F5), // Light gray background
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _participantNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Add Participant',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(),
-                    ),
+                Text(
+                  'Create New Room',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed:
-                      () => _addParticipant(_participantNameController.text),
-                  child: const Text('Add'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Participants:',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _selectedParticipants.length,
-                      itemBuilder: (context, index) {
-                        final participant = _selectedParticipants[index];
-                        return ListTile(
-                          dense: true,
-                          title: Text(
-                            participant['name'] as String,
-                            style: const TextStyle(color: Colors.black87),
-                          ),
-                          trailing:
-                              participant['isHost'] == true
-                                  ? const Chip(label: Text('Host'))
-                                  : IconButton(
-                                    icon: const Icon(
-                                      Icons.remove_circle,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedParticipants.removeAt(index);
-                                      });
-                                    },
-                                  ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _createRoom,
-              child:
-                  _isLoading
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : const Text('Create Room'),
-            ),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
                   textAlign: TextAlign.center,
                 ),
-              ),
-          ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Room Name',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  validator:
+                      (value) =>
+                          value?.isEmpty == true
+                              ? 'Room name is required'
+                              : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  maxLines: 3,
+                  validator:
+                      (value) =>
+                          value?.isEmpty == true
+                              ? 'Description is required'
+                              : null,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _participantNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Add Participant',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) {
+                          if (!_isLoading) _createRoom();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed:
+                          () =>
+                              _addParticipant(_participantNameController.text),
+                      child: const Text('Add'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Participants:',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _selectedParticipants.length,
+                          itemBuilder: (context, index) {
+                            final participant = _selectedParticipants[index];
+                            return ListTile(
+                              dense: true,
+                              title: Text(
+                                participant['name'] as String,
+                                style: const TextStyle(color: Colors.black87),
+                              ),
+                              trailing:
+                                  participant['isHost'] == true
+                                      ? const Chip(label: Text('Host'))
+                                      : IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedParticipants.removeAt(
+                                              index,
+                                            );
+                                          });
+                                        },
+                                      ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _createRoom,
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Create Room'),
+                ),
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

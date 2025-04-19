@@ -73,252 +73,282 @@ class _LoginViewState extends State<LoginView> {
     final authViewModel = Provider.of<AuthViewModel>(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Add this line
       appBar: AppBar(
         title: null, // Removed the title
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Stack(
-            children: [
-              Column(
+      body: GestureDetector(
+        onTap: () {
+          // Dismiss keyboard when tapping outside
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          // Wrap with SingleChildScrollView
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Stack(
                 children: [
-                  // Calendar icon
-                  const Icon(
-                    Icons.calendar_today,
-                    size: 48,
-                    color: Color(0xFF375DFB),
-                  ),
-                  const SizedBox(height: 20),
-                  // "Sign in to your Account" text
-                  const Text(
-                    'Sign in to your Account',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // "Don't have an account? Sign Up" text and button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Column(
                     children: [
+                      // Calendar icon
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 48,
+                        color: Color(0xFF375DFB),
+                      ),
+                      const SizedBox(height: 20),
+                      // "Sign in to your Account" text
                       const Text(
-                        "Don't have an account?",
+                        'Sign in to your Account',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
                           color: Colors.white,
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      // "Don't have an account? Sign Up" text and button
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Don't have an account?",
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SignupView(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                color: Color(0xFF4D81E7),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Combined email and password fields
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 12.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // Email field
+                            TextFormField(
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
+                                  Icons.mail,
+                                  color: Color(0xFF375DFB),
+                                ), // Changed to blue
+                                hintText: 'eng491', // Changed this line
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0,
+                                  horizontal: 10.0,
+                                ),
+                              ),
+                              style: const TextStyle(color: Colors.black),
+                              onChanged: authViewModel.updateEmail,
+                              textInputAction:
+                                  TextInputAction.next, // Add this line
+                            ),
+                            const SizedBox(height: 10),
+                            // Password field
+                            TextFormField(
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(
+                                  Icons.lock,
+                                  color: Color(0xFF375DFB),
+                                ), // Changed to blue
+                                hintText: '123456', // Changed this line
+                                hintStyle: const TextStyle(color: Colors.grey),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10.0,
+                                  horizontal: 10.0,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
+                              ),
+                              style: const TextStyle(color: Colors.black),
+                              obscureText: _obscurePassword,
+                              onChanged: authViewModel.updatePassword,
+                              textInputAction:
+                                  TextInputAction.done, // Add this line
+                              onFieldSubmitted: (_) async {
+                                // Add this block
+                                if (authViewModel.email.isNotEmpty &&
+                                    authViewModel.password.isNotEmpty) {
+                                  // Trigger login
+                                  FocusScope.of(context).unfocus();
+                                  await authService.value.signIn(
+                                    email: authViewModel.email,
+                                    password: authViewModel.password,
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // "Forgot Your Password?" button
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignupView(),
-                            ),
-                          );
+                          // TODO: Implement "Forgot Password?" feature
                         },
                         child: const Text(
-                          'Sign Up',
+                          'Forgot Your Password?',
                           style: TextStyle(
                             fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             fontSize: 12,
-                            color: Color(0xFF4D81E7),
+                            color: Colors.white,
+                            decoration: TextDecoration.underline,
                           ),
+                          textAlign: TextAlign.center,
                         ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Log In button
+                      CustomButton(
+                        text: 'Log In',
+                        onPressed: () async {
+                          if (authViewModel.email.isEmpty ||
+                              authViewModel.password.isEmpty) {
+                            _showError(
+                              'Please enter valid email and password.',
+                            );
+                          } else {
+                            setState(() {
+                              _errorMessage = null;
+                              _isLoading = true; // Show loading
+                            });
+
+                            try {
+                              await authService.value.signIn(
+                                email: authViewModel.email,
+                                password: authViewModel.password,
+                              );
+
+                              setState(() {
+                                _isLoading = false; // Hide loading
+                              });
+
+                              _showSuccess('Login successful!');
+                              await Future.delayed(
+                                const Duration(seconds: 1),
+                              ); // Reduced delay
+
+                              if (mounted) {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const HomeView(),
+                                  ),
+                                );
+                              }
+                            } on FirebaseAuthException catch (e) {
+                              setState(() {
+                                _isLoading = false; // Hide loading
+                              });
+                              _showError(
+                                e.message ?? 'Login failed. Please try again.',
+                              );
+                            }
+                          }
+                        },
+                        buttonType: 'main',
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  // Combined email and password fields
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 12.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
+                  // Popup error message
+                  if (_showErrorPopup)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: _isSuccess ? Colors.green : Colors.red,
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        // Email field
-                        TextFormField(
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.mail,
-                              color: Color(0xFF375DFB),
-                            ), // Changed to blue
-                            hintText: 'eng491', // Changed this line
-                            hintStyle: const TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10.0,
-                              horizontal: 10.0,
-                            ),
+                        child: Text(
+                          _errorMessage ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          style: const TextStyle(color: Colors.black),
-                          onChanged: authViewModel.updateEmail,
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 10),
-                        // Password field
-                        TextFormField(
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.lock,
-                              color: Color(0xFF375DFB),
-                            ), // Changed to blue
-                            hintText: '123456', // Changed this line
-                            hintStyle: const TextStyle(color: Colors.grey),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10.0,
-                              horizontal: 10.0,
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.black),
-                          obscureText: _obscurePassword,
-                          onChanged: authViewModel.updatePassword,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // "Forgot Your Password?" button
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Implement "Forgot Password?" feature
-                    },
-                    child: const Text(
-                      'Forgot Your Password?',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        color: Colors.white,
-                        decoration: TextDecoration.underline,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Log In button
-                  CustomButton(
-                    text: 'Log In',
-                    onPressed: () async {
-                      if (authViewModel.email.isEmpty ||
-                          authViewModel.password.isEmpty) {
-                        _showError('Please enter valid email and password.');
-                      } else {
-                        setState(() {
-                          _errorMessage = null;
-                          _isLoading = true; // Show loading
-                        });
-
-                        try {
-                          await authService.value.signIn(
-                            email: authViewModel.email,
-                            password: authViewModel.password,
-                          );
-
-                          setState(() {
-                            _isLoading = false; // Hide loading
-                          });
-
-                          _showSuccess('Login successful!');
-                          await Future.delayed(
-                            const Duration(seconds: 1),
-                          ); // Reduced delay
-
-                          if (mounted) {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HomeView(),
-                              ),
-                            );
-                          }
-                        } on FirebaseAuthException catch (e) {
-                          setState(() {
-                            _isLoading = false; // Hide loading
-                          });
-                          _showError(
-                            e.message ?? 'Login failed. Please try again.',
-                          );
-                        }
-                      }
-                    },
-                    buttonType: 'main',
-                  ),
+                  // Add this at the end of the Stack children list
+                  if (_isLoading)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black54,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              // Popup error message
-              if (_showErrorPopup)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(10.0),
-                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                    decoration: BoxDecoration(
-                      color: _isSuccess ? Colors.green : Colors.red,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Text(
-                      _errorMessage ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              // Add this at the end of the Stack children list
-              if (_isLoading)
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.black54,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),

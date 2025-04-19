@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import 'package:project491/managers/auth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_view.dart';
 
 class RoomView extends StatefulWidget {
   final String roomId;
@@ -356,138 +352,155 @@ class _RoomViewState extends State<RoomView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1B),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween, // Changed to spaceBetween
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: const Color(0xFF0D0D1B),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        widget.roomName,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 32,
-                          color: Colors.white,
-                        ),
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment
+                            .spaceBetween, // Changed to spaceBetween
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                    ),
-                  ),
-                  if (_isHost) // Only show delete button for host
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: _deleteRoom,
-                    ),
-                  if (!_isHost)
-                    const SizedBox(
-                      width: 48,
-                    ), // Maintain layout when no delete button
-                ],
-              ),
-              const SizedBox(height: 20),
-              if (_isHost) // Only show Preview Schedule button for host
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement preview schedule functionality
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  child: const Text(
-                    'Preview Schedule',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  widget.roomDescription,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  'Participants',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 20,
-                    color: Colors.white,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              if (_isHost)
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _newParticipantController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: const InputDecoration(
-                                hintText: 'Add new participant',
-                                hintStyle: TextStyle(color: Colors.white60),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white60),
-                                ),
-                              ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            widget.roomName,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 32,
+                              color: Colors.white,
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.add, color: Colors.white),
-                            onPressed: _addNewParticipant,
-                          ),
-                        ],
+                        ),
+                      ),
+                      if (_isHost) // Only show delete button for host
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: _deleteRoom,
+                        ),
+                      if (!_isHost)
+                        const SizedBox(
+                          width: 48,
+                        ), // Maintain layout when no delete button
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_isHost) // Only show Preview Schedule button for host
+                    ElevatedButton(
+                      onPressed: () {
+                        // TODO: Implement preview schedule functionality
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Preview Schedule',
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _participants.length,
-                  itemBuilder: (context, index) {
-                    final participant = _participants[index];
-                    return InkWell(
-                      onTap: () => _handleParticipantTap(participant),
-                      child: _buildParticipantRow(
-                        participant['name'] +
-                            (participant['isHost'] == true ? ' (Host)' : ''),
-                        _getParticipantStatusColor(participant),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      widget.roomDescription,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Center(
+                    child: Text(
+                      'Participants',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        color: Colors.white,
+                        decoration: TextDecoration.underline,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (_isHost)
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _newParticipantController,
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Add new participant',
+                                    hintStyle: TextStyle(color: Colors.white60),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.white60,
+                                      ),
+                                    ),
+                                  ),
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _addNewParticipant(),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                                onPressed: _addNewParticipant,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height - 300,
+                    child: ListView.builder(
+                      itemCount: _participants.length,
+                      itemBuilder: (context, index) {
+                        final participant = _participants[index];
+                        return InkWell(
+                          onTap: () => _handleParticipantTap(participant),
+                          child: _buildParticipantRow(
+                            participant['name'] +
+                                (participant['isHost'] == true
+                                    ? ' (Host)'
+                                    : ''),
+                            _getParticipantStatusColor(participant),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
