@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project491/views/profile_edit_view.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'login_view.dart';
@@ -91,6 +92,22 @@ class _HomeViewState extends State<HomeView>
                                   strokeWidth: 2,
                                 ),
                               ),
+                          TextButton(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                builder:
+                                    (context) => ProfileEditView(
+                                      user: authVM.currentUser!,
+                                    ),
+                              );
+                            },
+                            child: const Text(
+                              'Edit Profile',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
                         ],
                       ),
                     ),

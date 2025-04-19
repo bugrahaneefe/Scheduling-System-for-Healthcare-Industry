@@ -64,4 +64,25 @@ class AuthServices {
       throw e;
     }
   }
+
+  Future<void> updateUserProfile({
+    required String name,
+    required String title,
+    required String phoneNumber,
+    required DateTime birthday,
+  }) async {
+    try {
+      final user = firebaseAuth.currentUser;
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).update({
+          'name': name,
+          'title': title,
+          'phoneNumber': phoneNumber,
+          'birthday': birthday,
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
+    }
+  }
 }
