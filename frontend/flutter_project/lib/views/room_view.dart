@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:project491/views/home_view.dart';
 
 class RoomView extends StatefulWidget {
   final String roomId;
@@ -344,6 +346,33 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
+  Future<void> _shareRoomInvitation() async {
+    if (!_isHost) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Only the host can share room invitations'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Generate a shareable link with the room ID
+    final inviteLink = 'project491://room/${widget.roomId}';
+
+    // Copy to clipboard
+    await Clipboard.setData(ClipboardData(text: inviteLink));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invitation link copied to clipboard!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -371,7 +400,13 @@ class _RoomViewState extends State<RoomView> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const HomeView()),
+                            (route) => false,
+                          );
+                        },
                       ),
                       Expanded(
                         child: Center(
@@ -386,15 +421,23 @@ class _RoomViewState extends State<RoomView> {
                           ),
                         ),
                       ),
-                      if (_isHost) // Only show delete button for host
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: _deleteRoom,
+                      if (_isHost)
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.share,
+                                color: Colors.white,
+                              ),
+                              onPressed: _shareRoomInvitation,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: _deleteRoom,
+                            ),
+                          ],
                         ),
-                      if (!_isHost)
-                        const SizedBox(
-                          width: 48,
-                        ), // Maintain layout when no delete button
+                      if (!_isHost) const SizedBox(width: 48),
                     ],
                   ),
                   const SizedBox(height: 20),

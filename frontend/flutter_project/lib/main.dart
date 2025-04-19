@@ -1,7 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
+import 'package:app_links/app_links.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'views/login_view.dart';
+import 'views/home_view.dart';
+import 'views/room_invitation_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '/firebase_options.dart';
 
@@ -11,27 +16,104 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late AppLinks _appLinks;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    initDeepLinks();
+  }
+
+  Future<void> initDeepLinks() async {
+    _appLinks = AppLinks();
+
+    // Handle incoming links when app is in foreground
+    _appLinks.uriLinkStream.listen((uri) {
+      handleDeepLink(uri);
+    });
+
+    // Handle initial URI if app was started by a deep link
+    final uri = await _appLinks.getInitialLink();
+    if (uri != null) {
+      handleDeepLink(uri);
+    }
+  }
+
+  void handleDeepLink(Uri uri) {
+    if (uri.host == 'room') {
+      final roomId = uri.pathSegments.last;
+
+      // Check if user is logged in
+      if (authService.value.currentUser == null) {
+        // Store the room ID to redirect after login
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => LoginView(pendingRoomId: roomId),
+          ),
+        );
+      } else {
+        // User is already logged in, go directly to room invitation
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => RoomInvitationView(roomId: roomId),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        // Provide AuthViewModel for the entire app
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Flutter MVVM Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
-          scaffoldBackgroundColor: Color(0xFF0D0D1B), // Set background color
-          appBarTheme: AppBarTheme(
-            backgroundColor: Color(0xFF0D0D1B), // Set navigation bar color
-          ),
+          scaffoldBackgroundColor: const Color(0xFF0D0D1B),
+          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF0D0D1B)),
         ),
-        // Start with the Log In page
-        home: const LoginView(),
+        home: StreamBuilder<User?>(
+          stream: authService.value.authStateChanges,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (snapshot.hasData && snapshot.data != null) {
+              return FutureBuilder(
+                future:
+                    Provider.of<AuthViewModel>(
+                      context,
+                      listen: false,
+                    ).loadCurrentUser(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  return const HomeView();
+                },
+              );
+            }
+
+            return const LoginView();
+          },
+        ),
       ),
     );
   }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:project491/components/custom_button.dart';
 import 'package:project491/managers/auth_services.dart';
+import 'package:project491/views/room_invitation_view.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -12,7 +13,9 @@ import 'home_view.dart';
 import 'dart:async';
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  final String? pendingRoomId;
+
+  const LoginView({Key? key, this.pendingRoomId}) : super(key: key);
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -59,6 +62,34 @@ class _LoginViewState extends State<LoginView> {
         _isSuccess = false;
       });
     });
+  }
+
+  Future<void> _handleSuccessfulLogin(BuildContext context) async {
+    if (widget.pendingRoomId != null) {
+      // Navigate to room invitation if there's a pending room
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => RoomInvitationView(
+                  roomId: widget.pendingRoomId!,
+                  returnToHome: true, // Add this parameter
+                ),
+          ),
+          (route) => false, // Remove all previous routes
+        );
+      }
+    } else {
+      // Navigate to home view as usual
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeView()),
+          (route) => false, // Remove all previous routes
+        );
+      }
+    }
   }
 
   @override
@@ -287,12 +318,7 @@ class _LoginViewState extends State<LoginView> {
                               ); // Reduced delay
 
                               if (mounted) {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const HomeView(),
-                                  ),
-                                );
+                                await _handleSuccessfulLogin(context);
                               }
                             } on FirebaseAuthException catch (e) {
                               setState(() {
