@@ -185,6 +185,31 @@ class _SignupViewState extends State<SignupView> {
                                   .updateName, // Add this method in AuthViewModel
                         ),
                         const SizedBox(height: 10),
+                        // Title field
+                        TextFormField(
+                          keyboardType: TextInputType.text,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z\s]'),
+                            ),
+                          ],
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.work,
+                              color: Color(0xFF375DFB),
+                            ),
+                            hintText: 'title',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 10.0,
+                            ),
+                          ),
+                          style: const TextStyle(color: Colors.black),
+                          onChanged: authViewModel.updateTitle,
+                        ),
+                        const SizedBox(height: 10),
                         // Email field
                         TextFormField(
                           decoration: const InputDecoration(
@@ -303,28 +328,34 @@ class _SignupViewState extends State<SignupView> {
                   CustomButton(
                     text: 'Register',
                     onPressed: () async {
-                      if (authViewModel.email.isEmpty ||
-                          authViewModel.password.isEmpty) {
-                        _showError('Please enter valid email and password.');
-                      } else {
+                      if (_formKey.currentState!.validate() &&
+                          authViewModel.email.isNotEmpty &&
+                          authViewModel.password.isNotEmpty &&
+                          authViewModel.name.isNotEmpty &&
+                          authViewModel.title.isNotEmpty &&
+                          authViewModel.phoneNumber.isNotEmpty &&
+                          authViewModel.birthday != null) {
                         setState(() {
                           _errorMessage = null;
-                          _isLoading = true; // Show loading
+                          _isLoading = true;
                         });
 
                         try {
                           await authService.value.signUp(
                             email: authViewModel.email,
                             password: authViewModel.password,
+                            name: authViewModel.name,
+                            title: authViewModel.title,
+                            birthday: authViewModel.birthday!,
+                            phoneNumber: authViewModel.phoneNumber,
                           );
 
                           setState(() {
-                            _isLoading = false; // Hide loading
+                            _isLoading = false;
                           });
 
                           _showSuccess('Registration successful!');
-                          authViewModel
-                              .clearUserData(); // Clear user data after successful registration
+                          authViewModel.clearUserData();
 
                           await Future.delayed(const Duration(seconds: 1));
 
@@ -333,12 +364,14 @@ class _SignupViewState extends State<SignupView> {
                           }
                         } on FirebaseAuthException catch (e) {
                           setState(() {
-                            _isLoading = false; // Hide loading
+                            _isLoading = false;
                           });
                           _showError(
                             e.message ?? 'An error occurred. Please try again.',
                           );
                         }
+                      } else {
+                        _showError('Please fill in all required fields.');
                       }
                     },
                     buttonType: 'main',

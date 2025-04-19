@@ -8,7 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'signup_view.dart';
 import 'package:flutter/services.dart';
-import 'room_view.dart';
+import 'home_view.dart';
+import 'dart:async';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -24,14 +25,19 @@ class _LoginViewState extends State<LoginView> {
   bool _showErrorPopup = false;
   bool _isSuccess = false;
   bool _isLoading = false; // Add this line after other state variables
+  Timer? _errorTimer;
+  Timer? _successTimer;
 
   void _showError(String message) {
+    if (!mounted) return;
     setState(() {
       _errorMessage = message;
       _showErrorPopup = true;
       _isSuccess = false;
     });
-    Future.delayed(const Duration(seconds: 3), () {
+    _errorTimer?.cancel();
+    _errorTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
       setState(() {
         _showErrorPopup = false;
       });
@@ -39,17 +45,27 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _showSuccess(String message) {
+    if (!mounted) return;
     setState(() {
       _errorMessage = message;
       _showErrorPopup = true;
       _isSuccess = true;
     });
-    Future.delayed(const Duration(seconds: 2), () {
+    _successTimer?.cancel();
+    _successTimer = Timer(const Duration(seconds: 2), () {
+      if (!mounted) return;
       setState(() {
         _showErrorPopup = false;
         _isSuccess = false;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _errorTimer?.cancel();
+    _successTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -248,7 +264,7 @@ class _LoginViewState extends State<LoginView> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RoomView(),
+                                builder: (_) => const HomeView(),
                               ),
                             );
                           }
