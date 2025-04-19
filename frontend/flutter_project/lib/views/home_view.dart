@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project491/views/create_room_sheet.dart';
 import 'package:project491/views/profile_edit_view.dart';
+import 'package:project491/views/room_view.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'login_view.dart';
@@ -251,6 +252,7 @@ class _HomeViewState extends State<HomeView>
 
   Future<List<Widget>> _buildRoomsList(List<String> roomIds) async {
     List<Widget> roomWidgets = [];
+    List<String> invalidRoomIds = [];
 
     for (String roomId in roomIds) {
       try {
@@ -263,79 +265,83 @@ class _HomeViewState extends State<HomeView>
         if (roomDoc.exists) {
           final roomData = roomDoc.data()!;
           roomWidgets.add(
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => RoomView(
+                          roomId: roomId,
+                          roomName: roomData['name'] ?? 'Unnamed Room',
+                          roomDescription:
+                              roomData['description'] ?? 'No description',
+                          participants: List<Map<String, dynamic>>.from(
+                            roomData['participants'] ?? [],
+                          ),
+                          currentUserId: authService.value.currentUser!.uid,
+                        ),
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    roomData['name'] ?? 'Unnamed Room',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    roomData['description'] ?? 'No description',
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          );
-        } else {
-          roomWidgets.add(
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'Room could not be fetched',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      roomData['name'] ?? 'Unnamed Room',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      roomData['description'] ?? 'No description',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
                 ),
               ),
             ),
           );
+        } else {
+          invalidRoomIds.add(roomId);
         }
       } catch (e) {
-        roomWidgets.add(
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'Room could not be fetched',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        );
+        invalidRoomIds.add(roomId);
+      }
+    }
+
+    // Clean up invalid room IDs from user's rooms array
+    if (invalidRoomIds.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authService.value.currentUser!.uid)
+            .update({'rooms': FieldValue.arrayRemove(invalidRoomIds)});
+
+        // Refresh the user data in AuthViewModel
+        await Provider.of<AuthViewModel>(
+          context,
+          listen: false,
+        ).loadCurrentUser();
+      } catch (e) {
+        debugPrint('Error cleaning up invalid room IDs: $e');
       }
     }
 

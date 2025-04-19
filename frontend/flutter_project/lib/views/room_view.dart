@@ -2,10 +2,357 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'package:project491/managers/auth_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_view.dart';
 
-class RoomView extends StatelessWidget {
-  const RoomView({Key? key}) : super(key: key);
+class RoomView extends StatefulWidget {
+  final String roomId;
+  final String roomName;
+  final String roomDescription;
+  final List<Map<String, dynamic>> participants;
+  final String currentUserId;
+
+  const RoomView({
+    Key? key,
+    required this.roomId,
+    required this.roomName,
+    required this.roomDescription,
+    required this.participants,
+    required this.currentUserId,
+  }) : super(key: key);
+
+  @override
+  State<RoomView> createState() => _RoomViewState();
+}
+
+class _RoomViewState extends State<RoomView> {
+  List<Map<String, dynamic>> _participants = [];
+  final TextEditingController _newParticipantController =
+      TextEditingController();
+  bool _isHost = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _participants = widget.participants;
+    _isHost = _participants.any(
+      (p) => p['isHost'] == true && p['userId'] == widget.currentUserId,
+    );
+  }
+
+  Future<void> _refreshRoom() async {
+    try {
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
+      if (roomDoc.exists) {
+        setState(() {
+          _participants = List<Map<String, dynamic>>.from(
+            roomDoc.data()?['participants'] ?? [],
+          );
+        });
+      }
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> _handleParticipantTap(Map<String, dynamic> participant) async {
+    // Check if user is already assigned to another participant
+    bool isAlreadyAssigned = _participants.any(
+      (p) => p != participant && p['userId'] == widget.currentUserId,
+    );
+
+    // If user is not host, use existing assignment logic
+    if (!_isHost) {
+      if (participant['userId'] != null && participant['userId'].isNotEmpty) {
+        // Show warning for assigned participant
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Participant Assigned'),
+                content: Text(
+                  'This participant is already assigned to ${participant['name']}.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      } else if (isAlreadyAssigned) {
+        // Show warning that user is already assigned
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Already Assigned'),
+                content: const Text(
+                  'You are already assigned to another participant in this room.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      } else {
+        // Show confirmation for unassigned participant
+        final bool? confirm = await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Assign Participant'),
+                content: Text(
+                  'Do you want to assign yourself to ${participant['name']}? \n You won\'t be able to unassign yourself later.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+        );
+
+        if (confirm == true) {
+          try {
+            // Update the participant's userId
+            final int participantIndex = _participants.indexOf(participant);
+            if (participantIndex != -1) {
+              _participants[participantIndex]['userId'] = widget.currentUserId;
+
+              // Update in Firestore
+              await FirebaseFirestore.instance
+                  .collection('rooms')
+                  .doc(widget.roomId)
+                  .update({'participants': _participants});
+
+              // Add room to user's rooms array if not already there
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(widget.currentUserId)
+                  .update({
+                    'rooms': FieldValue.arrayUnion([widget.roomId]),
+                  });
+
+              // Refresh the room
+              await _refreshRoom();
+            }
+          } catch (e) {
+            // Show error dialog
+            if (mounted) {
+              showDialog(
+                context: context,
+                builder:
+                    (context) => AlertDialog(
+                      title: const Text('Error'),
+                      content: Text('Failed to assign participant: $e'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+              );
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    // Host-specific actions
+    if (participant['userId'] != null && participant['userId'].isNotEmpty) {
+      // Prevent host from unassigning themselves
+      if (participant['isHost'] == true &&
+          participant['userId'] == widget.currentUserId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Host cannot be unassigned'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Show options to remove assigned user
+      final bool? confirm = await showDialog<bool>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Remove Assignment'),
+              content: Text(
+                'Do you want to remove the assigned user from ${participant['name']}?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Remove'),
+                ),
+              ],
+            ),
+      );
+
+      if (confirm == true) {
+        await _removeUserFromParticipant(participant);
+      }
+    } else if (_isHost && !participant['isHost']) {
+      // Show options to remove unassigned participant
+      final bool? confirm = await showDialog<bool>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Remove Participant'),
+              content: Text(
+                'Do you want to remove ${participant['name']} from the room?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Remove'),
+                ),
+              ],
+            ),
+      );
+
+      if (confirm == true) {
+        await _removeParticipant(participant);
+      }
+    }
+  }
+
+  Future<void> _removeUserFromParticipant(
+    Map<String, dynamic> participant,
+  ) async {
+    try {
+      final int index = _participants.indexOf(participant);
+
+      if (index != -1) {
+        // Only update the participant's userId
+        _participants[index]['userId'] = '';
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .update({'participants': _participants});
+
+        await _refreshRoom();
+      }
+    } catch (e) {
+      _showError('Failed to remove user: $e');
+    }
+  }
+
+  Future<void> _removeParticipant(Map<String, dynamic> participant) async {
+    try {
+      _participants.remove(participant);
+
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .update({'participants': _participants});
+
+      await _refreshRoom();
+    } catch (e) {
+      _showError('Failed to remove participant: $e');
+    }
+  }
+
+  Future<void> _addNewParticipant() async {
+    final name = _newParticipantController.text.trim();
+    if (name.isEmpty) return;
+
+    try {
+      _participants.add({'userId': '', 'name': name, 'isHost': false});
+
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .update({'participants': _participants});
+
+      _newParticipantController.clear();
+      await _refreshRoom();
+    } catch (e) {
+      _showError('Failed to add participant: $e');
+    }
+  }
+
+  Future<void> _deleteRoom() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Room'),
+            content: const Text('Are you sure you want to delete this room?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      try {
+        // Delete the room document
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .delete();
+
+        // Remove room from all participants' rooms arrays
+        for (var participant in _participants) {
+          if (participant['userId']?.isNotEmpty == true) {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(participant['userId'])
+                .update({
+                  'rooms': FieldValue.arrayRemove([widget.roomId]),
+                });
+          }
+        }
+
+        if (mounted) {
+          Navigator.pop(context); // Return to home view
+        }
+      } catch (e) {
+        _showError('Failed to delete room: $e');
+      }
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,32 +365,18 @@ class RoomView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween, // Changed to spaceBetween
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () async {
-                      final authViewModel = Provider.of<AuthViewModel>(
-                        context,
-                        listen: false,
-                      );
-                      await authService.value.signOut();
-                      authViewModel.clearUserData();
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginView(),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: () => Navigator.pop(context),
                   ),
                   Expanded(
                     child: Center(
-                      child: const Text(
-                        'Room-01',
-                        style: TextStyle(
+                      child: Text(
+                        widget.roomName,
+                        style: const TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,
                           fontSize: 32,
@@ -52,23 +385,46 @@ class RoomView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48),
+                  if (_isHost) // Only show delete button for host
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: _deleteRoom,
+                    ),
+                  if (!_isHost)
+                    const SizedBox(
+                      width: 48,
+                    ), // Maintain layout when no delete button
                 ],
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement preview schedule functionality
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+              if (_isHost) // Only show Preview Schedule button for host
+                ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement preview schedule functionality
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'Preview Schedule',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-                child: const Text(
-                  'Preview Schedule',
-                  style: TextStyle(color: Colors.white),
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.roomDescription,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 20),
@@ -85,14 +441,50 @@ class RoomView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Expanded(
-                child: ListView(
+              if (_isHost)
+                Column(
                   children: [
-                    _buildParticipantRow('Buğrahan Efe (Host)', Colors.green),
-                    _buildParticipantRow('Mert Küçükerdem', Colors.red),
-                    _buildParticipantRow('Melike Şahin', Colors.red),
-                    _buildParticipantRow('Selen Bilgiç', Colors.grey),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _newParticipantController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                hintText: 'Add new participant',
+                                hintStyle: TextStyle(color: Colors.white60),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white60),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add, color: Colors.white),
+                            onPressed: _addNewParticipant,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                   ],
+                ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _participants.length,
+                  itemBuilder: (context, index) {
+                    final participant = _participants[index];
+                    return InkWell(
+                      onTap: () => _handleParticipantTap(participant),
+                      child: _buildParticipantRow(
+                        participant['name'] +
+                            (participant['isHost'] == true ? ' (Host)' : ''),
+                        _getParticipantStatusColor(participant),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -133,9 +525,26 @@ class RoomView extends StatelessWidget {
               ),
             ),
           ),
-          Icon(Icons.circle, color: statusColor),
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: statusColor,
+              shape: BoxShape.circle,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Color _getParticipantStatusColor(Map<String, dynamic> participant) {
+    if (participant['userId'] == null || participant['userId'].isEmpty) {
+      return Colors.grey; // No assigned userId
+    }
+    if (participant['userId'] == widget.currentUserId) {
+      return Colors.green; // Current user
+    }
+    return Colors.red; // Other assigned user
   }
 }

@@ -90,7 +90,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFF5F5F5), // Light gray background
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       padding: EdgeInsets.fromLTRB(
         16,
         16,
@@ -106,7 +110,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
             Text(
               'Create New Room',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
+                color: Colors.black87,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -118,6 +122,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 labelText: 'Room Name',
                 filled: true,
                 fillColor: Colors.white,
+                border: OutlineInputBorder(),
               ),
               validator:
                   (value) =>
@@ -130,6 +135,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 labelText: 'Description',
                 filled: true,
                 fillColor: Colors.white,
+                border: OutlineInputBorder(),
               ),
               maxLines: 3,
               validator:
@@ -146,6 +152,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                       labelText: 'Add Participant',
                       filled: true,
                       fillColor: Colors.white,
+                      border: OutlineInputBorder(),
                     ),
                   ),
                 ),
@@ -160,17 +167,18 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
             const SizedBox(height: 16),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
               ),
               padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Participants (${_selectedParticipants.length}):',
-                    style: const TextStyle(
-                      color: Colors.white,
+                  const Text(
+                    'Participants:',
+                    style: TextStyle(
+                      color: Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -186,7 +194,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                           dense: true,
                           title: Text(
                             participant['name'] as String,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.black87),
                           ),
                           trailing:
                               participant['isHost'] == true
