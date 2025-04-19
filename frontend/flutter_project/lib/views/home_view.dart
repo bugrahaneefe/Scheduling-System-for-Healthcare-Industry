@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'login_view.dart';
 import '../managers/auth_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -115,11 +116,57 @@ class _HomeViewState extends State<HomeView>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    Center(
-                      child: Text(
-                        authVM.currentUser?.rooms.join(', ') ??
-                            'No rooms assigned',
-                        style: const TextStyle(color: Colors.white),
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        await Provider.of<AuthViewModel>(
+                          context,
+                          listen: false,
+                        ).loadCurrentUser();
+                        setState(() {});
+                      },
+                      child: ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: FutureBuilder<List<Widget>>(
+                              future: _buildRoomsList(
+                                authVM.currentUser?.rooms ?? [],
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const SizedBox(
+                                    height: 200,
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+
+                                if (authVM.currentUser?.rooms.isEmpty ?? true) {
+                                  return const SizedBox(
+                                    height: 200,
+                                    child: Center(
+                                      child: Text(
+                                        'No room assigned',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: snapshot.data ?? [],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const Center(
@@ -136,5 +183,98 @@ class _HomeViewState extends State<HomeView>
         },
       ),
     );
+  }
+
+  Future<List<Widget>> _buildRoomsList(List<String> roomIds) async {
+    List<Widget> roomWidgets = [];
+
+    for (String roomId in roomIds) {
+      try {
+        final roomDoc =
+            await FirebaseFirestore.instance
+                .collection('rooms')
+                .doc(roomId)
+                .get();
+
+        if (roomDoc.exists) {
+          final roomData = roomDoc.data()!;
+          roomWidgets.add(
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    roomData['name'] ?? 'Unnamed Room',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    roomData['description'] ?? 'No description',
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          roomWidgets.add(
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Room could not be fetched',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        roomWidgets.add(
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              'Room could not be fetched',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return roomWidgets;
   }
 }
