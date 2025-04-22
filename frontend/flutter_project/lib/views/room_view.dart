@@ -31,6 +31,7 @@ class _RoomViewState extends State<RoomView> {
   bool _isHost = false;
   Map<String, List<Map<String, String>>>? _appliedSchedule;
   bool _showOnlyMySchedule = false;
+  final ScrollController _scheduleScrollController = ScrollController();
 
   @override
   void initState() {
@@ -39,7 +40,18 @@ class _RoomViewState extends State<RoomView> {
     _isHost = _participants.any(
       (p) => p['isHost'] == true && p['userId'] == widget.currentUserId,
     );
-    _loadSchedules();
+    _loadSchedules().then((_) {
+      if (_appliedSchedule != null) {
+        final sortedDates = _appliedSchedule!.keys.toList()..sort();
+        _scrollToToday(sortedDates);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scheduleScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSchedules() async {
@@ -424,6 +436,38 @@ class _RoomViewState extends State<RoomView> {
     );
   }
 
+  String _formatDateForComparison(String date) {
+    // Convert from DD.MM.YYYY to YYYY-MM-DD
+    final parts = date.split('.');
+    return '${parts[2]}-${parts[1]}-${parts[0]}';
+  }
+
+  void _scrollToToday(List<String> sortedDates) {
+    if (sortedDates.isEmpty) return;
+
+    final today = DateTime.now();
+    final formattedToday =
+        '${today.day.toString().padLeft(2, '0')}.${today.month.toString().padLeft(2, '0')}.${today.year}';
+
+    final index = sortedDates.indexWhere((date) {
+      final dateStr = _formatDateForComparison(date);
+      final todayStr = _formatDateForComparison(formattedToday);
+      return dateStr.compareTo(todayStr) >= 0;
+    });
+
+    if (index != -1) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (_scheduleScrollController.hasClients) {
+          _scheduleScrollController.animateTo(
+            index * 72.0, // Approximate height of each ListTile
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
+  }
+
   Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
     if (schedule == null) return const SizedBox.shrink();
 
@@ -489,12 +533,25 @@ class _RoomViewState extends State<RoomView> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListView.builder(
+            controller: _scheduleScrollController,
             itemCount: sortedDates.length,
             itemBuilder: (context, index) {
               final date = sortedDates[index];
               final assignments = filteredSchedule[date]!;
+              final isToday =
+                  date ==
+                  '${DateTime.now().day.toString().padLeft(2, '0')}.${DateTime.now().month.toString().padLeft(2, '0')}.${DateTime.now().year}';
+
               return ListTile(
-                title: Text(date, style: const TextStyle(color: Colors.white)),
+                title: Text(
+                  date,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                    backgroundColor:
+                        isToday ? Colors.blue.withOpacity(0.3) : null,
+                  ),
+                ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children:
