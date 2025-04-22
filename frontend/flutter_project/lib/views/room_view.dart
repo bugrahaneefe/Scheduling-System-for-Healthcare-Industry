@@ -29,6 +29,7 @@ class _RoomViewState extends State<RoomView> {
   final TextEditingController _newParticipantController =
       TextEditingController();
   bool _isHost = false;
+  Map<String, List<Map<String, String>>>? _appliedSchedule;
 
   @override
   void initState() {
@@ -37,6 +38,36 @@ class _RoomViewState extends State<RoomView> {
     _isHost = _participants.any(
       (p) => p['isHost'] == true && p['userId'] == widget.currentUserId,
     );
+    _loadSchedules();
+  }
+
+  Future<void> _loadSchedules() async {
+    final roomDoc =
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .get();
+
+    if (roomDoc.exists) {
+      setState(() {
+        _appliedSchedule = _convertScheduleData(
+          roomDoc.data()?['appliedSchedule'],
+        );
+      });
+    }
+  }
+
+  Map<String, List<Map<String, String>>>? _convertScheduleData(dynamic data) {
+    if (data == null) return null;
+
+    final Map<String, List<Map<String, String>>> result = {};
+    (data as Map<String, dynamic>).forEach((key, value) {
+      result[key] =
+          (value as List)
+              .map((item) => Map<String, String>.from(item))
+              .toList();
+    });
+    return result;
   }
 
   Future<void> _refreshRoom() async {
@@ -392,6 +423,40 @@ class _RoomViewState extends State<RoomView> {
     );
   }
 
+  Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
+    if (schedule == null) return const SizedBox.shrink();
+
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListView.builder(
+        itemCount: schedule.length,
+        itemBuilder: (context, index) {
+          final date = schedule.keys.elementAt(index);
+          final assignments = schedule[date]!;
+          return ListTile(
+            title: Text(date, style: const TextStyle(color: Colors.white)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children:
+                  assignments
+                      .map(
+                        (a) => Text(
+                          '${a['name']} (${a['assignedUser']})',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      )
+                      .toList(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -454,6 +519,9 @@ class _RoomViewState extends State<RoomView> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  if (_appliedSchedule != null)
+                    _buildScheduleList(_appliedSchedule),
+                  const SizedBox(height: 16),
                   if (_isHost)
                     ElevatedButton(
                       onPressed: () async {
@@ -509,6 +577,9 @@ class _RoomViewState extends State<RoomView> {
                             builder:
                                 (context) => PreviewScheduleView(
                                   participants: _participants,
+                                  roomId:
+                                      widget
+                                          .roomId, // Fix: Pass the correct roomId
                                 ),
                           ),
                         );
@@ -520,7 +591,7 @@ class _RoomViewState extends State<RoomView> {
                         ),
                       ),
                       child: const Text(
-                        'Preview Schedule',
+                        'Preview New Schedule',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),

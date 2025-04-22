@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PreviewScheduleView extends StatelessWidget {
   final List<Map<String, dynamic>> participants;
+  final String roomId;
 
-  const PreviewScheduleView({Key? key, required this.participants})
-    : super(key: key);
+  const PreviewScheduleView({
+    Key? key,
+    required this.participants,
+    required this.roomId,
+  }) : super(key: key);
 
   Map<String, List<Map<String, String>>> _generateSchedule() {
     final Map<String, List<Map<String, String>>> schedule = {};
@@ -30,6 +35,43 @@ class PreviewScheduleView extends StatelessWidget {
     }
 
     return schedule;
+  }
+
+  Future<void> _applySchedule(
+    BuildContext context,
+    Map<String, List<Map<String, String>>> schedule,
+  ) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Only update appliedSchedule, remove previewSchedule
+      await FirebaseFirestore.instance.collection('rooms').doc(roomId).update({
+        'appliedSchedule': schedule,
+      });
+
+      if (context.mounted) {
+        // Remove loading indicator
+        Navigator.pop(context);
+        // Return to room view
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      // Remove loading indicator
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to apply schedule: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -115,9 +157,7 @@ class PreviewScheduleView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: () {
-                  // Will be implemented later
-                },
+                onPressed: () => _applySchedule(context, schedule),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   minimumSize: const Size.fromHeight(50),
