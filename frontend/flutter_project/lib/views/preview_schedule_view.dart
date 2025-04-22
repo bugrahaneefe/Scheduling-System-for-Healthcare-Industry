@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class PreviewScheduleView extends StatelessWidget {
+class PreviewScheduleView extends StatefulWidget {
   final List<Map<String, dynamic>> participants;
   final String roomId;
 
@@ -11,10 +11,23 @@ class PreviewScheduleView extends StatelessWidget {
     required this.roomId,
   }) : super(key: key);
 
+  @override
+  _PreviewScheduleViewState createState() => _PreviewScheduleViewState();
+}
+
+class _PreviewScheduleViewState extends State<PreviewScheduleView> {
+  late Map<String, List<Map<String, String>>> _schedule;
+
+  @override
+  void initState() {
+    super.initState();
+    _schedule = _generateSchedule();
+  }
+
   Map<String, List<Map<String, String>>> _generateSchedule() {
     final Map<String, List<Map<String, String>>> schedule = {};
     final List<Map<String, String>> participantInfo =
-        participants.map((p) {
+        widget.participants.map((p) {
           return {
             'name': p['name'] as String,
             'assignedUser':
@@ -24,12 +37,9 @@ class PreviewScheduleView extends StatelessWidget {
           };
         }).toList();
 
-    // Get today's date
     final now = DateTime.now();
-    // Calculate the end date (1 month from today)
     final endDate = DateTime(now.year, now.month + 1, now.day);
 
-    // Generate schedule from today until end date
     for (
       var date = now;
       date.isBefore(endDate);
@@ -37,8 +47,6 @@ class PreviewScheduleView extends StatelessWidget {
     ) {
       String formattedDate =
           '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-
-      // Randomly select 2-3 participants for each day
       participantInfo.shuffle();
       int numberOfParticipants = (date.day % 2 == 0) ? 2 : 3;
       schedule[formattedDate] =
@@ -48,31 +56,136 @@ class PreviewScheduleView extends StatelessWidget {
     return schedule;
   }
 
+  Future<void> _removeAssignment(
+    String date,
+    Map<String, String> assignment,
+  ) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Remove Assignment'),
+            content: Text('Remove ${assignment['name']} from $date?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      setState(() {
+        _schedule[date]!.removeWhere(
+          (a) =>
+              a['name'] == assignment['name'] &&
+              a['assignedUser'] == assignment['assignedUser'],
+        );
+      });
+    }
+  }
+
+  Future<void> _showAddAssignmentDialog(String date) async {
+    // Check for users already assigned on this date
+    final List<String> assignedUsers =
+        _schedule[date]!
+            .map((assignment) => assignment['name'] as String)
+            .toList();
+
+    final availableParticipants =
+        widget.participants
+            .where((p) => !assignedUsers.contains(p['name']))
+            .toList();
+
+    if (availableParticipants.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All participants are already assigned for this day'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final selectedParticipant = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Add Assignment for $date'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableParticipants.length,
+                itemBuilder: (context, index) {
+                  final participant = availableParticipants[index];
+                  return ListTile(
+                    title: Text(participant['name']),
+                    subtitle: Text(
+                      participant['assignedUserName'] ?? 'Unassigned',
+                    ),
+                    onTap: () => Navigator.pop(context, participant),
+                  );
+                },
+              ),
+            ),
+          ),
+    );
+
+    if (selectedParticipant != null) {
+      try {
+        final updatedSchedule = Map<String, List<Map<String, String>>>.from(
+          _schedule,
+        );
+        updatedSchedule[date]!.add({
+          'name': selectedParticipant['name'],
+          'assignedUser':
+              selectedParticipant['assignedUserName'] ?? 'Unassigned',
+        });
+
+        setState(() {
+          _schedule = updatedSchedule;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add assignment: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _applySchedule(
     BuildContext context,
     Map<String, List<Map<String, String>>> schedule,
   ) async {
     try {
-      // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Only update appliedSchedule, remove previewSchedule
-      await FirebaseFirestore.instance.collection('rooms').doc(roomId).update({
-        'appliedSchedule': schedule,
-      });
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .update({'appliedSchedule': schedule});
 
       if (context.mounted) {
-        // Remove loading indicator
         Navigator.pop(context);
-        // Return to room view and refresh data
-        Navigator.pop(context, true); // Pass true to indicate refresh needed
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      // Remove loading indicator
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -87,8 +200,6 @@ class PreviewScheduleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final schedule = _generateSchedule();
-
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       body: SafeArea(
@@ -113,16 +224,16 @@ class PreviewScheduleView extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(width: 48), // For balance
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: schedule.length,
+                itemCount: _schedule.length,
                 itemBuilder: (context, index) {
-                  String date = schedule.keys.elementAt(index);
-                  List<Map<String, String>> names = schedule[date]!;
+                  String date = _schedule.keys.elementAt(index);
+                  List<Map<String, String>> names = _schedule[date]!;
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
@@ -149,14 +260,33 @@ class PreviewScheduleView extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                 vertical: 4.0,
                               ),
-                              child: Text(
-                                '• ${info['name']} (${info['assignedUser']})',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 16,
-                                ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '• ${info['name']} (${info['assignedUser']})',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    onPressed:
+                                        () => _removeAssignment(date, info),
+                                  ),
+                                ],
                               ),
                             ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add, color: Colors.green),
+                            onPressed: () => _showAddAssignmentDialog(date),
                           ),
                         ],
                       ),
@@ -168,7 +298,7 @@ class PreviewScheduleView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: () => _applySchedule(context, schedule),
+                onPressed: () => _applySchedule(context, _schedule),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   minimumSize: const Size.fromHeight(50),

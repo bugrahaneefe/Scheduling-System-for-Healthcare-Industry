@@ -591,6 +591,25 @@ class _RoomViewState extends State<RoomView> {
   }
 
   Future<void> _showAddAssignmentDialog(String date) async {
+    // Check for users already assigned on this date
+    final List<String> assignedUsers =
+        _appliedSchedule![date]!
+            .map((assignment) => assignment['name'] as String)
+            .toList();
+
+    final availableParticipants =
+        _participants.where((p) => !assignedUsers.contains(p['name'])).toList();
+
+    if (availableParticipants.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All participants are already assigned for this day'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
       builder:
@@ -600,9 +619,9 @@ class _RoomViewState extends State<RoomView> {
               width: double.maxFinite,
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: _participants.length,
+                itemCount: availableParticipants.length,
                 itemBuilder: (context, index) {
-                  final participant = _participants[index];
+                  final participant = availableParticipants[index];
                   return ListTile(
                     title: Text(participant['name']),
                     subtitle: Text(
