@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:project491/views/home_view.dart';
+import 'package:project491/views/preview_schedule_view.dart';
 
 class RoomView extends StatefulWidget {
   final String roomId;
@@ -127,10 +128,20 @@ class _RoomViewState extends State<RoomView> {
 
         if (confirm == true) {
           try {
-            // Update the participant's userId
+            // Get user's name from Firestore
+            final userDoc =
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.currentUserId)
+                    .get();
+
+            final userName = userDoc.data()?['name'] ?? 'Unknown User';
+
+            // Update the participant's userId and assignedUserName
             final int participantIndex = _participants.indexOf(participant);
             if (participantIndex != -1) {
               _participants[participantIndex]['userId'] = widget.currentUserId;
+              _participants[participantIndex]['assignedUserName'] = userName;
 
               // Update in Firestore
               await FirebaseFirestore.instance
@@ -248,8 +259,10 @@ class _RoomViewState extends State<RoomView> {
       final int index = _participants.indexOf(participant);
 
       if (index != -1) {
-        // Only update the participant's userId
+        // Remove both userId and assignedUserName
         _participants[index]['userId'] = '';
+        _participants[index]['assignedUserName'] = null;
+
         await FirebaseFirestore.instance
             .collection('rooms')
             .doc(widget.roomId)
@@ -441,10 +454,64 @@ class _RoomViewState extends State<RoomView> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (_isHost) // Only show Preview Schedule button for host
+                  if (_isHost)
                     ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement preview schedule functionality
+                      onPressed: () async {
+                        // Check for unassigned participants
+                        final unassignedParticipants =
+                            _participants
+                                .where(
+                                  (p) =>
+                                      p['userId'] == null ||
+                                      p['userId'].isEmpty,
+                                )
+                                .toList();
+
+                        if (unassignedParticipants.isNotEmpty) {
+                          showDialog(
+                            context: context,
+                            builder:
+                                (context) => AlertDialog(
+                                  title: const Text('Warning'),
+                                  content: Text(
+                                    'There are ${unassignedParticipants.length} unassigned participants.\n'
+                                    'Please assign all participants before previewing the schedule.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                          );
+                          return;
+                        }
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        );
+
+                        await Future.delayed(const Duration(seconds: 2));
+
+                        if (!mounted) return;
+
+                        Navigator.pop(context); // Remove loading dialog
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => PreviewScheduleView(
+                                  participants: _participants,
+                                ),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -531,10 +598,7 @@ class _RoomViewState extends State<RoomView> {
                         return InkWell(
                           onTap: () => _handleParticipantTap(participant),
                           child: _buildParticipantRow(
-                            participant['name'] +
-                                (participant['isHost'] == true
-                                    ? ' (Host)'
-                                    : ''),
+                            participant['name'],
                             _getParticipantStatusColor(participant),
                           ),
                         );
@@ -551,7 +615,15 @@ class _RoomViewState extends State<RoomView> {
   }
 
   Widget _buildParticipantRow(String name, Color statusColor) {
-    bool isHost = name.contains('(Host)');
+    // Find participant data
+    final participant = _participants.firstWhere(
+      (p) => p['name'] == name,
+      orElse: () => <String, dynamic>{},
+    );
+
+    bool isHost = participant['isHost'] == true;
+    String? assignedUserName = participant['assignedUserName'];
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -573,12 +645,22 @@ class _RoomViewState extends State<RoomView> {
           const Icon(Icons.person, color: Colors.blue),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (isHost || assignedUserName != null)
+                  Text(
+                    '${isHost ? "Host" : ""}${isHost && assignedUserName != null ? " • " : ""}${assignedUserName != null ? "Assigned to: $assignedUserName" : ""}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+              ],
             ),
           ),
           Container(
