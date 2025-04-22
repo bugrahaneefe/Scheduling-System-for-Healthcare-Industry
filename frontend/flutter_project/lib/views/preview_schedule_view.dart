@@ -24,14 +24,25 @@ class PreviewScheduleView extends StatelessWidget {
           };
         }).toList();
 
-    // Generate schedule for January 2025
-    for (int day = 1; day <= 31; day++) {
-      String date = day < 10 ? '0$day.01.2025' : '$day.01.2025';
+    // Get today's date
+    final now = DateTime.now();
+    // Calculate the end date (1 month from today)
+    final endDate = DateTime(now.year, now.month + 1, now.day);
+
+    // Generate schedule from today until end date
+    for (
+      var date = now;
+      date.isBefore(endDate);
+      date = date.add(const Duration(days: 1))
+    ) {
+      String formattedDate =
+          '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
 
       // Randomly select 2-3 participants for each day
       participantInfo.shuffle();
-      int numberOfParticipants = (day % 2 == 0) ? 2 : 3;
-      schedule[date] = participantInfo.take(numberOfParticipants).toList();
+      int numberOfParticipants = (date.day % 2 == 0) ? 2 : 3;
+      schedule[formattedDate] =
+          participantInfo.take(numberOfParticipants).toList();
     }
 
     return schedule;
@@ -57,8 +68,8 @@ class PreviewScheduleView extends StatelessWidget {
       if (context.mounted) {
         // Remove loading indicator
         Navigator.pop(context);
-        // Return to room view
-        Navigator.pop(context);
+        // Return to room view and refresh data
+        Navigator.pop(context, true); // Pass true to indicate refresh needed
       }
     } catch (e) {
       // Remove loading indicator

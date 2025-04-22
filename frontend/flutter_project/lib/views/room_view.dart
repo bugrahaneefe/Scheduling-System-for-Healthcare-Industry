@@ -30,6 +30,7 @@ class _RoomViewState extends State<RoomView> {
       TextEditingController();
   bool _isHost = false;
   Map<String, List<Map<String, String>>>? _appliedSchedule;
+  bool _showOnlyMySchedule = false;
 
   @override
   void initState() {
@@ -426,34 +427,96 @@ class _RoomViewState extends State<RoomView> {
   Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
     if (schedule == null) return const SizedBox.shrink();
 
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListView.builder(
-        itemCount: schedule.length,
-        itemBuilder: (context, index) {
-          final date = schedule.keys.elementAt(index);
-          final assignments = schedule[date]!;
-          return ListTile(
-            title: Text(date, style: const TextStyle(color: Colors.white)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children:
-                  assignments
-                      .map(
-                        (a) => Text(
-                          '${a['name']} (${a['assignedUser']})',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      )
-                      .toList(),
+    // Filter schedule if needed
+    Map<String, List<Map<String, String>>> filteredSchedule =
+        _showOnlyMySchedule
+            ? Map.fromEntries(
+              schedule.entries.where((entry) {
+                // Find the participant info for current user
+                final myParticipantInfo = _participants.firstWhere(
+                  (p) => p['userId'] == widget.currentUserId,
+                  orElse: () => {},
+                );
+
+                // Check if any assignment in this date matches current user's name
+                return entry.value.any(
+                  (assignment) =>
+                      assignment['name'] == myParticipantInfo['name'],
+                );
+              }),
+            )
+            : schedule;
+
+    // Sort the dates
+    final sortedDates =
+        filteredSchedule.keys.toList()..sort((a, b) {
+          // Parse dates in DD.MM.YYYY format
+          final aDate = DateTime.parse(a.split('.').reversed.join('-'));
+          final bDate = DateTime.parse(b.split('.').reversed.join('-'));
+          return aDate.compareTo(bDate);
+        });
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              onPressed: () => setState(() => _showOnlyMySchedule = false),
+              child: Text(
+                'All',
+                style: TextStyle(
+                  color: !_showOnlyMySchedule ? Colors.blue : Colors.white,
+                  fontWeight:
+                      !_showOnlyMySchedule
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                ),
+              ),
             ),
-          );
-        },
-      ),
+            TextButton(
+              onPressed: () => setState(() => _showOnlyMySchedule = true),
+              child: Text(
+                'Me',
+                style: TextStyle(
+                  color: _showOnlyMySchedule ? Colors.blue : Colors.white,
+                  fontWeight:
+                      _showOnlyMySchedule ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ListView.builder(
+            itemCount: sortedDates.length,
+            itemBuilder: (context, index) {
+              final date = sortedDates[index];
+              final assignments = filteredSchedule[date]!;
+              return ListTile(
+                title: Text(date, style: const TextStyle(color: Colors.white)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:
+                      assignments
+                          .map(
+                            (a) => Text(
+                              '${a['name']} (${a['assignedUser']})',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          )
+                          .toList(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -571,18 +634,22 @@ class _RoomViewState extends State<RoomView> {
                         if (!mounted) return;
 
                         Navigator.pop(context); // Remove loading dialog
-                        Navigator.push(
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
                                 (context) => PreviewScheduleView(
                                   participants: _participants,
-                                  roomId:
-                                      widget
-                                          .roomId, // Fix: Pass the correct roomId
+                                  roomId: widget.roomId,
                                 ),
                           ),
                         );
+
+                        // If returned with refresh flag, reload the data
+                        if (result == true) {
+                          await _loadSchedules();
+                          await _refreshRoom();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
