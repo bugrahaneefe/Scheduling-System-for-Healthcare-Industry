@@ -432,13 +432,10 @@ class _RoomViewState extends State<RoomView> {
         _showOnlyMySchedule
             ? Map.fromEntries(
               schedule.entries.where((entry) {
-                // Find the participant info for current user
                 final myParticipantInfo = _participants.firstWhere(
                   (p) => p['userId'] == widget.currentUserId,
                   orElse: () => {},
                 );
-
-                // Check if any assignment in this date matches current user's name
                 return entry.value.any(
                   (assignment) =>
                       assignment['name'] == myParticipantInfo['name'],
@@ -447,10 +444,8 @@ class _RoomViewState extends State<RoomView> {
             )
             : schedule;
 
-    // Sort the dates
     final sortedDates =
         filteredSchedule.keys.toList()..sort((a, b) {
-          // Parse dates in DD.MM.YYYY format
           final aDate = DateTime.parse(a.split('.').reversed.join('-'));
           final bDate = DateTime.parse(b.split('.').reversed.join('-'));
           return aDate.compareTo(bDate);
@@ -503,21 +498,145 @@ class _RoomViewState extends State<RoomView> {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children:
-                      assignments
-                          .map(
-                            (a) => Text(
+                      assignments.map((a) {
+                        return _isHost
+                            ? Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${a['name']} (${a['assignedUser']})',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _removeAssignment(date, a),
+                                ),
+                              ],
+                            )
+                            : Text(
                               '${a['name']} (${a['assignedUser']})',
                               style: const TextStyle(color: Colors.white70),
-                            ),
-                          )
-                          .toList(),
+                            );
+                      }).toList(),
                 ),
+                trailing:
+                    _isHost
+                        ? IconButton(
+                          icon: const Icon(Icons.add, color: Colors.green),
+                          onPressed: () => _showAddAssignmentDialog(date),
+                        )
+                        : null,
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _removeAssignment(
+    String date,
+    Map<String, String> assignment,
+  ) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Remove Assignment'),
+            content: Text('Remove ${assignment['name']} from $date?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      try {
+        final updatedSchedule = Map<String, List<Map<String, String>>>.from(
+          _appliedSchedule!,
+        );
+        updatedSchedule[date]!.removeWhere(
+          (a) =>
+              a['name'] == assignment['name'] &&
+              a['assignedUser'] == assignment['assignedUser'],
+        );
+
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .update({'appliedSchedule': updatedSchedule});
+
+        await _loadSchedules();
+      } catch (e) {
+        _showError('Failed to remove assignment: $e');
+      }
+    }
+  }
+
+  Future<void> _showAddAssignmentDialog(String date) async {
+    final selectedParticipant = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Add Assignment for $date'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _participants.length,
+                itemBuilder: (context, index) {
+                  final participant = _participants[index];
+                  return ListTile(
+                    title: Text(participant['name']),
+                    subtitle: Text(
+                      participant['assignedUserName'] ?? 'Unassigned',
+                    ),
+                    onTap: () => Navigator.pop(context, participant),
+                  );
+                },
+              ),
+            ),
+          ),
+    );
+
+    if (selectedParticipant != null) {
+      try {
+        final updatedSchedule = Map<String, List<Map<String, String>>>.from(
+          _appliedSchedule!,
+        );
+        updatedSchedule[date]!.add({
+          'name': selectedParticipant['name'],
+          'assignedUser':
+              selectedParticipant['assignedUserName'] ?? 'Unassigned',
+        });
+
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .update({'appliedSchedule': updatedSchedule});
+
+        await _loadSchedules();
+      } catch (e) {
+        _showError('Failed to add assignment: $e');
+      }
+    }
   }
 
   @override
