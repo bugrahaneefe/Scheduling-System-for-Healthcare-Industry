@@ -4,11 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class PreviewScheduleView extends StatefulWidget {
   final List<Map<String, dynamic>> participants;
   final String roomId;
+  final Map<String, List<String>> scheduleData; // Update type definition
 
   const PreviewScheduleView({
     Key? key,
     required this.participants,
     required this.roomId,
+    required this.scheduleData,
   }) : super(key: key);
 
   @override
@@ -21,65 +23,60 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
   @override
   void initState() {
     super.initState();
-    _schedule = _generateSchedule();
+    print('Schedule Data received: ${widget.scheduleData}'); // Debug print
+    _schedule = _convertScheduleData(widget.scheduleData);
+    print('Converted Schedule: $_schedule'); // Debug print
   }
 
-  Map<String, List<Map<String, String>>> _generateSchedule() {
-    final Map<String, List<Map<String, String>>> schedule = {};
-    final List<Map<String, String>> participantInfo =
-        widget.participants.map((p) {
-          return {
-            'name': p['name'] as String,
-            'assignedUser':
-                p['isHost'] == true
-                    ? 'Host'
-                    : (p['assignedUserName'] as String? ?? 'Unassigned'),
-          };
-        }).toList();
-
-    final now = DateTime.now();
-    final endDate = DateTime(now.year, now.month + 1, now.day);
-
-    for (
-      var date = now;
-      date.isBefore(endDate);
-      date = date.add(const Duration(days: 1))
-    ) {
-      String formattedDate =
-          '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-      participantInfo.shuffle();
-      int numberOfParticipants = (date.day % 2 == 0) ? 2 : 3;
-      schedule[formattedDate] =
-          participantInfo.take(numberOfParticipants).toList();
+  Map<String, List<Map<String, String>>> _convertScheduleData(Map<String, List<String>> data) {
+    print('Converting data: $data'); // Debug print
+    final Map<String, List<Map<String, String>>> result = {};
+    
+    if (data.isEmpty) {
+      print('Warning: Input data is empty!');
+      return result;
     }
-
-    return schedule;
+    
+    data.forEach((dateStr, doctorNames) {
+      print('Processing date: $dateStr with doctors: $doctorNames'); // Debug print
+      result[dateStr] = doctorNames.map((name) {
+        // Find the participant info for this doctor
+        final doctor = widget.participants.firstWhere(
+          (p) => p['name'] == name,
+          orElse: () => {'name': name, 'assignedUserName': 'Unassigned'},
+        );
+        print('Found doctor info: $doctor'); // Debug print
+        
+        return {
+          'name': name,
+          'assignedUser': (doctor['assignedUserName'] ?? 'Unassigned') as String,
+        };
+      }).toList();
+    });
+    print('Conversion result: $result'); // Debug print
+    return result;
   }
 
-  Future<void> _removeAssignment(
-    String date,
-    Map<String, String> assignment,
-  ) async {
+  Future<void> _removeAssignment(String date, Map<String, String> assignment) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Remove Assignment'),
-            content: Text('Remove ${assignment['name']} from $date?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Assignment'),
+        content: Text('Remove ${assignment['name']} from $date?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
           ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirm == true) {
@@ -117,27 +114,26 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Add Assignment for $date'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: availableParticipants.length,
-                itemBuilder: (context, index) {
-                  final participant = availableParticipants[index];
-                  return ListTile(
-                    title: Text(participant['name']),
-                    subtitle: Text(
-                      participant['assignedUserName'] ?? 'Unassigned',
-                    ),
-                    onTap: () => Navigator.pop(context, participant),
-                  );
-                },
-              ),
-            ),
+      builder: (context) => AlertDialog(
+        title: Text('Add Assignment for $date'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: availableParticipants.length,
+            itemBuilder: (context, index) {
+              final participant = availableParticipants[index];
+              return ListTile(
+                title: Text(participant['name']),
+                subtitle: Text(
+                  participant['assignedUserName'] ?? 'Unassigned',
+                ),
+                onTap: () => Navigator.pop(context, participant),
+              );
+            },
           ),
+        ),
+      ),
     );
 
     if (selectedParticipant != null) {
@@ -176,18 +172,45 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
+      // Convert schedule to format expected by Firestore
+      final Map<String, List<Map<String, dynamic>>> convertedSchedule = {};
+      schedule.forEach((date, assignments) {
+        // Extract the date parts from the formatted date (e.g., "1 February 2025 Saturday")
+        final dateParts = date.split(' '); // ["1", "February", "2025", "Saturday"]
+        final day = int.parse(dateParts[0]);
+        final month = _getMonthNumber(dateParts[1]);
+        final year = int.parse(dateParts[2]);
+        
+        // Format the date as DD.MM.YYYY
+        final formattedDate = '${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year';
+
+        final List<Map<String, dynamic>> convertedAssignments = assignments.map((assignment) {
+          final participant = widget.participants.firstWhere(
+            (p) => p['name'] == assignment['name'],
+            orElse: () => {'name': assignment['name'], 'assignedUserName': 'Unassigned'},
+          );
+
+          return {
+            'name': assignment['name'],
+            'assignedUser': participant['assignedUserName'] ?? 'Unassigned',
+          };
+        }).toList();
+
+        convertedSchedule[formattedDate] = convertedAssignments;
+      });
+
       await FirebaseFirestore.instance
           .collection('rooms')
           .doc(widget.roomId)
-          .update({'appliedSchedule': schedule});
+          .update({'appliedSchedule': convertedSchedule});
 
       if (context.mounted) {
-        Navigator.pop(context);
-        Navigator.pop(context, true);
+        Navigator.pop(context); // Remove loading dialog
+        Navigator.pop(context, true); // Return to room view with refresh flag
       }
     } catch (e) {
       if (context.mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context); // Remove loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to apply schedule: $e'),
@@ -196,6 +219,25 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
         );
       }
     }
+  }
+
+  // Helper method to convert month name to number
+  int _getMonthNumber(String monthName) {
+    final months = {
+      'January': 1,
+      'February': 2,
+      'March': 3,
+      'April': 4,
+      'May': 5,
+      'June': 6,
+      'July': 7,
+      'August': 8,
+      'September': 9,
+      'October': 10,
+      'November': 11,
+      'December': 12,
+    };
+    return months[monthName] ?? 1;
   }
 
   @override

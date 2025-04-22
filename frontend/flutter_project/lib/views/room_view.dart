@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:project491/views/home_view.dart';
 import 'package:project491/views/preview_schedule_view.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RoomView extends StatefulWidget {
   final String roomId;
@@ -783,37 +785,6 @@ class _RoomViewState extends State<RoomView> {
                   if (_isHost)
                     ElevatedButton(
                       onPressed: () async {
-                        // Check for unassigned participants
-                        final unassignedParticipants =
-                            _participants
-                                .where(
-                                  (p) =>
-                                      p['userId'] == null ||
-                                      p['userId'].isEmpty,
-                                )
-                                .toList();
-
-                        if (unassignedParticipants.isNotEmpty) {
-                          showDialog(
-                            context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  title: const Text('Warning'),
-                                  content: Text(
-                                    'There are ${unassignedParticipants.length} unassigned participants.\n'
-                                    'Please assign all participants before previewing the schedule.',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                          );
-                          return;
-                        }
-
                         showDialog(
                           context: context,
                           barrierDismissible: false,
@@ -824,26 +795,80 @@ class _RoomViewState extends State<RoomView> {
                           },
                         );
 
-                        await Future.delayed(const Duration(seconds: 2));
+                        try {
+                          // Filter participants to get only doctors (non-host users)
+                          final doctors = _participants
+                              .map((p) => p['name'] as String)
+                              .toList();
 
-                        if (!mounted) return;
+                          if (doctors.isEmpty) {
+                            Navigator.pop(context);
+                            _showError('No doctors found in the room. Please add participants first.');
+                            return;
+                          }
 
-                        Navigator.pop(context); // Remove loading dialog
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => PreviewScheduleView(
+                          // Prepare the input data with doctors from participants
+                          final inputData = {
+                            'year': 2025,
+                            'month': 2,
+                            'doctors': doctors,
+                            'numShifts': List.filled(doctors.length, 10), // Default 10 shifts per doctor
+                            'dailyShifts': [1, 2, 1, 0, 1, 1, 1, 1, 0, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 0, 1, 1, 2, 1, 2, 0, 1],
+                            'availabilityMatrix': List.generate(
+                              doctors.length,
+                              (index) => List.filled(28, 0), // Default all available
+                            ),
+                          };
+
+                          // Make API request
+                          final response = await http.post(
+                            Uri.parse('http://127.0.0.1:8000/api/generate-schedule/'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode(inputData),
+                          );
+
+                          if (response.statusCode == 200) {
+                            final resultData = jsonDecode(response.body);
+                            print('API Response: $resultData'); // Debug print
+                            
+                            // Extract the schedule from the response
+                            final scheduleData = resultData['schedule'] as Map<String, dynamic>;
+                            
+                            // Convert API response to schedule format
+                            final Map<String, List<String>> schedule = {};
+                            scheduleData.forEach((date, doctors) {
+                              if (doctors is List) {
+                                print('Processing date: $date, doctors: $doctors'); // Debug print
+                                schedule[date] = List<String>.from(doctors);
+                              }
+                            });
+                            
+                            print('Final schedule: $schedule'); // Debug print
+
+                            Navigator.pop(context); // Remove loading dialog
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PreviewScheduleView(
                                   participants: _participants,
                                   roomId: widget.roomId,
+                                  scheduleData: schedule,
                                 ),
-                          ),
-                        );
+                              ),
+                            );
 
-                        // If returned with refresh flag, reload the data
-                        if (result == true) {
-                          await _loadSchedules();
-                          await _refreshRoom();
+                            // If returned with refresh flag, reload the data
+                            if (result == true) {
+                              await _loadSchedules();
+                              await _refreshRoom();
+                            }
+                          } else {
+                            Navigator.pop(context); // Remove loading dialog
+                            _showError('Failed to fetch schedule: ${response.body}');
+                          }
+                        } catch (e) {
+                          Navigator.pop(context); // Remove loading dialog
+                          _showError('Error occurred: $e');
                         }
                       },
                       style: ElevatedButton.styleFrom(
