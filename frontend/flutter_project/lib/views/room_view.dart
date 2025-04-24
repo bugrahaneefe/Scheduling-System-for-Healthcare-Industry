@@ -809,8 +809,8 @@ class _RoomViewState extends State<RoomView> {
 
                           // Prepare the input data with doctors from participants
                           final inputData = {
-                            'year': 2025,
-                            'month': 2,
+                            'firstDay': '2025-02-03',
+                            'lastDay': '2025-03-02',
                             'doctors': doctors,
                             'numShifts': List.filled(doctors.length, 10), // Default 10 shifts per doctor
                             'dailyShifts': [1, 2, 1, 0, 1, 1, 1, 1, 0, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 0, 1, 1, 2, 1, 2, 0, 1],

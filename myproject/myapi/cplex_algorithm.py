@@ -6,21 +6,20 @@ import scipy.sparse as sp
 
 import cplex as cp
 
-def list_days_of_month(year, month):
-    date = datetime.date(year, month, 1)
-    
-    last_day_of_month = (date.replace(month=date.month % 12 + 1, day=1) - datetime.timedelta(days=1))
-    num_days_in_month = last_day_of_month.day
-    
+def list_days_between(start_date: datetime.date, end_date: datetime.date):
     days = []
-    for day in range(1, num_days_in_month + 1):
-        date = datetime.date(year, month, day)
+    current_date = start_date
+    day_counter = 1
+
+    while current_date <= end_date:
         day_info = {
-            "date": date.strftime("%-d %B %Y %A"),
-            "day": day
+            "date": current_date.strftime("%-d %B %Y %A"),
+            "day": day_counter
         }
         days.append(day_info)
-    
+        current_date += datetime.timedelta(days=1)
+        day_counter += 1
+
     return days
 
 
@@ -54,14 +53,14 @@ def mixed_integer_linear_programming(direction, A, senses, b, c, l, u, types, na
 
 
 def shift_schedule_problem(input_data):
-    year = input_data['year']
-    month = input_data['month']
+    firstDay = datetime.datetime.strptime(input_data['firstDay'], "%Y-%m-%d").date()
+    lastDay = datetime.datetime.strptime(input_data['lastDay'], "%Y-%m-%d").date()
     IDs = np.array(input_data['doctors'])
     num_shifts = np.array(input_data['numShifts'])
     required_doctors = np.array(input_data['dailyShifts'])
     availabilities = np.array(input_data['availabilityMatrix'])
 
-    days = list_days_of_month(year, month)
+    days = list_days_between(firstDay, lastDay)
 
     num_doctors = np.size(IDs)
     num_days = np.size(days)
