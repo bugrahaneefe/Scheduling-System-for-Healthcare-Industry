@@ -20,6 +20,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _participantNameController = TextEditingController();
+  final _firstDayController = TextEditingController();
+  final _lastDayController = TextEditingController();
+  List<int> _dailyShifts = [];
   bool _isLoading = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _selectedParticipants = [];
@@ -33,6 +36,99 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       'name': widget.hostName,
       'isHost': true,
     });
+
+    // Initialize controllers with default dates (current month)
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, 1);
+    final lastDay = DateTime(now.year, now.month + 1, 0);
+    _firstDayController.text = _formatDate(firstDay);
+    _lastDayController.text = _formatDate(lastDay);
+
+    // Initialize daily shifts with ones
+    _dailyShifts = List.filled(_getDaysBetween(firstDay, lastDay), 1);
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  int _getDaysBetween(DateTime start, DateTime end) {
+    return end.difference(start).inDays + 1;
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isFirstDay) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isFirstDay) {
+          _firstDayController.text = _formatDate(picked);
+        } else {
+          _lastDayController.text = _formatDate(picked);
+        }
+
+        // Update daily shifts array length
+        final start = DateTime.parse(_firstDayController.text);
+        final end = DateTime.parse(_lastDayController.text);
+        final days = _getDaysBetween(start, end);
+        _dailyShifts = List.filled(days, 1); // Reset with default values
+      });
+    }
+  }
+
+  Future<void> _editDailyShifts() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Daily Required Shifts'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _dailyShifts.length,
+            itemBuilder: (context, index) {
+              final date = DateTime.parse(_firstDayController.text).add(Duration(days: index));
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(_formatDate(date)),
+                    ),
+                    SizedBox(
+                      width: 60,
+                      child: TextFormField(
+                        initialValue: _dailyShifts[index].toString(),
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _dailyShifts[index] = int.tryParse(value) ?? 1;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _addParticipant(String name) {
@@ -48,8 +144,35 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     });
   }
 
+  bool _validateConsecutiveDaysShifts(List<int> shifts, int doctorCount) {
+    for (int i = 0; i < shifts.length - 1; i++) {
+      if (shifts[i] + shifts[i + 1] > doctorCount) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Future<void> _createRoom() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final firstDay = DateTime.parse(_firstDayController.text);
+    final lastDay = DateTime.parse(_lastDayController.text);
+    if (lastDay.isBefore(firstDay)) {
+      setState(() {
+        _errorMessage = 'Last day cannot be before first day';
+      });
+      return;
+    }
+
+    // Add validation for consecutive days' shifts
+    final doctorCount = _selectedParticipants.length;
+    if (!_validateConsecutiveDaysShifts(_dailyShifts, doctorCount)) {
+      setState(() {
+        _errorMessage = 'The sum of shifts for any two consecutive days cannot exceed the total number of doctors';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -57,12 +180,15 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     });
 
     try {
-      // Create room document with selected participants
+      // Create room document with selected participants and new fields
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
         'name': _nameController.text,
         'description': _descriptionController.text,
         'createdAt': FieldValue.serverTimestamp(),
         'participants': _selectedParticipants,
+        'firstDay': _firstDayController.text,
+        'lastDay': _lastDayController.text,
+        'dailyShifts': _dailyShifts,
       });
 
       // Only update the host's rooms array since other participants are pending
@@ -70,8 +196,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
           .collection('users')
           .doc(widget.hostId)
           .update({
-            'rooms': FieldValue.arrayUnion([roomRef.id]),
-          });
+        'rooms': FieldValue.arrayUnion([roomRef.id]),
+      });
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -127,11 +253,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     border: OutlineInputBorder(),
                   ),
                   textInputAction: TextInputAction.next,
-                  validator:
-                      (value) =>
-                          value?.isEmpty == true
-                              ? 'Room name is required'
-                              : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Room name is required' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -144,11 +267,50 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: 3,
-                  validator:
-                      (value) =>
-                          value?.isEmpty == true
-                              ? 'Description is required'
-                              : null,
+                  validator: (value) =>
+                      value?.isEmpty == true ? 'Description is required' : null,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _firstDayController,
+                        decoration: const InputDecoration(
+                          labelText: 'First Day',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context, true),
+                        validator: (value) =>
+                            value?.isEmpty == true ? 'First day is required' : null,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _lastDayController,
+                        decoration: const InputDecoration(
+                          labelText: 'Last Day',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(),
+                        ),
+                        readOnly: true,
+                        onTap: () => _selectDate(context, false),
+                        validator: (value) =>
+                            value?.isEmpty == true ? 'Last day is required' : null,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _editDailyShifts,
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Daily Required Shifts'),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -170,9 +332,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed:
-                          () =>
-                              _addParticipant(_participantNameController.text),
+                      onPressed: () =>
+                          _addParticipant(_participantNameController.text),
                       child: const Text('Add'),
                     ),
                   ],
@@ -209,22 +370,21 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                 participant['name'] as String,
                                 style: const TextStyle(color: Colors.black87),
                               ),
-                              trailing:
-                                  participant['isHost'] == true
-                                      ? const Chip(label: Text('Host'))
-                                      : IconButton(
-                                        icon: const Icon(
-                                          Icons.remove_circle,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _selectedParticipants.removeAt(
-                                              index,
-                                            );
-                                          });
-                                        },
+                              trailing: participant['isHost'] == true
+                                  ? const Chip(label: Text('Host'))
+                                  : IconButton(
+                                      icon: const Icon(
+                                        Icons.remove_circle,
+                                        color: Colors.red,
                                       ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedParticipants.removeAt(
+                                            index,
+                                          );
+                                        });
+                                      },
+                                    ),
                             );
                           },
                         ),
@@ -235,14 +395,13 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _createRoom,
-                  child:
-                      _isLoading
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Text('Create Room'),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Create Room'),
                 ),
                 if (_errorMessage != null)
                   Padding(

@@ -321,8 +321,49 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
+  bool _validateConsecutiveDaysShifts(List<int> shifts, int doctorCount) {
+    for (int i = 0; i < shifts.length - 1; i++) {
+      if (shifts[i] + shifts[i + 1] > doctorCount) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Future<void> _removeParticipant(Map<String, dynamic> participant) async {
     try {
+      // Get the room data to check daily shifts
+      final roomDoc = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .get();
+      
+      final dailyShifts = List<int>.from(roomDoc.data()?['dailyShifts'] ?? []);
+      final updatedDoctorCount = _participants.length - 1; // After removal
+
+      if (!_validateConsecutiveDaysShifts(dailyShifts, updatedDoctorCount)) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cannot Remove Doctor'),
+              content: const Text(
+                'Removing this doctor would result in consecutive days having more '
+                'shifts than available doctors. Please adjust the daily shifts first.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      // Original removal code
       _participants.remove(participant);
 
       await FirebaseFirestore.instance
@@ -807,16 +848,26 @@ class _RoomViewState extends State<RoomView> {
                             return;
                           }
 
+                          final roomDoc = await FirebaseFirestore.instance
+                              .collection('rooms')
+                              .doc(widget.roomId)
+                              .get();
+
+                          final data = roomDoc.data();
+                          final firstDay = data?['firstDay'] as String;
+                          final lastDay = data?['lastDay'] as String;
+                          final dailyShifts = List<int>.from(data?['dailyShifts'] ?? []);
+
                           // Prepare the input data with doctors from participants
                           final inputData = {
-                            'firstDay': '2025-02-03',
-                            'lastDay': '2025-03-02',
+                            'firstDay': firstDay,
+                            'lastDay': lastDay,
                             'doctors': doctors,
                             'numShifts': List.filled(doctors.length, 10), // Default 10 shifts per doctor
-                            'dailyShifts': [1, 2, 1, 0, 1, 1, 1, 1, 0, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 0, 1, 1, 2, 1, 2, 0, 1],
+                            'dailyShifts': dailyShifts,
                             'availabilityMatrix': List.generate(
                               doctors.length,
-                              (index) => List.filled(28, 0), // Default all available
+                              (index) => List.filled(dailyShifts.length, 0), // Default all available
                             ),
                           };
 
