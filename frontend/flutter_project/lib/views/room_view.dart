@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:project491/views/home_view.dart';
 import 'package:project491/views/preview_schedule_view.dart';
+import 'package:project491/views/set_duties_view.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -34,6 +35,7 @@ class _RoomViewState extends State<RoomView> {
   Map<String, List<Map<String, String>>>? _appliedSchedule;
   bool _showOnlyMySchedule = false;
   final ScrollController _scheduleScrollController = ScrollController();
+  Map<int, Map<String, dynamic>> _doctorPreferences = {};
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _RoomViewState extends State<RoomView> {
         _scrollToToday(sortedDates);
       }
     });
+    _loadAllDoctorPreferences();
   }
 
   @override
@@ -102,6 +105,38 @@ class _RoomViewState extends State<RoomView> {
       }
     } catch (e) {
       // Handle error
+    }
+  }
+
+  Future<void> _loadAllDoctorPreferences() async {
+    try {
+      final preferencesSnapshot = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .collection('preferences')
+          .get();
+
+      for (var doc in preferencesSnapshot.docs) {
+        if (doc.id.startsWith('doctor_')) {
+          final index = int.parse(doc.id.split('_')[1]);
+          final data = doc.data();
+
+          // Properly cast the availability array to List<int>
+          final List<int> availability = (data['availability'] as List<dynamic>?)
+              ?.map((e) => e as int)
+              .toList() ?? [];
+
+          setState(() {
+            _doctorPreferences[index] = {
+              'shiftsCount': data['shiftsCount'] as int,
+              'availability': availability,
+            };
+          });
+          print('Loaded preferences for doctor index $index: ${_doctorPreferences[index]}');
+        }
+      }
+    } catch (e) {
+      print('Error loading doctor preferences: $e');
     }
   }
 
@@ -758,6 +793,71 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
+  Future<void> _openSetDutiesScreen(Map<String, dynamic> participant, int index) async {
+    try {
+      final roomDoc = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .get();
+      
+      if (!roomDoc.exists) {
+        _showError('Room data not found');
+        return;
+      }
+
+      final data = roomDoc.data();
+      if (data == null || !data.containsKey('firstDay') || !data.containsKey('lastDay')) {
+        _showError('Room scheduling data is incomplete');
+        return;
+      }
+
+      // Parse dates and normalize to start of day
+      final firstDayStr = data['firstDay'] as String;
+      final lastDayStr = data['lastDay'] as String;
+      
+      final firstDay = DateTime.parse(firstDayStr);
+      final lastDay = DateTime.parse(lastDayStr);
+
+      // Set time to midnight to avoid timezone issues
+      final normalizedFirstDay = DateTime(firstDay.year, firstDay.month, firstDay.day);
+      final normalizedLastDay = DateTime(lastDay.year, lastDay.month, lastDay.day, 23, 59, 59);
+
+      if (mounted) {
+        // Get the actual doctor index based on their position in the participants list
+        final doctorIndex = _participants.indexWhere((p) => p['name'] == participant['name']);
+        print('Opening duties screen for ${participant['name']} at index $doctorIndex'); // Debug print
+
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SetDutiesView(
+              roomId: widget.roomId,
+              userId: widget.currentUserId,
+              doctorName: participant['name'],
+              doctorIndex: doctorIndex, // Use the correct index
+              firstDay: normalizedFirstDay,
+              lastDay: normalizedLastDay,
+            ),
+          ),
+        );
+
+        if (result != null && mounted) {
+          print('Received preferences for ${participant['name']} (index: $doctorIndex)'); // Debug print
+          setState(() {
+            _doctorPreferences[doctorIndex] = {
+              'shiftsCount': result['shiftsCount'],
+              'availability': result['availability'],
+            };
+          });
+          print('Updated doctor preferences: ${_doctorPreferences[doctorIndex]}'); // Debug print
+          print('All doctor preferences: $_doctorPreferences'); // Debug print
+        }
+      }
+    } catch (e) {
+      _showError('Failed to open duties screen: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -839,7 +939,9 @@ class _RoomViewState extends State<RoomView> {
                         try {
                           // Filter participants to get only doctors (non-host users)
                           final doctors = _participants
-                              .map((p) => p['name'] as String)
+                              .asMap()
+                              .entries
+                              .map((entry) => entry.value['name'] as String)
                               .toList();
 
                           if (doctors.isEmpty) {
@@ -859,17 +961,39 @@ class _RoomViewState extends State<RoomView> {
                           final dailyShifts = List<int>.from(data?['dailyShifts'] ?? []);
 
                           // Prepare the input data with doctors from participants
+                          final numShifts = List<int>.generate(
+                            doctors.length,
+                            (i) => _doctorPreferences[i]?['shiftsCount'] ?? 10,
+                          );
+
+                          final availabilityMatrix = List<List<int>>.generate(
+                            doctors.length,
+                            (i) {
+                              final prefs = _doctorPreferences[i];
+                              // Properly cast the availability array
+                              final List<int> availability = (prefs?['availability'] as List<dynamic>?)
+                                  ?.map((e) => e as int)
+                                  .toList() ?? 
+                                  List<int>.filled(dailyShifts.length, 0);
+                              print('Doctor ${doctors[i]} (index $i) availability: $availability');
+                              return availability;
+                            },
+                          );
+
                           final inputData = {
                             'firstDay': firstDay,
                             'lastDay': lastDay,
                             'doctors': doctors,
-                            'numShifts': List.filled(doctors.length, 10), // Default 10 shifts per doctor
+                            'numShifts': numShifts,
                             'dailyShifts': dailyShifts,
-                            'availabilityMatrix': List.generate(
-                              doctors.length,
-                              (index) => List.filled(dailyShifts.length, 0), // Default all available
-                            ),
+                            'availabilityMatrix': availabilityMatrix,
                           };
+
+                          print('Algorithm Input Data:');
+                          print('Doctors order: $doctors'); // Debug print
+                          print('Number of Shifts per Doctor: $numShifts'); // Debug print
+                          print('Daily Required Shifts: $dailyShifts');
+                          print('Availability Matrix: $availabilityMatrix'); // Debug print
 
                           // Make API request
                           final response = await http.post(
@@ -1033,6 +1157,10 @@ class _RoomViewState extends State<RoomView> {
     bool isHost = participant['isHost'] == true;
     String? assignedUserName = participant['assignedUserName'];
 
+    final index = _participants.indexWhere((p) => p['name'] == name);
+    // Show Set Duties button if the participant is assigned to the current user (including host)
+    final canSetDuties = participant['userId'] == widget.currentUserId;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -1080,6 +1208,14 @@ class _RoomViewState extends State<RoomView> {
               shape: BoxShape.circle,
             ),
           ),
+          if (canSetDuties)
+            TextButton(
+              onPressed: () => _openSetDutiesScreen(participant, index),
+              child: const Text(
+                'Set Duties',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
         ],
       ),
     );

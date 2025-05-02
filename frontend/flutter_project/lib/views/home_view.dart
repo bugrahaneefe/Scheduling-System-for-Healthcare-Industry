@@ -222,24 +222,7 @@ class _HomeViewState extends State<HomeView>
                   listen: false,
                 );
                 if (authVM.currentUser != null) {
-                  final result = await showModalBottomSheet<bool>(
-                    context: context,
-                    isScrollControlled: true,
-                    builder:
-                        (context) => CreateRoomSheet(
-                          hostId: authService.value.currentUser!.uid,
-                          hostName: authVM.currentUser!.name,
-                        ),
-                  );
-
-                  if (result == true) {
-                    // Refresh the rooms list
-                    await Provider.of<AuthViewModel>(
-                      context,
-                      listen: false,
-                    ).loadCurrentUser();
-                    setState(() {});
-                  }
+                  _showCreateRoomSheet(context);
                 }
               },
               child: const Icon(Icons.add),
@@ -346,5 +329,22 @@ class _HomeViewState extends State<HomeView>
     }
 
     return roomWidgets;
+  }
+
+  void _showCreateRoomSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CreateRoomSheet(
+        hostId: authService.value.currentUser!.uid,
+        hostName: Provider.of<AuthViewModel>(context, listen: false).currentUser!.name,
+      ),
+    );
+
+    if (result == true && mounted) {
+      // Refresh rooms list after creation
+      setState(() {});
+    }
   }
 }

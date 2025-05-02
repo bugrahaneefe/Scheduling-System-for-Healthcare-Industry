@@ -49,6 +49,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   }
 
   String _formatDate(DateTime date) {
+    // Format date as YYYY-MM-DD
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
@@ -65,18 +66,26 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     );
 
     if (picked != null) {
+      // Create date at noon UTC to avoid timezone issues
+      final normalizedDate = DateTime.utc(
+        picked.year, 
+        picked.month, 
+        picked.day, 
+        12  // Set to noon UTC
+      );
+      
       setState(() {
         if (isFirstDay) {
-          _firstDayController.text = _formatDate(picked);
+          _firstDayController.text = _formatDate(normalizedDate);
         } else {
-          _lastDayController.text = _formatDate(picked);
+          _lastDayController.text = _formatDate(normalizedDate);
         }
 
-        // Update daily shifts array length
+        // Update daily shifts array length using the normalized dates
         final start = DateTime.parse(_firstDayController.text);
         final end = DateTime.parse(_lastDayController.text);
         final days = _getDaysBetween(start, end);
-        _dailyShifts = List.filled(days, 1); // Reset with default values
+        _dailyShifts = List.filled(days, 1);
       });
     }
   }
@@ -156,8 +165,10 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   Future<void> _createRoom() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final firstDay = DateTime.parse(_firstDayController.text);
-    final lastDay = DateTime.parse(_lastDayController.text);
+    // Parse dates and set to noon UTC
+    final firstDay = DateTime.parse(_firstDayController.text).add(const Duration(hours: 12));
+    final lastDay = DateTime.parse(_lastDayController.text).add(const Duration(hours: 12));
+
     if (lastDay.isBefore(firstDay)) {
       setState(() {
         _errorMessage = 'Last day cannot be before first day';
@@ -180,18 +191,22 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     });
 
     try {
-      // Create room document with selected participants and new fields
+      // Store dates in YYYY-MM-DD format
+      final formattedFirstDay = _formatDate(firstDay);
+      final formattedLastDay = _formatDate(lastDay);
+
+      // Create room document with normalized dates
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
         'name': _nameController.text,
         'description': _descriptionController.text,
         'createdAt': FieldValue.serverTimestamp(),
         'participants': _selectedParticipants,
-        'firstDay': _firstDayController.text,
-        'lastDay': _lastDayController.text,
+        'firstDay': formattedFirstDay,
+        'lastDay': formattedLastDay,
         'dailyShifts': _dailyShifts,
       });
 
-      // Only update the host's rooms array since other participants are pending
+      // Update host's rooms array
       await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.hostId)
@@ -238,9 +253,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 Text(
                   'Create New Room',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -326,7 +341,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         ),
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) {
-                          if (!_isLoading) _createRoom();
+                          _addParticipant(_participantNameController.text);
                         },
                       ),
                     ),
@@ -379,9 +394,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                       ),
                                       onPressed: () {
                                         setState(() {
-                                          _selectedParticipants.removeAt(
-                                            index,
-                                          );
+                                          _selectedParticipants.removeAt(index);
                                         });
                                       },
                                     ),
