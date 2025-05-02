@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:project491/components/custom_button.dart';
 import 'package:project491/managers/auth_services.dart';
+import 'package:project491/views/reset_password_view.dart';
 import 'package:project491/views/room_invitation_view.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -272,7 +273,12 @@ class _LoginViewState extends State<LoginView> {
                       // "Forgot Your Password?" button
                       TextButton(
                         onPressed: () {
-                          // TODO: Implement "Forgot Password?" feature
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ResetPasswordView(),
+                            ),
+                          );
                         },
                         child: const Text(
                           'Forgot Your Password?',
@@ -332,6 +338,7 @@ class _LoginViewState extends State<LoginView> {
                         },
                         buttonType: 'main',
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                   // Popup error message

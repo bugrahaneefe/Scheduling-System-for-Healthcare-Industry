@@ -85,4 +85,30 @@ class AuthServices {
       throw Exception('Failed to update profile: $e');
     }
   }
+
+  Future<void> resetPassword(String email) async {
+    // Basic email validation
+    if (email.isEmpty || !email.contains('@')) {
+      throw Exception('Please enter a valid email address');
+    }
+
+    try {
+      await firebaseAuth.sendPasswordResetEmail(
+        email: email.trim(), // Remove any whitespace
+      );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'user-not-found':
+          throw Exception('No user found with this email address');
+        case 'invalid-email':
+          throw Exception('The email address is invalid');
+        case 'too-many-requests':
+          throw Exception('Too many requests. Please try again later');
+        default:
+          throw Exception('Failed to send reset password email: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('An unexpected error occurred');
+    }
+  }
 }
