@@ -438,20 +438,16 @@ class _HomeViewState extends State<HomeView>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => CreateRoomSheet(
-            hostId: authService.value.currentUser!.uid,
-            hostName:
-                Provider.of<AuthViewModel>(
-                  context,
-                  listen: false,
-                ).currentUser!.name,
-          ),
+      builder: (context) => CreateRoomSheet(
+        hostId: authService.value.currentUser!.uid,
+        hostName: Provider.of<AuthViewModel>(context, listen: false).currentUser!.name,
+      ),
     );
 
     if (result == true && mounted) {
-      // Refresh rooms list after creation
-      setState(() {});
+      // Kullanıcı bilgilerini ve oda listesini yenile
+      await Provider.of<AuthViewModel>(context, listen: false).loadCurrentUser();
+      setState(() {}); // UI'ı yenile
     }
   }
 }
