@@ -414,7 +414,24 @@ class _RoomViewState extends State<RoomView> {
           .doc(widget.roomId)
           .update({'participants': _participants});
 
+      // Silinen doktorun preferences'larını da sil
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .collection('preferences')
+          .doc(participant['name'])
+          .delete();
+
+      // UI'ı güncelle
+      setState(() {
+        _doctorPreferences.clear(); // Tüm preferences'ları temizle
+      });
+      
+      // Verileri yeniden yükle
       await _refreshRoom();
+      await _loadAllDoctorPreferences();
+      await _loadSchedules();
+
     } catch (e) {
       _showError('Failed to remove participant: $e');
     }
