@@ -1,0 +1,199 @@
+import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+
+class ViewPreferencesView extends StatelessWidget {
+  final String doctorName;
+  final Map<String, dynamic> preferences;
+
+  const ViewPreferencesView({
+    Key? key,
+    required this.doctorName,
+    required this.preferences,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final shiftsCount = preferences['shiftsCount'] as int;
+    final availability = List<int>.from(preferences['availability'] as List);
+
+    // Get the room's date range from the availability array length
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, now.day);
+    final lastDay = firstDay.add(Duration(days: availability.length - 1));
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0D1B),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          '$doctorName\'s Preferences',
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              color: Colors.blue.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.work_history,
+                          color: Colors.blue,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Requested Number of Shifts:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                shiftsCount.toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_month,
+                          color: Colors.blue,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Availability Calendar:',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TableCalendar(
+                      firstDay: firstDay,
+                      lastDay: lastDay,
+                      focusedDay: firstDay,
+                      calendarFormat: CalendarFormat.month,
+                      headerStyle: const HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        titleTextStyle: TextStyle(color: Colors.white),
+                        leftChevronIcon: Icon(
+                          Icons.chevron_left,
+                          color: Colors.white,
+                        ),
+                        rightChevronIcon: Icon(
+                          Icons.chevron_right,
+                          color: Colors.white,
+                        ),
+                      ),
+                      calendarStyle: const CalendarStyle(
+                        defaultTextStyle: TextStyle(color: Colors.white),
+                        weekendTextStyle: TextStyle(color: Colors.white70),
+                        outsideTextStyle: TextStyle(color: Colors.grey),
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                        defaultBuilder: (context, date, _) {
+                          final dayIndex = date.difference(firstDay).inDays;
+                          if (dayIndex < 0 || dayIndex >= availability.length) {
+                            return null;
+                          }
+
+                          final value = availability[dayIndex];
+                          final backgroundColor =
+                              value == 1
+                                  ? const Color(
+                                    0xFF5C9D5C,
+                                  ) // Green for available
+                                  : value == -1
+                                  ? const Color(
+                                    0xFFCE5A57,
+                                  ) // Red for unavailable
+                                  : Colors.grey; // Grey for no preference
+
+                          return Container(
+                            margin: const EdgeInsets.all(4.0),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: backgroundColor.withOpacity(0.8),
+                            ),
+                            child: Text(
+                              '${date.day}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Legend
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildLegendItem(const Color(0xFF5C9D5C), 'Available'),
+                        _buildLegendItem(
+                          const Color(0xFFCE5A57),
+                          'Unavailable',
+                        ),
+                        _buildLegendItem(Colors.grey, 'No Preference'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      ],
+    );
+  }
+}

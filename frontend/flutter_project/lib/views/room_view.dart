@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:project491/views/home_view.dart';
 import 'package:project491/views/preview_schedule_view.dart';
 import 'package:project491/views/set_duties_view.dart';
+import 'package:project491/views/view_preferences_view.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -110,11 +111,12 @@ class _RoomViewState extends State<RoomView> {
 
   Future<void> _loadAllDoctorPreferences() async {
     try {
-      final preferencesSnapshot = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(widget.roomId)
-          .collection('preferences')
-          .get();
+      final preferencesSnapshot =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .collection('preferences')
+              .get();
 
       for (var doc in preferencesSnapshot.docs) {
         if (doc.id.startsWith('doctor_')) {
@@ -122,9 +124,11 @@ class _RoomViewState extends State<RoomView> {
           final data = doc.data();
 
           // Properly cast the availability array to List<int>
-          final List<int> availability = (data['availability'] as List<dynamic>?)
-              ?.map((e) => e as int)
-              .toList() ?? [];
+          final List<int> availability =
+              (data['availability'] as List<dynamic>?)
+                  ?.map((e) => e as int)
+                  .toList() ??
+              [];
 
           setState(() {
             _doctorPreferences[index] = {
@@ -132,7 +136,9 @@ class _RoomViewState extends State<RoomView> {
               'availability': availability,
             };
           });
-          print('Loaded preferences for doctor index $index: ${_doctorPreferences[index]}');
+          print(
+            'Loaded preferences for doctor index $index: ${_doctorPreferences[index]}',
+          );
         }
       }
     } catch (e) {
@@ -368,11 +374,12 @@ class _RoomViewState extends State<RoomView> {
   Future<void> _removeParticipant(Map<String, dynamic> participant) async {
     try {
       // Get the room data to check daily shifts
-      final roomDoc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(widget.roomId)
-          .get();
-      
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
       final dailyShifts = List<int>.from(roomDoc.data()?['dailyShifts'] ?? []);
       final updatedDoctorCount = _participants.length - 1; // After removal
 
@@ -380,19 +387,20 @@ class _RoomViewState extends State<RoomView> {
         if (mounted) {
           showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Cannot Remove Doctor'),
-              content: const Text(
-                'Removing this doctor would result in consecutive days having more '
-                'shifts than available doctors. Please adjust the daily shifts first.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
+            builder:
+                (context) => AlertDialog(
+                  title: const Text('Cannot Remove Doctor'),
+                  content: const Text(
+                    'Removing this doctor would result in consecutive days having more '
+                    'shifts than available doctors. Please adjust the daily shifts first.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
           );
         }
         return;
@@ -793,20 +801,26 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
-  Future<void> _openSetDutiesScreen(Map<String, dynamic> participant, int index) async {
+  Future<void> _openSetDutiesScreen(
+    Map<String, dynamic> participant,
+    int index,
+  ) async {
     try {
-      final roomDoc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(widget.roomId)
-          .get();
-      
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
       if (!roomDoc.exists) {
         _showError('Room data not found');
         return;
       }
 
       final data = roomDoc.data();
-      if (data == null || !data.containsKey('firstDay') || !data.containsKey('lastDay')) {
+      if (data == null ||
+          !data.containsKey('firstDay') ||
+          !data.containsKey('lastDay')) {
         _showError('Room scheduling data is incomplete');
         return;
       }
@@ -814,42 +828,62 @@ class _RoomViewState extends State<RoomView> {
       // Parse dates and normalize to start of day
       final firstDayStr = data['firstDay'] as String;
       final lastDayStr = data['lastDay'] as String;
-      
+
       final firstDay = DateTime.parse(firstDayStr);
       final lastDay = DateTime.parse(lastDayStr);
 
       // Set time to midnight to avoid timezone issues
-      final normalizedFirstDay = DateTime(firstDay.year, firstDay.month, firstDay.day);
-      final normalizedLastDay = DateTime(lastDay.year, lastDay.month, lastDay.day, 23, 59, 59);
+      final normalizedFirstDay = DateTime(
+        firstDay.year,
+        firstDay.month,
+        firstDay.day,
+      );
+      final normalizedLastDay = DateTime(
+        lastDay.year,
+        lastDay.month,
+        lastDay.day,
+        23,
+        59,
+        59,
+      );
 
       if (mounted) {
         // Get the actual doctor index based on their position in the participants list
-        final doctorIndex = _participants.indexWhere((p) => p['name'] == participant['name']);
-        print('Opening duties screen for ${participant['name']} at index $doctorIndex'); // Debug print
+        final doctorIndex = _participants.indexWhere(
+          (p) => p['name'] == participant['name'],
+        );
+        print(
+          'Opening duties screen for ${participant['name']} at index $doctorIndex',
+        ); // Debug print
 
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SetDutiesView(
-              roomId: widget.roomId,
-              userId: widget.currentUserId,
-              doctorName: participant['name'],
-              doctorIndex: doctorIndex, // Use the correct index
-              firstDay: normalizedFirstDay,
-              lastDay: normalizedLastDay,
-            ),
+            builder:
+                (context) => SetDutiesView(
+                  roomId: widget.roomId,
+                  userId: widget.currentUserId,
+                  doctorName: participant['name'],
+                  doctorIndex: doctorIndex, // Use the correct index
+                  firstDay: normalizedFirstDay,
+                  lastDay: normalizedLastDay,
+                ),
           ),
         );
 
         if (result != null && mounted) {
-          print('Received preferences for ${participant['name']} (index: $doctorIndex)'); // Debug print
+          print(
+            'Received preferences for ${participant['name']} (index: $doctorIndex)',
+          ); // Debug print
           setState(() {
             _doctorPreferences[doctorIndex] = {
               'shiftsCount': result['shiftsCount'],
               'availability': result['availability'],
             };
           });
-          print('Updated doctor preferences: ${_doctorPreferences[doctorIndex]}'); // Debug print
+          print(
+            'Updated doctor preferences: ${_doctorPreferences[doctorIndex]}',
+          ); // Debug print
           print('All doctor preferences: $_doctorPreferences'); // Debug print
         }
       }
@@ -866,279 +900,326 @@ class _RoomViewState extends State<RoomView> {
         resizeToAvoidBottomInset: true,
         backgroundColor: const Color(0xFF0D0D1B),
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment
-                            .spaceBetween, // Changed to spaceBetween
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
-                        onPressed: () {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (_) => const HomeView()),
-                            (route) => false,
-                          );
-                        },
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            widget.roomName,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 32,
-                              color: Colors.white,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await _loadSchedules();
+              await _refreshRoom();
+              await _loadAllDoctorPreferences();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween, // Changed to spaceBetween
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HomeView(),
+                              ),
+                              (route) => false,
+                            );
+                          },
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              widget.roomName,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 32,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      if (_isHost)
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.share,
-                                color: Colors.white,
-                              ),
-                              onPressed: _shareRoomInvitation,
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: _deleteRoom,
-                            ),
-                          ],
-                        ),
-                      if (!_isHost) const SizedBox(width: 48),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  if (_appliedSchedule != null)
-                    _buildScheduleList(_appliedSchedule),
-                  const SizedBox(height: 16),
-                  if (_isHost)
-                    ElevatedButton(
-                      onPressed: () async {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        );
-
-                        try {
-                          // Filter participants to get only doctors (non-host users)
-                          final doctors = _participants
-                              .asMap()
-                              .entries
-                              .map((entry) => entry.value['name'] as String)
-                              .toList();
-
-                          if (doctors.isEmpty) {
-                            Navigator.pop(context);
-                            _showError('No doctors found in the room. Please add participants first.');
-                            return;
-                          }
-
-                          final roomDoc = await FirebaseFirestore.instance
-                              .collection('rooms')
-                              .doc(widget.roomId)
-                              .get();
-
-                          final data = roomDoc.data();
-                          final firstDay = data?['firstDay'] as String;
-                          final lastDay = data?['lastDay'] as String;
-                          final dailyShifts = List<int>.from(data?['dailyShifts'] ?? []);
-
-                          // Prepare the input data with doctors from participants
-                          final numShifts = List<int>.generate(
-                            doctors.length,
-                            (i) => _doctorPreferences[i]?['shiftsCount'] ?? 10,
-                          );
-
-                          final availabilityMatrix = List<List<int>>.generate(
-                            doctors.length,
-                            (i) {
-                              final prefs = _doctorPreferences[i];
-                              // Properly cast the availability array
-                              final List<int> availability = (prefs?['availability'] as List<dynamic>?)
-                                  ?.map((e) => e as int)
-                                  .toList() ?? 
-                                  List<int>.filled(dailyShifts.length, 0);
-                              print('Doctor ${doctors[i]} (index $i) availability: $availability');
-                              return availability;
-                            },
-                          );
-
-                          final inputData = {
-                            'firstDay': firstDay,
-                            'lastDay': lastDay,
-                            'doctors': doctors,
-                            'numShifts': numShifts,
-                            'dailyShifts': dailyShifts,
-                            'availabilityMatrix': availabilityMatrix,
-                          };
-
-                          print('Algorithm Input Data:');
-                          print('Doctors order: $doctors'); // Debug print
-                          print('Number of Shifts per Doctor: $numShifts'); // Debug print
-                          print('Daily Required Shifts: $dailyShifts');
-                          print('Availability Matrix: $availabilityMatrix'); // Debug print
-
-                          // Make API request
-                          final response = await http.post(
-                            Uri.parse('http://127.0.0.1:8000/api/generate-schedule/'),
-                            headers: {'Content-Type': 'application/json'},
-                            body: jsonEncode(inputData),
-                          );
-
-                          if (response.statusCode == 200) {
-                            final resultData = jsonDecode(response.body);
-                            print('API Response: $resultData'); // Debug print
-                            
-                            // Extract the schedule from the response
-                            final scheduleData = resultData['schedule'] as Map<String, dynamic>;
-                            
-                            // Convert API response to schedule format
-                            final Map<String, List<String>> schedule = {};
-                            scheduleData.forEach((date, doctors) {
-                              if (doctors is List) {
-                                print('Processing date: $date, doctors: $doctors'); // Debug print
-                                schedule[date] = List<String>.from(doctors);
-                              }
-                            });
-                            
-                            print('Final schedule: $schedule'); // Debug print
-
-                            Navigator.pop(context); // Remove loading dialog
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PreviewScheduleView(
-                                  participants: _participants,
-                                  roomId: widget.roomId,
-                                  scheduleData: schedule,
-                                ),
-                              ),
-                            );
-
-                            // If returned with refresh flag, reload the data
-                            if (result == true) {
-                              await _loadSchedules();
-                              await _refreshRoom();
-                            }
-                          } else {
-                            Navigator.pop(context); // Remove loading dialog
-                            _showError('Failed to fetch schedule: ${response.body}');
-                          }
-                        } catch (e) {
-                          Navigator.pop(context); // Remove loading dialog
-                          _showError('Error occurred: $e');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      child: const Text(
-                        'Preview New Schedule',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      widget.roomDescription,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Center(
-                    child: Text(
-                      'Participants',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                        color: Colors.white,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (_isHost)
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
+                        if (_isHost)
+                          Row(
                             children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _newParticipantController,
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: const InputDecoration(
-                                    hintText: 'Add new participant',
-                                    hintStyle: TextStyle(color: Colors.white60),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.white60,
-                                      ),
-                                    ),
-                                  ),
-                                  textInputAction: TextInputAction.done,
-                                  onSubmitted: (_) => _addNewParticipant(),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.share,
+                                  color: Colors.white,
                                 ),
+                                onPressed: _shareRoomInvitation,
                               ),
                               IconButton(
                                 icon: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
-                                onPressed: _addNewParticipant,
+                                onPressed: _deleteRoom,
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 20),
+                        if (!_isHost) const SizedBox(width: 48),
                       ],
                     ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height - 300,
-                    child: ListView.builder(
-                      itemCount: _participants.length,
-                      itemBuilder: (context, index) {
-                        final participant = _participants[index];
-                        return InkWell(
-                          onTap: () => _handleParticipantTap(participant),
-                          child: _buildParticipantRow(
-                            participant['name'],
-                            _getParticipantStatusColor(participant),
+                    const SizedBox(height: 20),
+                    if (_appliedSchedule != null)
+                      _buildScheduleList(_appliedSchedule),
+                    const SizedBox(height: 16),
+                    if (_isHost)
+                      ElevatedButton(
+                        onPressed: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          );
+
+                          try {
+                            // Filter participants to get only doctors (non-host users)
+                            final doctors =
+                                _participants
+                                    .asMap()
+                                    .entries
+                                    .map(
+                                      (entry) => entry.value['name'] as String,
+                                    )
+                                    .toList();
+
+                            if (doctors.isEmpty) {
+                              Navigator.pop(context);
+                              _showError(
+                                'No doctors found in the room. Please add participants first.',
+                              );
+                              return;
+                            }
+
+                            final roomDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('rooms')
+                                    .doc(widget.roomId)
+                                    .get();
+
+                            final data = roomDoc.data();
+                            final firstDay = data?['firstDay'] as String;
+                            final lastDay = data?['lastDay'] as String;
+                            final dailyShifts = List<int>.from(
+                              data?['dailyShifts'] ?? [],
+                            );
+
+                            // Prepare the input data with doctors from participants
+                            final numShifts = List<int>.generate(
+                              doctors.length,
+                              (i) =>
+                                  _doctorPreferences[i]?['shiftsCount'] ?? 10,
+                            );
+
+                            final availabilityMatrix = List<
+                              List<int>
+                            >.generate(doctors.length, (i) {
+                              final prefs = _doctorPreferences[i];
+                              // Properly cast the availability array
+                              final List<int> availability =
+                                  (prefs?['availability'] as List<dynamic>?)
+                                      ?.map((e) => e as int)
+                                      .toList() ??
+                                  List<int>.filled(dailyShifts.length, 0);
+                              print(
+                                'Doctor ${doctors[i]} (index $i) availability: $availability',
+                              );
+                              return availability;
+                            });
+
+                            final inputData = {
+                              'firstDay': firstDay,
+                              'lastDay': lastDay,
+                              'doctors': doctors,
+                              'numShifts': numShifts,
+                              'dailyShifts': dailyShifts,
+                              'availabilityMatrix': availabilityMatrix,
+                            };
+
+                            print('Algorithm Input Data:');
+                            print('Doctors order: $doctors'); // Debug print
+                            print(
+                              'Number of Shifts per Doctor: $numShifts',
+                            ); // Debug print
+                            print('Daily Required Shifts: $dailyShifts');
+                            print(
+                              'Availability Matrix: $availabilityMatrix',
+                            ); // Debug print
+
+                            // Make API request
+                            final response = await http.post(
+                              Uri.parse(
+                                'http://127.0.0.1:8000/api/generate-schedule/',
+                              ),
+                              headers: {'Content-Type': 'application/json'},
+                              body: jsonEncode(inputData),
+                            );
+
+                            if (response.statusCode == 200) {
+                              final resultData = jsonDecode(response.body);
+                              print('API Response: $resultData'); // Debug print
+
+                              // Extract the schedule from the response
+                              final scheduleData =
+                                  resultData['schedule']
+                                      as Map<String, dynamic>;
+
+                              // Convert API response to schedule format
+                              final Map<String, List<String>> schedule = {};
+                              scheduleData.forEach((date, doctors) {
+                                if (doctors is List) {
+                                  print(
+                                    'Processing date: $date, doctors: $doctors',
+                                  ); // Debug print
+                                  schedule[date] = List<String>.from(doctors);
+                                }
+                              });
+
+                              print('Final schedule: $schedule'); // Debug print
+
+                              Navigator.pop(context); // Remove loading dialog
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => PreviewScheduleView(
+                                        participants: _participants,
+                                        roomId: widget.roomId,
+                                        scheduleData: schedule,
+                                      ),
+                                ),
+                              );
+
+                              // If returned with refresh flag, reload the data
+                              if (result == true) {
+                                await _loadSchedules();
+                                await _refreshRoom();
+                              }
+                            } else {
+                              Navigator.pop(context); // Remove loading dialog
+                              _showError(
+                                'Failed to fetch schedule: ${response.body}',
+                              );
+                            }
+                          } catch (e) {
+                            Navigator.pop(context); // Remove loading dialog
+                            _showError('Error occurred: $e');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                        );
-                      },
+                        ),
+                        child: const Text(
+                          'Preview New Schedule',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.roomDescription,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    const Center(
+                      child: Text(
+                        'Participants',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    if (_isHost)
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _newParticipantController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: const InputDecoration(
+                                      hintText: 'Add new participant',
+                                      hintStyle: TextStyle(
+                                        color: Colors.white60,
+                                      ),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.white60,
+                                        ),
+                                      ),
+                                    ),
+                                    textInputAction: TextInputAction.done,
+                                    onSubmitted: (_) => _addNewParticipant(),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: _addNewParticipant,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 300,
+                      child: ListView.builder(
+                        itemCount: _participants.length,
+                        itemBuilder: (context, index) {
+                          final participant = _participants[index];
+                          return InkWell(
+                            onTap: () => _handleParticipantTap(participant),
+                            child: _buildParticipantRow(
+                              participant['name'],
+                              _getParticipantStatusColor(participant),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1148,7 +1229,6 @@ class _RoomViewState extends State<RoomView> {
   }
 
   Widget _buildParticipantRow(String name, Color statusColor) {
-    // Find participant data
     final participant = _participants.firstWhere(
       (p) => p['name'] == name,
       orElse: () => <String, dynamic>{},
@@ -1156,10 +1236,9 @@ class _RoomViewState extends State<RoomView> {
 
     bool isHost = participant['isHost'] == true;
     String? assignedUserName = participant['assignedUserName'];
-
     final index = _participants.indexWhere((p) => p['name'] == name);
-    // Show Set Duties button if the participant is assigned to the current user (including host)
-    final canSetDuties = participant['userId'] == widget.currentUserId;
+    final hasPreferences = _doctorPreferences.containsKey(index);
+    final isCurrentUser = participant['userId'] == widget.currentUserId;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -1208,12 +1287,40 @@ class _RoomViewState extends State<RoomView> {
               shape: BoxShape.circle,
             ),
           ),
-          if (canSetDuties)
+          if (participant['userId']?.isNotEmpty ==
+              true) // Sadece atanmış kullanıcılar için
             TextButton(
-              onPressed: () => _openSetDutiesScreen(participant, index),
-              child: const Text(
-                'Set Duties',
-                style: TextStyle(color: Colors.blue),
+              onPressed:
+                  isCurrentUser // Kendisi ise (host olsa bile)
+                      ? () => _openSetDutiesScreen(participant, index)
+                      : hasPreferences // Kendisi değilse ve preferences varsa
+                      ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ViewPreferencesView(
+                                  doctorName: participant['name'],
+                                  preferences: _doctorPreferences[index]!,
+                                ),
+                          ),
+                        );
+                      }
+                      : null, // Kendisi değilse ve preferences yoksa butonu devre dışı bırak
+              child: Text(
+                isCurrentUser
+                    ? hasPreferences
+                        ? 'Edit Duties'
+                        : 'Set Duties'
+                    : hasPreferences
+                    ? 'View Duties'
+                    : 'No Duties Set',
+                style: TextStyle(
+                  color:
+                      isCurrentUser || hasPreferences
+                          ? Colors.blue
+                          : Colors.grey,
+                ),
               ),
             ),
         ],
