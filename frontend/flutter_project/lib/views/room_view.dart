@@ -118,29 +118,29 @@ class _RoomViewState extends State<RoomView> {
               .collection('preferences')
               .get();
 
-      for (var doc in preferencesSnapshot.docs) {
-        if (doc.id.startsWith('doctor_')) {
-          final index = int.parse(doc.id.split('_')[1]);
+      setState(() {
+        _doctorPreferences.clear();
+        for (var doc in preferencesSnapshot.docs) {
+          // Doktor ismini doğrudan document ID olarak kullanıyoruz
+          final doctorName = doc.id;
           final data = doc.data();
+          
+          // Doktor hala odada var mı kontrol ediyoruz
+          if (_participants.any((p) => p['name'] == doctorName)) {
+            final List<int> availability =
+                (data['availability'] as List<dynamic>?)
+                    ?.map((e) => e as int)
+                    .toList() ??
+                [];
 
-          // Properly cast the availability array to List<int>
-          final List<int> availability =
-              (data['availability'] as List<dynamic>?)
-                  ?.map((e) => e as int)
-                  .toList() ??
-              [];
-
-          setState(() {
-            _doctorPreferences[index] = {
+            // İndex yerine doktor ismi ile saklıyoruz
+            _doctorPreferences[_participants.indexWhere((p) => p['name'] == doctorName)] = {
               'shiftsCount': data['shiftsCount'] as int,
               'availability': availability,
             };
-          });
-          print(
-            'Loaded preferences for doctor index $index: ${_doctorPreferences[index]}',
-          );
+          }
         }
-      }
+      });
     } catch (e) {
       print('Error loading doctor preferences: $e');
     }
@@ -825,14 +825,12 @@ class _RoomViewState extends State<RoomView> {
         return;
       }
 
-      // Parse dates and normalize to start of day
       final firstDayStr = data['firstDay'] as String;
       final lastDayStr = data['lastDay'] as String;
 
       final firstDay = DateTime.parse(firstDayStr);
       final lastDay = DateTime.parse(lastDayStr);
 
-      // Set time to midnight to avoid timezone issues
       final normalizedFirstDay = DateTime(
         firstDay.year,
         firstDay.month,
@@ -848,13 +846,9 @@ class _RoomViewState extends State<RoomView> {
       );
 
       if (mounted) {
-        // Get the actual doctor index based on their position in the participants list
-        final doctorIndex = _participants.indexWhere(
-          (p) => p['name'] == participant['name'],
-        );
         print(
-          'Opening duties screen for ${participant['name']} at index $doctorIndex',
-        ); // Debug print
+          'Opening duties screen for ${participant['name']}',
+        );
 
         final result = await Navigator.push(
           context,
@@ -864,7 +858,7 @@ class _RoomViewState extends State<RoomView> {
                   roomId: widget.roomId,
                   userId: widget.currentUserId,
                   doctorName: participant['name'],
-                  doctorIndex: doctorIndex, // Use the correct index
+                  doctorIndex: index,
                   firstDay: normalizedFirstDay,
                   lastDay: normalizedLastDay,
                 ),
@@ -873,18 +867,14 @@ class _RoomViewState extends State<RoomView> {
 
         if (result != null && mounted) {
           print(
-            'Received preferences for ${participant['name']} (index: $doctorIndex)',
-          ); // Debug print
+            'Received preferences for ${participant['name']}',
+          );
           setState(() {
-            _doctorPreferences[doctorIndex] = {
+            _doctorPreferences[index] = {
               'shiftsCount': result['shiftsCount'],
               'availability': result['availability'],
             };
           });
-          print(
-            'Updated doctor preferences: ${_doctorPreferences[doctorIndex]}',
-          ); // Debug print
-          print('All doctor preferences: $_doctorPreferences'); // Debug print
         }
       }
     } catch (e) {

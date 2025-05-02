@@ -52,14 +52,13 @@ class _SetDutiesViewState extends State<SetDutiesView> {
           .collection('rooms')
           .doc(widget.roomId)
           .collection('preferences')
-          .doc('doctor_${widget.doctorIndex}')
+          .doc(widget.doctorName) // Doktor indexi yerine ismini kullanıyoruz
           .get();
 
       if (doc.exists) {
         final data = doc.data()!;
         _shiftsController.text = data['shiftsCount'].toString();
         
-        // Handle both availability array and selected days
         if (data['availability'] != null) {
           final List<int> availability = List<int>.from(data['availability']);
           final Map<DateTime, int> selectedDays = {};
@@ -77,7 +76,6 @@ class _SetDutiesViewState extends State<SetDutiesView> {
             current = current.add(const Duration(days: 1));
           }
           
-          // Update the state
           if (mounted) {
             setState(() {
               _selectedDaysNotifier.value = Map<DateTime, int>.from(selectedDays);
@@ -92,7 +90,6 @@ class _SetDutiesViewState extends State<SetDutiesView> {
 
   Future<void> _savePreferences(Map<String, dynamic> dutyData) async {
     try {
-      // Normalize dates before saving
       final Map<String, int> normalizedDays = {};
       _selectedDaysNotifier.value.forEach((key, value) {
         final normalizedDate = DateTime(key.year, key.month, key.day);
@@ -103,7 +100,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
           .collection('rooms')
           .doc(widget.roomId)
           .collection('preferences')
-          .doc('doctor_${widget.doctorIndex}')
+          .doc(widget.doctorName) // Doktor indexi yerine ismini kullanıyoruz
           .set({
             'shiftsCount': dutyData['shiftsCount'],
             'availability': dutyData['availability'],
