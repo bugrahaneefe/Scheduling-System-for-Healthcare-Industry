@@ -285,30 +285,50 @@ class _HomeViewState extends State<HomeView>
                 );
               },
               onDismissed: (direction) async {
-                // Check if current user is the host
-                final isHost =
-                    roomData['hostId'] == authService.value.currentUser!.uid;
+                // Host kontrolünü participants array'inden yap
+                final participants = List<Map<String, dynamic>>.from(roomData['participants'] ?? []);
+                final isHost = participants.any((p) => 
+                  p['isHost'] == true && 
+                  p['userId'] == authService.value.currentUser!.uid
+                );
 
                 if (isHost) {
-                  // Delete the entire room and all references
+                  // Host ise odayı tamamen sil
                   await FirebaseFirestore.instance
                       .collection('rooms')
                       .doc(roomId)
                       .delete();
-                  // Update all participants' room lists
+                } else {
+                  // Host değilse sadece kendini unassign et
                   final participants = List<Map<String, dynamic>>.from(
                     roomData['participants'] ?? [],
                   );
-                  for (var participant in participants) {
-                    await FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(participant['userId'])
-                        .update({
-                          'rooms': FieldValue.arrayRemove([roomId]),
-                        });
-                  }
-                } else {
-                  // Just remove the room from current user's rooms
+                  
+                  // Kullanıcının atandığı participant'ı bul
+                  final myParticipant = participants.firstWhere(
+                    (p) => p['userId'] == authService.value.currentUser!.uid,
+                    orElse: () => <String, dynamic>{},
+                  );
+
+                  // Participant'ı unassign et
+                  myParticipant['userId'] = '';
+                  myParticipant['assignedUserName'] = null;
+
+                  // Firestore'da participant güncelle
+                  await FirebaseFirestore.instance
+                      .collection('rooms')
+                      .doc(roomId)
+                      .update({'participants': participants});
+
+                  // Preferences'ları sil
+                  await FirebaseFirestore.instance
+                      .collection('rooms')
+                      .doc(roomId)
+                      .collection('preferences')
+                      .doc(myParticipant['name'])
+                      .delete();
+                
+                  // Kullanıcının rooms listesinden odayı kaldır
                   await FirebaseFirestore.instance
                       .collection('users')
                       .doc(authService.value.currentUser!.uid)

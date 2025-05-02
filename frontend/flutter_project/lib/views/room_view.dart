@@ -915,7 +915,6 @@ class _RoomViewState extends State<RoomView> {
     final data = roomDoc.data()!;
     final List<int> currentDailyShifts = List<int>.from(data['dailyShifts']);
     final String firstDay = data['firstDay'];
-    final String lastDay = data['lastDay'];
 
     await showDialog(
       context: context,
