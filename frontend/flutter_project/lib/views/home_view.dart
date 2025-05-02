@@ -248,28 +248,84 @@ class _HomeViewState extends State<HomeView>
         if (roomDoc.exists) {
           final roomData = roomDoc.data()!;
           roomWidgets.add(
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => RoomView(
-                          roomId: roomId,
-                          roomName: roomData['name'] ?? 'Unnamed Room',
-                          roomDescription:
-                              roomData['description'] ?? 'No description',
-                          participants: List<Map<String, dynamic>>.from(
-                            roomData['participants'] ?? [],
-                          ),
-                          currentUserId: authService.value.currentUser!.uid,
+            Dismissible(
+              key: Key(roomId),
+              background: Container(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16.0),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              direction: DismissDirection.endToStart,
+              confirmDismiss: (direction) async {
+                return await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Delete'),
+                      content: const Text(
+                        'Are you sure you want to delete this room?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
                         ),
-                  ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    );
+                  },
                 );
+              },
+              onDismissed: (direction) async {
+                // Check if current user is the host
+                final isHost =
+                    roomData['hostId'] == authService.value.currentUser!.uid;
+
+                if (isHost) {
+                  // Delete the entire room and all references
+                  await FirebaseFirestore.instance
+                      .collection('rooms')
+                      .doc(roomId)
+                      .delete();
+                  // Update all participants' room lists
+                  final participants = List<Map<String, dynamic>>.from(
+                    roomData['participants'] ?? [],
+                  );
+                  for (var participant in participants) {
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(participant['userId'])
+                        .update({
+                          'rooms': FieldValue.arrayRemove([roomId]),
+                        });
+                  }
+                } else {
+                  // Just remove the room from current user's rooms
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(authService.value.currentUser!.uid)
+                      .update({
+                        'rooms': FieldValue.arrayRemove([roomId]),
+                      });
+                }
+
+                // Refresh the user data
+                await Provider.of<AuthViewModel>(
+                  context,
+                  listen: false,
+                ).loadCurrentUser();
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
-                padding: const EdgeInsets.all(16.0),
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(12),
@@ -281,23 +337,49 @@ class _HomeViewState extends State<HomeView>
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      roomData['name'] ?? 'Unnamed Room',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => RoomView(
+                              roomId: roomId,
+                              roomName: roomData['name'] ?? 'Unnamed Room',
+                              roomDescription:
+                                  roomData['description'] ?? 'No description',
+                              participants: List<Map<String, dynamic>>.from(
+                                roomData['participants'] ?? [],
+                              ),
+                              currentUserId: authService.value.currentUser!.uid,
+                            ),
                       ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          roomData['name'] ?? 'Unnamed Room',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          roomData['description'] ?? 'No description',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      roomData['description'] ?? 'No description',
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -336,10 +418,15 @@ class _HomeViewState extends State<HomeView>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CreateRoomSheet(
-        hostId: authService.value.currentUser!.uid,
-        hostName: Provider.of<AuthViewModel>(context, listen: false).currentUser!.name,
-      ),
+      builder:
+          (context) => CreateRoomSheet(
+            hostId: authService.value.currentUser!.uid,
+            hostName:
+                Provider.of<AuthViewModel>(
+                  context,
+                  listen: false,
+                ).currentUser!.name,
+          ),
     );
 
     if (result == true && mounted) {
