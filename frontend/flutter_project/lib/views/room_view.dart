@@ -892,6 +892,122 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
+  Future<void> _editDailyShifts() async {
+    // First, fetch current dailyShifts from Firestore
+    final roomDoc =
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .get();
+
+    if (!roomDoc.exists) {
+      _showError('Room data not found');
+      return;
+    }
+
+    final data = roomDoc.data()!;
+    final List<int> currentDailyShifts = List<int>.from(data['dailyShifts']);
+    final String firstDay = data['firstDay'];
+    final String lastDay = data['lastDay'];
+
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E2E),
+            title: const Text(
+              'Edit Daily Required Shifts',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 400, // Fixed height for scrollable content
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: currentDailyShifts.length,
+                itemBuilder: (context, index) {
+                  final date = DateTime.parse(
+                    firstDay,
+                  ).add(Duration(days: index));
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 60,
+                          child: TextFormField(
+                            initialValue: currentDailyShifts[index].toString(),
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white38),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              currentDailyShifts[index] =
+                                  int.tryParse(value) ?? 1;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  // Validate consecutive days constraint
+                  if (!_validateConsecutiveDaysShifts(
+                    currentDailyShifts,
+                    _participants.length,
+                  )) {
+                    _showError(
+                      'The sum of shifts for any two consecutive days cannot exceed the total number of doctors',
+                    );
+                    return;
+                  }
+
+                  // Update Firestore
+                  await FirebaseFirestore.instance
+                      .collection('rooms')
+                      .doc(widget.roomId)
+                      .update({'dailyShifts': currentDailyShifts});
+
+                  if (mounted) {
+                    Navigator.pop(context);
+                    // Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Daily shifts updated successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Save', style: TextStyle(color: Colors.blue)),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -972,6 +1088,22 @@ class _RoomViewState extends State<RoomView> {
                     if (_appliedSchedule != null)
                       _buildScheduleList(_appliedSchedule),
                     const SizedBox(height: 16),
+                    if (_isHost) ...[
+                      ElevatedButton(
+                        onPressed: _editDailyShifts,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: const Text(
+                          'Edit Daily Required Shifts',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (_isHost)
                       ElevatedButton(
                         onPressed: () async {
