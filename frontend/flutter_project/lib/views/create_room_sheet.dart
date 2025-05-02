@@ -58,10 +58,25 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   }
 
   Future<void> _selectDate(BuildContext context, bool isFirstDay) async {
+    // Get current values
+    DateTime? currentFirstDay = _firstDayController.text.isNotEmpty 
+        ? DateTime.parse(_firstDayController.text)
+        : null;
+    DateTime? currentLastDay = _lastDayController.text.isNotEmpty 
+        ? DateTime.parse(_lastDayController.text)
+        : null;
+    
+    // Set minimum selectable date
+    DateTime minDate = isFirstDay 
+        ? DateTime.now() // firstDay için bugün
+        : currentFirstDay ?? DateTime.now(); // lastDay için firstDay veya bugün
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: isFirstDay 
+          ? minDate
+          : (currentLastDay ?? minDate.add(const Duration(days: 1))),
+      firstDate: minDate,
       lastDate: DateTime(2030),
     );
 
@@ -71,17 +86,23 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
         picked.year, 
         picked.month, 
         picked.day, 
-        12  // Set to noon UTC
+         12
       );
-      
+
       setState(() {
         if (isFirstDay) {
           _firstDayController.text = _formatDate(normalizedDate);
+          // firstDay değiştiğinde lastDay'i kontrol et
+          if (currentLastDay != null && !currentLastDay.isAfter(normalizedDate)) {
+            // lastDay'i firstDay'den bir gün sonraya ayarla
+            final newLastDay = normalizedDate.add(const Duration(days: 1));
+            _lastDayController.text = _formatDate(newLastDay);
+          }
         } else {
           _lastDayController.text = _formatDate(normalizedDate);
         }
 
-        // Update daily shifts array length using the normalized dates
+        // Update daily shifts array length
         final start = DateTime.parse(_firstDayController.text);
         final end = DateTime.parse(_lastDayController.text);
         final days = _getDaysBetween(start, end);
@@ -168,10 +189,20 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     // Parse dates and set to noon UTC
     final firstDay = DateTime.parse(_firstDayController.text).add(const Duration(hours: 12));
     final lastDay = DateTime.parse(_lastDayController.text).add(const Duration(hours: 12));
+    final today = DateTime.now();
+    final todayNormalized = DateTime(today.year, today.month, today.day);
 
-    if (lastDay.isBefore(firstDay)) {
+    // Validate dates
+    if (firstDay.isBefore(todayNormalized)) {
       setState(() {
-        _errorMessage = 'Last day cannot be before first day';
+        _errorMessage = 'First day cannot be before today';
+      });
+      return;
+    }
+
+    if (!lastDay.isAfter(firstDay)) {
+      setState(() {
+        _errorMessage = 'Last day must be after first day';
       });
       return;
     }
