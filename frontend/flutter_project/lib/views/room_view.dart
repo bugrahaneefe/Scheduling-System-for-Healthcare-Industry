@@ -1025,10 +1025,51 @@ class _RoomViewState extends State<RoomView> {
         return;
       }
 
+      // Show warning dialog before proceeding
+      final bool? shouldProceed = await showDialog<bool>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2E),
+              title: const Text(
+                'Warning',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: const Text(
+                'Changing room dates will reset:\n\n'
+                '• All doctors\' duty preferences\n'
+                '• Number of shifts for each doctor\n'
+                '• Daily required shifts (will be set to 1)\n'
+                '• Any existing schedule\n\n'
+                'Do you want to continue?',
+                style: TextStyle(color: Colors.white),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
+      );
+
+      if (shouldProceed != true) return;
+
       final data = roomDoc.data()!;
       final firstDay = DateTime.parse(data['firstDay'] as String);
       final lastDay = DateTime.parse(data['lastDay'] as String);
 
+      // Rest of existing date editor code...
       final result = await showDialog<Map<String, DateTime>>(
         context: context,
         builder:
@@ -1051,6 +1092,16 @@ class _RoomViewState extends State<RoomView> {
           daysDifference,
           1,
         ); // Default value of 1 shift per day
+
+        // Show progress dialog
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (context) => const Center(child: CircularProgressIndicator()),
+          );
+        }
 
         // Update room dates and arrays
         await FirebaseFirestore.instance
@@ -1087,11 +1138,19 @@ class _RoomViewState extends State<RoomView> {
             .doc(widget.roomId)
             .update({'appliedSchedule': null});
 
+        // Dismiss progress dialog
         if (mounted) {
+          Navigator.pop(context);
+
+          // Show detailed success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Room dates updated and all related data reset'),
+              content: Text(
+                'Room dates updated. All preferences and schedules have been reset. '
+                'Please inform doctors to set their preferences again.',
+              ),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 5),
             ),
           );
         }
@@ -1102,6 +1161,10 @@ class _RoomViewState extends State<RoomView> {
         await _loadSchedules();
       }
     } catch (e) {
+      // Dismiss progress dialog if showing
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
       _showError('Failed to update room dates: $e');
     }
   }
