@@ -7,6 +7,7 @@ import 'package:project491/views/set_duties_view.dart';
 import 'package:project491/views/view_preferences_view.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../widgets/date_editor_dialog.dart';
 
 class RoomView extends StatefulWidget {
   final String roomId;
@@ -124,7 +125,7 @@ class _RoomViewState extends State<RoomView> {
           // Doktor ismini doğrudan document ID olarak kullanıyoruz
           final doctorName = doc.id;
           final data = doc.data();
-          
+
           // Doktor hala odada var mı kontrol ediyoruz
           if (_participants.any((p) => p['name'] == doctorName)) {
             final List<int> availability =
@@ -134,7 +135,9 @@ class _RoomViewState extends State<RoomView> {
                 [];
 
             // İndex yerine doktor ismi ile saklıyoruz
-            _doctorPreferences[_participants.indexWhere((p) => p['name'] == doctorName)] = {
+            _doctorPreferences[_participants.indexWhere(
+              (p) => p['name'] == doctorName,
+            )] = {
               'shiftsCount': data['shiftsCount'] as int,
               'availability': availability,
             };
@@ -426,12 +429,11 @@ class _RoomViewState extends State<RoomView> {
       setState(() {
         _doctorPreferences.clear(); // Tüm preferences'ları temizle
       });
-      
+
       // Verileri yeniden yükle
       await _refreshRoom();
       await _loadAllDoctorPreferences();
       await _loadSchedules();
-
     } catch (e) {
       _showError('Failed to remove participant: $e');
     }
@@ -863,9 +865,7 @@ class _RoomViewState extends State<RoomView> {
       );
 
       if (mounted) {
-        print(
-          'Opening duties screen for ${participant['name']}',
-        );
+        print('Opening duties screen for ${participant['name']}');
 
         final result = await Navigator.push(
           context,
@@ -883,9 +883,7 @@ class _RoomViewState extends State<RoomView> {
         );
 
         if (result != null && mounted) {
-          print(
-            'Received preferences for ${participant['name']}',
-          );
+          print('Received preferences for ${participant['name']}');
           setState(() {
             _doctorPreferences[index] = {
               'shiftsCount': result['shiftsCount'],
@@ -1012,6 +1010,100 @@ class _RoomViewState extends State<RoomView> {
             ],
           ),
     );
+  }
+
+  Future<void> _editRoomDates() async {
+    try {
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
+      if (!roomDoc.exists) {
+        _showError('Room data not found');
+        return;
+      }
+
+      final data = roomDoc.data()!;
+      final firstDay = DateTime.parse(data['firstDay'] as String);
+      final lastDay = DateTime.parse(data['lastDay'] as String);
+
+      final result = await showDialog<Map<String, DateTime>>(
+        context: context,
+        builder:
+            (context) => DateEditorDialog(firstDay: firstDay, lastDay: lastDay),
+      );
+
+      if (result != null) {
+        // Format dates to YYYY-MM-DD
+        final newFirstDay =
+            '${result['firstDay']!.year}-${result['firstDay']!.month.toString().padLeft(2, '0')}-${result['firstDay']!.day.toString().padLeft(2, '0')}';
+        final newLastDay =
+            '${result['lastDay']!.year}-${result['lastDay']!.month.toString().padLeft(2, '0')}-${result['lastDay']!.day.toString().padLeft(2, '0')}';
+
+        // Calculate number of days between new dates
+        final daysDifference =
+            result['lastDay']!.difference(result['firstDay']!).inDays + 1;
+
+        // Create new arrays with proper length
+        final List<int> newDailyShifts = List.filled(
+          daysDifference,
+          1,
+        ); // Default value of 1 shift per day
+
+        // Update room dates and arrays
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .update({
+              'firstDay': newFirstDay,
+              'lastDay': newLastDay,
+              'dailyShifts': newDailyShifts,
+            });
+
+        // Reset all preferences since date range changed
+        final batch = FirebaseFirestore.instance.batch();
+        final preferencesSnapshot =
+            await FirebaseFirestore.instance
+                .collection('rooms')
+                .doc(widget.roomId)
+                .collection('preferences')
+                .get();
+
+        for (var doc in preferencesSnapshot.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+
+        // Clear local preferences
+        setState(() {
+          _doctorPreferences.clear();
+        });
+
+        // Also clear any existing schedule
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .update({'appliedSchedule': null});
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Room dates updated and all related data reset'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+
+        // Reload all room data
+        await _refreshRoom();
+        await _loadAllDoctorPreferences();
+        await _loadSchedules();
+      }
+    } catch (e) {
+      _showError('Failed to update room dates: $e');
+    }
   }
 
   @override
@@ -1276,13 +1368,37 @@ class _RoomViewState extends State<RoomView> {
                         color: Colors.blue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        widget.roomDescription,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          Text(
+                            widget.roomDescription,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (_isHost) ...[
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _editRoomDates,
+                              icon: const Icon(
+                                Icons.calendar_today,
+                                color: Colors.white,
+                              ),
+                              label: const Text(
+                                'Edit Room Dates',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     const SizedBox(height: 20),
