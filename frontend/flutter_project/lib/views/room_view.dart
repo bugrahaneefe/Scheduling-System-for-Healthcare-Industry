@@ -511,6 +511,25 @@ class _RoomViewState extends State<RoomView> {
           }
         }
 
+        // --- DELETE ALL NOTIFICATIONS RELATED TO THIS ROOM FOR ALL USERS ---
+        for (var participant in _participants) {
+          final userId = participant['userId'];
+          if (userId != null && userId.toString().isNotEmpty) {
+            final notificationsRef = FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .collection('notifications');
+            final querySnapshot =
+                await notificationsRef
+                    .where('roomId', isEqualTo: widget.roomId)
+                    .get();
+            for (var doc in querySnapshot.docs) {
+              await doc.reference.delete();
+            }
+          }
+        }
+        // --- END NOTIFICATION DELETION ---
+
         if (mounted) {
           Navigator.pop(context); // Return to home view
         }
