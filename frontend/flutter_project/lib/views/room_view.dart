@@ -1069,6 +1069,91 @@ class _RoomViewState extends State<RoomView> {
       final firstDay = DateTime.parse(data['firstDay'] as String);
       final lastDay = DateTime.parse(data['lastDay'] as String);
 
+      // --- Show First Day and Last Day as two rows ---
+      FutureBuilder<DocumentSnapshot>(
+        future:
+            FirebaseFirestore.instance
+                .collection('rooms')
+                .doc(widget.roomId)
+                .get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox(height: 32);
+          }
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const SizedBox(height: 32);
+          }
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final firstDay = data['firstDay'] ?? '';
+          final lastDay = data['lastDay'] ?? '';
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'First Day: ',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      firstDay,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Last Day: ',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      lastDay,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+      // --- END BLOCK ---
+
       // Rest of existing date editor code...
       final result = await showDialog<Map<String, DateTime>>(
         context: context,
@@ -1300,6 +1385,95 @@ class _RoomViewState extends State<RoomView> {
                       ],
                     ),
                     const SizedBox(height: 20),
+                    // --- Show First Day and Last Day as two rows ---
+                    FutureBuilder<DocumentSnapshot>(
+                      future:
+                          FirebaseFirestore.instance
+                              .collection('rooms')
+                              .doc(widget.roomId)
+                              .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox(height: 32);
+                        }
+                        if (!snapshot.hasData || !snapshot.data!.exists) {
+                          return const SizedBox(height: 32);
+                        }
+                        final data =
+                            snapshot.data!.data() as Map<String, dynamic>;
+                        final firstDay = data['firstDay'] ?? '';
+                        final lastDay = data['lastDay'] ?? '';
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 16,
+                          ),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'First Day: ',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    firstDay,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Last Day: ',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    lastDay,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    // --- END BLOCK ---
                     if (_appliedSchedule != null)
                       _buildScheduleList(_appliedSchedule),
                     const SizedBox(height: 16),

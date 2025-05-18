@@ -21,8 +21,23 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _firstDay = widget.firstDay;
-    _lastDay = widget.lastDay;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // If firstDay is before today, set to today
+    if (widget.firstDay.isBefore(today)) {
+      _firstDay = today;
+      // If lastDay is before or same as today, set to tomorrow
+      if (widget.lastDay.isBefore(today) ||
+          widget.lastDay.isAtSameMomentAs(today)) {
+        _lastDay = today.add(const Duration(days: 1));
+      } else {
+        _lastDay = widget.lastDay;
+      }
+    } else {
+      _firstDay = widget.firstDay;
+      _lastDay = widget.lastDay;
+    }
   }
 
   @override
@@ -46,10 +61,12 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
               style: const TextStyle(color: Colors.white70),
             ),
             onTap: () async {
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
               final DateTime? picked = await showDatePicker(
                 context: context,
-                initialDate: _firstDay,
-                firstDate: DateTime.now(),
+                initialDate: _firstDay.isBefore(today) ? today : _firstDay,
+                firstDate: today,
                 lastDate: DateTime(2030),
                 builder: (context, child) {
                   return Theme(
