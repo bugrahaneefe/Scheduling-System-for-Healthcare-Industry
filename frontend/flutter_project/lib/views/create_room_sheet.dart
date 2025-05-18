@@ -26,6 +26,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   bool _isLoading = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _selectedParticipants = [];
+  late DateTime _firstDay;
+  late DateTime _lastDay;
 
   @override
   void initState() {
@@ -37,15 +39,16 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       'isHost': true,
     });
 
-    // Initialize controllers with default dates (current month)
     final now = DateTime.now();
-    final firstDay = DateTime(now.year, now.month, 1);
-    final lastDay = DateTime(now.year, now.month + 1, 0);
-    _firstDayController.text = _formatDate(firstDay);
-    _lastDayController.text = _formatDate(lastDay);
+    _firstDay = DateTime(now.year, now.month, now.day);
+    _lastDay = _firstDay.add(const Duration(days: 1));
+
+    // Initialize controllers with default dates (current month)
+    _firstDayController.text = _formatDate(_firstDay);
+    _lastDayController.text = _formatDate(_lastDay);
 
     // Initialize daily shifts with ones
-    _dailyShifts = List.filled(_getDaysBetween(firstDay, lastDay), 1);
+    _dailyShifts = List.filled(_getDaysBetween(_firstDay, _lastDay), 1);
   }
 
   String _formatDate(DateTime date) {
@@ -59,23 +62,28 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
   Future<void> _selectDate(BuildContext context, bool isFirstDay) async {
     // Get current values
-    DateTime? currentFirstDay = _firstDayController.text.isNotEmpty 
-        ? DateTime.parse(_firstDayController.text)
-        : null;
-    DateTime? currentLastDay = _lastDayController.text.isNotEmpty 
-        ? DateTime.parse(_lastDayController.text)
-        : null;
-    
+    DateTime? currentFirstDay =
+        _firstDayController.text.isNotEmpty
+            ? DateTime.parse(_firstDayController.text)
+            : null;
+    DateTime? currentLastDay =
+        _lastDayController.text.isNotEmpty
+            ? DateTime.parse(_lastDayController.text)
+            : null;
+
     // Set minimum selectable date
-    DateTime minDate = isFirstDay 
-        ? DateTime.now() // firstDay için bugün
-        : currentFirstDay ?? DateTime.now(); // lastDay için firstDay veya bugün
+    DateTime minDate =
+        isFirstDay
+            ? DateTime.now() // firstDay için bugün
+            : currentFirstDay ??
+                DateTime.now(); // lastDay için firstDay veya bugün
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isFirstDay 
-          ? minDate
-          : (currentLastDay ?? minDate.add(const Duration(days: 1))),
+      initialDate:
+          isFirstDay
+              ? minDate
+              : (currentLastDay ?? minDate.add(const Duration(days: 1))),
       firstDate: minDate,
       lastDate: DateTime(2030),
     );
@@ -83,17 +91,18 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     if (picked != null) {
       // Create date at noon UTC to avoid timezone issues
       final normalizedDate = DateTime.utc(
-        picked.year, 
-        picked.month, 
-        picked.day, 
-         12
+        picked.year,
+        picked.month,
+        picked.day,
+        12,
       );
 
       setState(() {
         if (isFirstDay) {
           _firstDayController.text = _formatDate(normalizedDate);
           // firstDay değiştiğinde lastDay'i kontrol et
-          if (currentLastDay != null && !currentLastDay.isAfter(normalizedDate)) {
+          if (currentLastDay != null &&
+              !currentLastDay.isAfter(normalizedDate)) {
             // lastDay'i firstDay'den bir gün sonraya ayarla
             final newLastDay = normalizedDate.add(const Duration(days: 1));
             _lastDayController.text = _formatDate(newLastDay);
@@ -114,50 +123,51 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   Future<void> _editDailyShifts() async {
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Daily Required Shifts'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _dailyShifts.length,
-            itemBuilder: (context, index) {
-              final date = DateTime.parse(_firstDayController.text).add(Duration(days: index));
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(_formatDate(date)),
-                    ),
-                    SizedBox(
-                      width: 60,
-                      child: TextFormField(
-                        initialValue: _dailyShifts[index].toString(),
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Edit Daily Required Shifts'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _dailyShifts.length,
+                itemBuilder: (context, index) {
+                  final date = DateTime.parse(
+                    _firstDayController.text,
+                  ).add(Duration(days: index));
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Expanded(child: Text(_formatDate(date))),
+                        SizedBox(
+                          width: 60,
+                          child: TextFormField(
+                            initialValue: _dailyShifts[index].toString(),
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _dailyShifts[index] = int.tryParse(value) ?? 1;
+                              });
+                            },
+                          ),
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            _dailyShifts[index] = int.tryParse(value) ?? 1;
-                          });
-                        },
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Done'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Done'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -187,8 +197,12 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     // Parse dates and set to noon UTC
-    final firstDay = DateTime.parse(_firstDayController.text).add(const Duration(hours: 12));
-    final lastDay = DateTime.parse(_lastDayController.text).add(const Duration(hours: 12));
+    final firstDay = DateTime.parse(
+      _firstDayController.text,
+    ).add(const Duration(hours: 12));
+    final lastDay = DateTime.parse(
+      _lastDayController.text,
+    ).add(const Duration(hours: 12));
     final today = DateTime.now();
     final todayNormalized = DateTime(today.year, today.month, today.day);
 
@@ -211,7 +225,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     final doctorCount = _selectedParticipants.length;
     if (!_validateConsecutiveDaysShifts(_dailyShifts, doctorCount)) {
       setState(() {
-        _errorMessage = 'The sum of shifts for any two consecutive days cannot exceed the total number of doctors';
+        _errorMessage =
+            'The sum of shifts for any two consecutive days cannot exceed the total number of doctors';
       });
       return;
     }
@@ -242,8 +257,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
           .collection('users')
           .doc(widget.hostId)
           .update({
-        'rooms': FieldValue.arrayUnion([roomRef.id]),
-      });
+            'rooms': FieldValue.arrayUnion([roomRef.id]),
+          });
 
       if (mounted) {
         Navigator.pop(context, true);
@@ -284,9 +299,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 Text(
                   'Create New Room',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -299,8 +314,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     border: OutlineInputBorder(),
                   ),
                   textInputAction: TextInputAction.next,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'Room name is required' : null,
+                  validator:
+                      (value) =>
+                          value?.isEmpty == true
+                              ? 'Room name is required'
+                              : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -313,8 +331,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   ),
                   textInputAction: TextInputAction.next,
                   maxLines: 3,
-                  validator: (value) =>
-                      value?.isEmpty == true ? 'Description is required' : null,
+                  validator:
+                      (value) =>
+                          value?.isEmpty == true
+                              ? 'Description is required'
+                              : null,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -330,8 +351,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         ),
                         readOnly: true,
                         onTap: () => _selectDate(context, true),
-                        validator: (value) =>
-                            value?.isEmpty == true ? 'First day is required' : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty == true
+                                    ? 'First day is required'
+                                    : null,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -346,8 +370,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         ),
                         readOnly: true,
                         onTap: () => _selectDate(context, false),
-                        validator: (value) =>
-                            value?.isEmpty == true ? 'Last day is required' : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty == true
+                                    ? 'Last day is required'
+                                    : null,
                       ),
                     ),
                   ],
@@ -378,8 +405,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () =>
-                          _addParticipant(_participantNameController.text),
+                      onPressed:
+                          () =>
+                              _addParticipant(_participantNameController.text),
                       child: const Text('Add'),
                     ),
                   ],
@@ -416,19 +444,22 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                 participant['name'] as String,
                                 style: const TextStyle(color: Colors.black87),
                               ),
-                              trailing: participant['isHost'] == true
-                                  ? const Chip(label: Text('Host'))
-                                  : IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle,
-                                        color: Colors.red,
+                              trailing:
+                                  participant['isHost'] == true
+                                      ? const Chip(label: Text('Host'))
+                                      : IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedParticipants.removeAt(
+                                              index,
+                                            );
+                                          });
+                                        },
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedParticipants.removeAt(index);
-                                        });
-                                      },
-                                    ),
                             );
                           },
                         ),
@@ -439,13 +470,14 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _createRoom,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Create Room'),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Create Room'),
                 ),
                 if (_errorMessage != null)
                   Padding(
