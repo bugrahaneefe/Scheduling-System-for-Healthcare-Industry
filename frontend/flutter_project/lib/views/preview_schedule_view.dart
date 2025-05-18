@@ -280,14 +280,93 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           : name;
     }
 
-    // Sort schedule keys (dates) and align so that today is at the top
+    // Sort schedule keys (dates)
     List<String> sortedDates = _schedule.keys.toList();
-    sortedDates.sort((a, b) {
-      final aDate = DateTime.parse(a.split('.').reversed.join('-'));
-      final bDate = DateTime.parse(b.split('.').reversed.join('-'));
-      return aDate.compareTo(bDate);
+    try {
+      sortedDates.sort((a, b) {
+        try {
+          final aParts = a.split(' ');
+          final bParts = b.split(' ');
+
+          // Parse dates from both date formats
+          final DateTime aDate =
+              aParts.length == 4
+                  ? DateTime(
+                    int.parse(aParts[2]),
+                    _getMonthNumber(aParts[1]),
+                    int.parse(aParts[0]),
+                  )
+                  : DateTime.parse(a.split('.').reversed.join('-'));
+
+          final DateTime bDate =
+              bParts.length == 4
+                  ? DateTime(
+                    int.parse(bParts[2]),
+                    _getMonthNumber(bParts[1]),
+                    int.parse(bParts[0]),
+                  )
+                  : DateTime.parse(b.split('.').reversed.join('-'));
+
+          return aDate.compareTo(bDate);
+        } catch (e) {
+          print('Error sorting dates $a and $b: $e');
+          return 0;
+        }
+      });
+    } catch (e) {
+      print('Error during date sorting: $e');
+    }
+
+    // Find index of today or next closest date
+    final now = DateTime.now();
+    final todayStr =
+        '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
+    int todayIndex = sortedDates.indexWhere((d) {
+      try {
+        DateTime dDate;
+        if (d.contains(' ')) {
+          // "21 May 2025 Wednesday" formatı
+          final parts = d.split(' ');
+          final day = int.parse(parts[0]);
+          final month = _getMonthNumber(parts[1]);
+          final year = int.parse(parts[2]);
+          dDate = DateTime(year, month, day);
+        } else {
+          // "DD.MM.YYYY" formatı
+          final parts = d.split('.');
+          dDate = DateTime(
+            int.parse(parts[2]), // year
+            int.parse(parts[1]), // month
+            int.parse(parts[0]), // day
+          );
+        }
+
+        final todayParts = todayStr.split('.');
+        final todayDate = DateTime(
+          int.parse(todayParts[2]),
+          int.parse(todayParts[1]),
+          int.parse(todayParts[0]),
+        );
+
+        return !dDate.isBefore(todayDate);
+      } catch (e) {
+        print('Error parsing date: $e for date: $d');
+        return false;
+      }
+    });
+    if (todayIndex == -1) todayIndex = 0;
+
+    final scrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients && sortedDates.isNotEmpty) {
+        scrollController.jumpTo(todayIndex * 120.0); // Approximate card height
+      }
     });
 
+    // Create a controller for the horizontal Scrollbar (must be unique per widget)
+    // DO NOT share this controller between multiple ScrollViews!
+    // Instead, create it inside the widget that uses it.
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       appBar: AppBar(
@@ -307,7 +386,6 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // --- ADD THIS BLOCK: Duty counts summary ---
             Padding(
               padding: const EdgeInsets.only(top: 40.0, bottom: 16.0),
               child: Card(
@@ -333,83 +411,108 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // --- SCROLLBAR ADDED HERE ---
+                      // Use a local controller for each Scrollbar/ScrollView pair
                       SizedBox(
-                        height: 56, // enough for chips and scrollbar
-                        child: Scrollbar(
-                          thumbVisibility: true,
-                          thickness: 6,
-                          radius: const Radius.circular(8),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children:
-                                  dutyCounts.entries.map((entry) {
-                                    return Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8,
-                                        horizontal: 16,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            getDisplayName(entry.key),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 4,
+                        height: 56,
+                        child: Builder(
+                          builder: (context) {
+                            final horizontalScrollController =
+                                ScrollController();
+                            return Stack(
+                              children: [
+                                // Duty chips row
+                                SingleChildScrollView(
+                                  controller: horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children:
+                                        dutyCounts.entries.map((entry) {
+                                          return Container(
+                                            margin: const EdgeInsets.symmetric(
                                               horizontal: 12,
                                             ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 8,
+                                              horizontal: 16,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: Colors.blue,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                            child: Text(
-                                              entry.value.toString(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
+                                              color: Colors.blue.withOpacity(
+                                                0.2,
                                               ),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  getDisplayName(entry.key),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 4,
+                                                        horizontal: 12,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.blue,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    entry.value.toString(),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                  ),
+                                ),
+                                // Scrollbar at the bottom with a little padding
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom:
+                                      4, // add a little padding from the bottom
+                                  child: Scrollbar(
+                                    controller: horizontalScrollController,
+                                    thumbVisibility: true,
+                                    thickness: 6,
+                                    radius: const Radius.circular(8),
+                                    notificationPredicate: (_) => false,
+                                    child: SizedBox(height: 8),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                      // --- END SCROLLBAR BLOCK ---
                     ],
                   ),
                 ),
               ),
             ),
-            // --- END BLOCK ---
             Expanded(
               child: ListView.builder(
-                itemCount: sortedDates.length,
+                controller: scrollController,
+                itemCount: _schedule.length,
                 itemBuilder: (context, index) {
                   String date = sortedDates[index];
                   List<Map<String, String>> names = _schedule[date]!;
 
-                  final now = DateTime.now();
-                  final todayStr =
-                      '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
                   final isToday = date == todayStr;
 
                   return Card(

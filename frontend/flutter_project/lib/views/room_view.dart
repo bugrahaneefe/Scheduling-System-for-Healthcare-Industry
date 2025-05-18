@@ -671,34 +671,34 @@ class _RoomViewState extends State<RoomView> {
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children:
-                      assignments.map((a) {
-                        return _isHost
-                            ? Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    '${a['name']} (${a['assignedUser']})',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                    ),
-                                  ),
+                  children: [
+                    // --- REMOVE dutyCounts horizontal scroll region ---
+                    ...assignments.map((a) {
+                      return _isHost
+                          ? Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${a['name']} (${a['assignedUser']})',
+                                  style: const TextStyle(color: Colors.white70),
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                    size: 20,
-                                  ),
-                                  onPressed: () => _removeAssignment(date, a),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                  size: 20,
                                 ),
-                              ],
-                            )
-                            : Text(
-                              '${a['name']} (${a['assignedUser']})',
-                              style: const TextStyle(color: Colors.white70),
-                            );
-                      }).toList(),
+                                onPressed: () => _removeAssignment(date, a),
+                              ),
+                            ],
+                          )
+                          : Text(
+                            '${a['name']} (${a['assignedUser']})',
+                            style: const TextStyle(color: Colors.white70),
+                          );
+                    }).toList(),
+                  ],
                 ),
                 trailing:
                     _isHost

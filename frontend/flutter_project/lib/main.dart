@@ -13,6 +13,13 @@ import '/firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Global error handler: log errors instead of crashing silently
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    // You can also report errors via your error logging service here.
+  };
+
   runApp(const MyApp());
 }
 
