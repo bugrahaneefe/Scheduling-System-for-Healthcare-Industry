@@ -443,6 +443,18 @@ class _RoomViewState extends State<RoomView> {
     final name = _newParticipantController.text.trim();
     if (name.isEmpty) return;
 
+    // Prevent adding duplicate participant names
+    final alreadyExists = _participants.any((p) => p['name'] == name);
+    if (alreadyExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A participant with this name already exists.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     try {
       _participants.add({'userId': '', 'name': name, 'isHost': false});
 

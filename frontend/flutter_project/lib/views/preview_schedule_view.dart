@@ -288,25 +288,6 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
       return aDate.compareTo(bDate);
     });
 
-    // Find index of today or next closest date
-    final now = DateTime.now();
-    final todayStr =
-        '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
-    int todayIndex = sortedDates.indexWhere((d) {
-      final dDate = DateTime.parse(d.split('.').reversed.join('-'));
-      final todayDate = DateTime.parse(todayStr.split('.').reversed.join('-'));
-      return !dDate.isBefore(todayDate);
-    });
-    if (todayIndex == -1) todayIndex = 0;
-
-    final scrollController = ScrollController();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scrollController.hasClients && sortedDates.isNotEmpty) {
-        scrollController.jumpTo(todayIndex * 120.0); // Approximate card height
-      }
-    });
-
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       appBar: AppBar(
@@ -421,12 +402,14 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             // --- END BLOCK ---
             Expanded(
               child: ListView.builder(
-                controller: scrollController,
-                itemCount: _schedule.length,
+                itemCount: sortedDates.length,
                 itemBuilder: (context, index) {
                   String date = sortedDates[index];
                   List<Map<String, String>> names = _schedule[date]!;
 
+                  final now = DateTime.now();
+                  final todayStr =
+                      '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
                   final isToday = date == todayStr;
 
                   return Card(
