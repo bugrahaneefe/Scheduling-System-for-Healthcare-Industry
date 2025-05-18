@@ -1496,6 +1496,40 @@ class _RoomViewState extends State<RoomView> {
                     if (_isHost)
                       ElevatedButton(
                         onPressed: () async {
+                          // Prevent preview if there are unassigned participants
+                          final hasUnassigned = _participants.any(
+                            (p) =>
+                                (p['userId'] == null ||
+                                    p['userId'].toString().isEmpty) &&
+                                p['isHost'] != true,
+                          );
+                          if (hasUnassigned) {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    backgroundColor: const Color(0xFF1E1E2E),
+                                    title: const Text(
+                                      'Cannot Preview Schedule',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    content: const Text(
+                                      'There are unassigned participants in the room. Please assign all participants before previewing the schedule.',
+                                      style: TextStyle(color: Colors.white70),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text(
+                                          'OK',
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                            return;
+                          }
                           showDialog(
                             context: context,
                             barrierDismissible: false,
