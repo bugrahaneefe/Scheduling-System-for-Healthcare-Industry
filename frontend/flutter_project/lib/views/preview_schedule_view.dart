@@ -280,6 +280,33 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           : name;
     }
 
+    // Sort schedule keys (dates) and align so that today is at the top
+    List<String> sortedDates = _schedule.keys.toList();
+    sortedDates.sort((a, b) {
+      final aDate = DateTime.parse(a.split('.').reversed.join('-'));
+      final bDate = DateTime.parse(b.split('.').reversed.join('-'));
+      return aDate.compareTo(bDate);
+    });
+
+    // Find index of today or next closest date
+    final now = DateTime.now();
+    final todayStr =
+        '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
+    int todayIndex = sortedDates.indexWhere((d) {
+      final dDate = DateTime.parse(d.split('.').reversed.join('-'));
+      final todayDate = DateTime.parse(todayStr.split('.').reversed.join('-'));
+      return !dDate.isBefore(todayDate);
+    });
+    if (todayIndex == -1) todayIndex = 0;
+
+    final scrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients && sortedDates.isNotEmpty) {
+        scrollController.jumpTo(todayIndex * 120.0); // Approximate card height
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       appBar: AppBar(
@@ -394,28 +421,38 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             // --- END BLOCK ---
             Expanded(
               child: ListView.builder(
+                controller: scrollController,
                 itemCount: _schedule.length,
                 itemBuilder: (context, index) {
-                  String date = _schedule.keys.elementAt(index);
+                  String date = sortedDates[index];
                   List<Map<String, String>> names = _schedule[date]!;
+
+                  final isToday = date == todayStr;
 
                   return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    color: Colors.white.withOpacity(0.1),
+                    color:
+                        isToday
+                            ? Colors.blue.withOpacity(0.25)
+                            : Colors.white.withOpacity(0.1),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            date,
-                            style: const TextStyle(
+                            date + (isToday ? " (Today)" : ""),
+                            style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              backgroundColor:
+                                  isToday
+                                      ? Colors.blue.withOpacity(0.15)
+                                      : null,
                             ),
                           ),
                           const Divider(color: Colors.white30),
