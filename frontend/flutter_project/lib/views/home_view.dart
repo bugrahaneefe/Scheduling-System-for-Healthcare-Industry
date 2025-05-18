@@ -118,8 +118,6 @@ class _HomeViewState extends State<HomeView>
                         IconButton(
                           icon: const Icon(Icons.logout, color: Colors.white),
                           onPressed: () async {
-                            await authService.value.signOut();
-                            authVM.clearUserData();
                             if (context.mounted) {
                               Navigator.pushReplacement(
                                 context,
@@ -127,6 +125,8 @@ class _HomeViewState extends State<HomeView>
                                   builder: (context) => const LoginView(),
                                 ),
                               );
+                              authVM.clearUserData();
+                              await authService.value.signOut();
                             }
                           },
                         ),
@@ -193,11 +193,64 @@ class _HomeViewState extends State<HomeView>
                             ],
                           ),
                         ),
-                        const Center(
-                          child: Text(
-                            'Notifications Content',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                        StreamBuilder<QuerySnapshot>(
+                          stream:
+                              FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(authService.value.currentUser!.uid)
+                                  .collection('notifications')
+                                  .orderBy('timestamp', descending: true)
+                                  .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No notifications',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                final notification = snapshot.data!.docs[index];
+                                final data =
+                                    notification.data() as Map<String, dynamic>;
+                                final timestamp =
+                                    (data['timestamp'] as Timestamp).toDate();
+                                final formattedTime =
+                                    '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+
+                                return ListTile(
+                                  title: Text(
+                                    data['message'] as String,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  subtitle: Text(
+                                    formattedTime,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  leading: Icon(
+                                    data['type'] == 'room_dates_updated_host'
+                                        ? Icons.edit_calendar
+                                        : Icons.calendar_today,
+                                    color: Colors.blue,
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -286,10 +339,13 @@ class _HomeViewState extends State<HomeView>
               },
               onDismissed: (direction) async {
                 // Host kontrolünü participants array'inden yap
-                final participants = List<Map<String, dynamic>>.from(roomData['participants'] ?? []);
-                final isHost = participants.any((p) => 
-                  p['isHost'] == true && 
-                  p['userId'] == authService.value.currentUser!.uid
+                final participants = List<Map<String, dynamic>>.from(
+                  roomData['participants'] ?? [],
+                );
+                final isHost = participants.any(
+                  (p) =>
+                      p['isHost'] == true &&
+                      p['userId'] == authService.value.currentUser!.uid,
                 );
 
                 if (isHost) {
@@ -303,7 +359,7 @@ class _HomeViewState extends State<HomeView>
                   final participants = List<Map<String, dynamic>>.from(
                     roomData['participants'] ?? [],
                   );
-                  
+
                   // Kullanıcının atandığı participant'ı bul
                   final myParticipant = participants.firstWhere(
                     (p) => p['userId'] == authService.value.currentUser!.uid,
@@ -327,7 +383,7 @@ class _HomeViewState extends State<HomeView>
                       .collection('preferences')
                       .doc(myParticipant['name'])
                       .delete();
-                
+
                   // Kullanıcının rooms listesinden odayı kaldır
                   await FirebaseFirestore.instance
                       .collection('users')
@@ -438,15 +494,23 @@ class _HomeViewState extends State<HomeView>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CreateRoomSheet(
-        hostId: authService.value.currentUser!.uid,
-        hostName: Provider.of<AuthViewModel>(context, listen: false).currentUser!.name,
-      ),
+      builder:
+          (context) => CreateRoomSheet(
+            hostId: authService.value.currentUser!.uid,
+            hostName:
+                Provider.of<AuthViewModel>(
+                  context,
+                  listen: false,
+                ).currentUser!.name,
+          ),
     );
 
     if (result == true && mounted) {
       // Kullanıcı bilgilerini ve oda listesini yenile
-      await Provider.of<AuthViewModel>(context, listen: false).loadCurrentUser();
+      await Provider.of<AuthViewModel>(
+        context,
+        listen: false,
+      ).loadCurrentUser();
       setState(() {}); // UI'ı yenile
     }
   }

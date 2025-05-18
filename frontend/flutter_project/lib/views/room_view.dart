@@ -1138,6 +1138,60 @@ class _RoomViewState extends State<RoomView> {
             .doc(widget.roomId)
             .update({'appliedSchedule': null});
 
+        // Notify all assigned users (except host) about the date change
+        final hostParticipant = _participants.firstWhere(
+          (p) => p['isHost'] == true,
+          orElse: () => <String, dynamic>{},
+        );
+        final hostUserId = hostParticipant['userId'];
+
+        final roomName = widget.roomName;
+        final notificationMessage =
+            'Your host in "$roomName" updated start and end date. Please confirm your preferences.';
+
+        final now = DateTime.now();
+
+        // Find all assigned users except host
+        final assignedUsers = _participants.where(
+          (p) =>
+              p['userId'] != null &&
+              p['userId'].toString().isNotEmpty &&
+              p['isHost'] != true,
+        );
+
+        // Send notifications to regular users
+        for (final user in assignedUsers) {
+          final userId = user['userId'];
+          if (userId != null && userId.toString().isNotEmpty) {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .collection('notifications')
+                .add({
+                  'message': notificationMessage,
+                  'roomId': widget.roomId,
+                  'roomName': roomName,
+                  'timestamp': now,
+                  'type': 'room_dates_updated',
+                });
+          }
+        }
+
+        // Send notification to host
+        if (hostUserId != null && hostUserId.toString().isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(hostUserId)
+              .collection('notifications')
+              .add({
+                'message': 'You updated start and end date in "$roomName".',
+                'roomId': widget.roomId,
+                'roomName': roomName,
+                'timestamp': now,
+                'type': 'room_dates_updated_host',
+              });
+        }
+
         // Dismiss progress dialog
         if (mounted) {
           Navigator.pop(context);
