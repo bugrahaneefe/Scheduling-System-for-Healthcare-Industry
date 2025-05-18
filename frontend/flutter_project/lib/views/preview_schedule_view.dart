@@ -28,55 +28,65 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     print('Converted Schedule: $_schedule'); // Debug print
   }
 
-  Map<String, List<Map<String, String>>> _convertScheduleData(Map<String, List<String>> data) {
+  Map<String, List<Map<String, String>>> _convertScheduleData(
+    Map<String, List<String>> data,
+  ) {
     print('Converting data: $data'); // Debug print
     final Map<String, List<Map<String, String>>> result = {};
-    
+
     if (data.isEmpty) {
       print('Warning: Input data is empty!');
       return result;
     }
-    
+
     data.forEach((dateStr, doctorNames) {
-      print('Processing date: $dateStr with doctors: $doctorNames'); // Debug print
-      result[dateStr] = doctorNames.map((name) {
-        // Find the participant info for this doctor
-        final doctor = widget.participants.firstWhere(
-          (p) => p['name'] == name,
-          orElse: () => {'name': name, 'assignedUserName': 'Unassigned'},
-        );
-        print('Found doctor info: $doctor'); // Debug print
-        
-        return {
-          'name': name,
-          'assignedUser': (doctor['assignedUserName'] ?? 'Unassigned') as String,
-        };
-      }).toList();
+      print(
+        'Processing date: $dateStr with doctors: $doctorNames',
+      ); // Debug print
+      result[dateStr] =
+          doctorNames.map((name) {
+            // Find the participant info for this doctor
+            final doctor = widget.participants.firstWhere(
+              (p) => p['name'] == name,
+              orElse: () => {'name': name, 'assignedUserName': 'Unassigned'},
+            );
+            print('Found doctor info: $doctor'); // Debug print
+
+            return {
+              'name': name,
+              'assignedUser':
+                  (doctor['assignedUserName'] ?? 'Unassigned') as String,
+            };
+          }).toList();
     });
     print('Conversion result: $result'); // Debug print
     return result;
   }
 
-  Future<void> _removeAssignment(String date, Map<String, String> assignment) async {
+  Future<void> _removeAssignment(
+    String date,
+    Map<String, String> assignment,
+  ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove Assignment'),
-        content: Text('Remove ${assignment['name']} from $date?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Remove Assignment'),
+            content: Text('Remove ${assignment['name']} from $date?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Remove',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {
@@ -114,26 +124,27 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Add Assignment for $date'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: availableParticipants.length,
-            itemBuilder: (context, index) {
-              final participant = availableParticipants[index];
-              return ListTile(
-                title: Text(participant['name']),
-                subtitle: Text(
-                  participant['assignedUserName'] ?? 'Unassigned',
-                ),
-                onTap: () => Navigator.pop(context, participant),
-              );
-            },
+      builder:
+          (context) => AlertDialog(
+            title: Text('Add Assignment for $date'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableParticipants.length,
+                itemBuilder: (context, index) {
+                  final participant = availableParticipants[index];
+                  return ListTile(
+                    title: Text(participant['name']),
+                    subtitle: Text(
+                      participant['assignedUserName'] ?? 'Unassigned',
+                    ),
+                    onTap: () => Navigator.pop(context, participant),
+                  );
+                },
+              ),
+            ),
           ),
-        ),
-      ),
     );
 
     if (selectedParticipant != null) {
@@ -176,25 +187,33 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
       final Map<String, List<Map<String, dynamic>>> convertedSchedule = {};
       schedule.forEach((date, assignments) {
         // Extract the date parts from the formatted date (e.g., "1 February 2025 Saturday")
-        final dateParts = date.split(' '); // ["1", "February", "2025", "Saturday"]
+        final dateParts = date.split(
+          ' ',
+        ); // ["1", "February", "2025", "Saturday"]
         final day = int.parse(dateParts[0]);
         final month = _getMonthNumber(dateParts[1]);
         final year = int.parse(dateParts[2]);
-        
+
         // Format the date as DD.MM.YYYY
-        final formattedDate = '${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year';
+        final formattedDate =
+            '${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year';
 
-        final List<Map<String, dynamic>> convertedAssignments = assignments.map((assignment) {
-          final participant = widget.participants.firstWhere(
-            (p) => p['name'] == assignment['name'],
-            orElse: () => {'name': assignment['name'], 'assignedUserName': 'Unassigned'},
-          );
+        final List<Map<String, dynamic>> convertedAssignments =
+            assignments.map((assignment) {
+              final participant = widget.participants.firstWhere(
+                (p) => p['name'] == assignment['name'],
+                orElse:
+                    () => {
+                      'name': assignment['name'],
+                      'assignedUserName': 'Unassigned',
+                    },
+              );
 
-          return {
-            'name': assignment['name'],
-            'assignedUser': participant['assignedUserName'] ?? 'Unassigned',
-          };
-        }).toList();
+              return {
+                'name': assignment['name'],
+                'assignedUser': participant['assignedUserName'] ?? 'Unassigned',
+              };
+            }).toList();
 
         convertedSchedule[formattedDate] = convertedAssignments;
       });
@@ -242,34 +261,137 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate duty counts for each participant
+    final Map<String, int> dutyCounts = {};
+    widget.scheduleData.forEach((date, doctors) {
+      for (final doctor in doctors) {
+        dutyCounts[doctor] = (dutyCounts[doctor] ?? 0) + 1;
+      }
+    });
+
+    // Optionally, get participant display names from participants list
+    String getDisplayName(String name) {
+      final participant = widget.participants.firstWhere(
+        (p) => p['name'] == name,
+        orElse: () => {'name': name, 'assignedUserName': null},
+      );
+      return participant['assignedUserName'] != null
+          ? '${participant['name']} (${participant['assignedUserName']})'
+          : name;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
-      body: SafeArea(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Preview Schedule',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // --- ADD THIS BLOCK: Duty counts summary ---
             Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+              padding: const EdgeInsets.only(top: 40.0, bottom: 16.0),
+              child: Card(
+                color: Colors.blue.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 16,
                   ),
-                  const Expanded(
-                    child: Text(
-                      'Schedule Preview',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Duties per Participant',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
+                      const SizedBox(height: 12),
+                      // --- SCROLLBAR ADDED HERE ---
+                      SizedBox(
+                        height: 56, // enough for chips and scrollbar
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          thickness: 6,
+                          radius: const Radius.circular(8),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children:
+                                  dutyCounts.entries.map((entry) {
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            getDisplayName(entry.key),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                              horizontal: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              entry.value.toString(),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // --- END SCROLLBAR BLOCK ---
+                    ],
                   ),
-                  const SizedBox(width: 48),
-                ],
+                ),
               ),
             ),
+            // --- END BLOCK ---
             Expanded(
               child: ListView.builder(
                 itemCount: _schedule.length,
