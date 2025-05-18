@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> {
       providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Flutter MVVM Demo',
+        title: 'Nöbetim',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: const Color(0xFF0D0D1B),
