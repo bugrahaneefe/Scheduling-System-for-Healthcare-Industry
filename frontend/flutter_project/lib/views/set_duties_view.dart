@@ -25,9 +25,7 @@ class SetDutiesView extends StatefulWidget {
 }
 
 class _SetDutiesViewState extends State<SetDutiesView> {
-  final TextEditingController _shiftsController = TextEditingController(
-    text: '10',
-  );
+  TextEditingController? _shiftsController;
   late ValueNotifier<Map<DateTime, int>> _selectedDaysNotifier;
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -35,16 +33,17 @@ class _SetDutiesViewState extends State<SetDutiesView> {
   @override
   void initState() {
     super.initState();
-    _selectedDaysNotifier = ValueNotifier<Map<DateTime, int>>({});
+    _shiftsController = TextEditingController();
     _calendarFormat = CalendarFormat.month;
-    _focusedDay = widget.firstDay; // Initialize with firstDay
+    _focusedDay = widget.firstDay;
+    _selectedDaysNotifier = ValueNotifier<Map<DateTime, int>>({});
     _loadPreferences();
   }
 
   @override
   void dispose() {
     _selectedDaysNotifier.dispose();
-    _shiftsController.dispose();
+    _shiftsController?.dispose();
     super.dispose();
   }
 
@@ -55,14 +54,12 @@ class _SetDutiesViewState extends State<SetDutiesView> {
               .collection('rooms')
               .doc(widget.roomId)
               .collection('preferences')
-              .doc(
-                widget.doctorName,
-              ) // Doktor indexi yerine ismini kullanıyoruz
+              .doc(widget.doctorName)
               .get();
 
       if (doc.exists) {
         final data = doc.data()!;
-        _shiftsController.text = data['shiftsCount'].toString();
+        _shiftsController!.text = data['shiftsCount'].toString();
 
         if (data['availability'] != null) {
           final List<int> availability = List<int>.from(data['availability']);
@@ -89,9 +86,25 @@ class _SetDutiesViewState extends State<SetDutiesView> {
             });
           }
         }
+      } else {
+        // No preferences: fetch defaultShifts from room
+        final roomDoc =
+            await FirebaseFirestore.instance
+                .collection('rooms')
+                .doc(widget.roomId)
+                .get();
+        int defaultShifts = 0;
+        if (roomDoc.exists) {
+          final roomData = roomDoc.data();
+          if (roomData != null && roomData.containsKey('defaultShifts')) {
+            defaultShifts = roomData['defaultShifts'] ?? 0;
+          }
+        }
+        _shiftsController!.text = defaultShifts.toString();
       }
     } catch (e) {
       print('Error loading preferences: $e');
+      _shiftsController!.text = '0';
     }
   }
 
@@ -171,7 +184,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
       current = current.add(const Duration(days: 1));
     }
 
-    final shiftsCount = int.parse(_shiftsController.text);
+    final shiftsCount = int.parse(_shiftsController!.text);
 
     print('Doctor: ${widget.doctorName}'); // Debug print
     print('Shifts count: $shiftsCount'); // Debug print

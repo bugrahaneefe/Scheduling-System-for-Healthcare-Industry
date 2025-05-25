@@ -1715,19 +1715,21 @@ class _RoomViewState extends State<RoomView> {
                             final dailyShifts = List<int>.from(
                               data?['dailyShifts'] ?? [],
                             );
+                            final defaultShifts =
+                                data?['defaultShifts'] ?? 0; // <-- EKLENDİ
 
                             // Prepare the input data with doctors from participants
                             final numShifts = List<int>.generate(
                               doctors.length,
                               (i) =>
-                                  _doctorPreferences[i]?['shiftsCount'] ?? 10,
+                                  _doctorPreferences[i]?['shiftsCount'] ??
+                                  defaultShifts, // <-- 10 yerine defaultShifts
                             );
 
                             final availabilityMatrix = List<
                               List<int>
                             >.generate(doctors.length, (i) {
                               final prefs = _doctorPreferences[i];
-                              // Properly cast the availability array
                               final List<int> availability =
                                   (prefs?['availability'] as List<dynamic>?)
                                       ?.map((e) => e as int)

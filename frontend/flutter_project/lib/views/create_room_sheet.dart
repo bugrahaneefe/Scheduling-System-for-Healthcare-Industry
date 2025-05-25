@@ -22,11 +22,15 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   final _participantNameController = TextEditingController();
   final _firstDayController = TextEditingController();
   final _lastDayController = TextEditingController();
+  final TextEditingController _defaultShiftsController = TextEditingController(
+    text: '0',
+  );
   List<int> _dailyShifts = [];
   bool _isLoading = false;
   List<Map<String, dynamic>> _selectedParticipants = [];
   late DateTime _firstDay;
   late DateTime _lastDay;
+  int _defaultShifts = 0;
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       'userId': widget.hostId,
       'name': widget.hostName,
       'isHost': true,
+      'defaultShifts': _defaultShifts,
     });
 
     final now = DateTime.now();
@@ -253,6 +258,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
         'userId': '', // Empty for now, will be assigned later
         'name': name,
         'isHost': false,
+        'defaultShifts': _defaultShifts,
       });
       _participantNameController.clear();
     });
@@ -309,6 +315,13 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       final formattedFirstDay = _formatDate(firstDay);
       final formattedLastDay = _formatDate(lastDay);
 
+      // Parse default shifts count
+      _defaultShifts = int.tryParse(_defaultShiftsController.text) ?? 0;
+      // Update all participants' defaultShifts before saving
+      for (var p in _selectedParticipants) {
+        p['defaultShifts'] = _defaultShifts;
+      }
+
       // _dailyShifts burada kullanıcı tarafından düzenlenmiş haliyle kaydedilecek
       // (yeniden sıfırlama veya varsayılana çekme yok!)
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
@@ -319,6 +332,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
         'firstDay': formattedFirstDay,
         'lastDay': formattedLastDay,
         'dailyShifts': _dailyShifts,
+        'defaultShifts': _defaultShifts, // Save to room for later use
       });
 
       // Update host's rooms array
@@ -467,6 +481,34 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _defaultShiftsController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Default Number of Shifts',
+                    hintText:
+                        'Enter default number of shifts for each participant',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter default number of shifts';
+                    }
+                    final shifts = int.tryParse(value);
+                    if (shifts == null || shifts < 0) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                  onChanged: (value) {
+                    setState(() {
+                      _defaultShifts = int.tryParse(value) ?? 0;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
