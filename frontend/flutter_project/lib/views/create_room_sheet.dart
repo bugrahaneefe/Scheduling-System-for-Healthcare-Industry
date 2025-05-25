@@ -24,7 +24,6 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   final _lastDayController = TextEditingController();
   List<int> _dailyShifts = [];
   bool _isLoading = false;
-  String? _errorMessage;
   List<Map<String, dynamic>> _selectedParticipants = [];
   late DateTime _firstDay;
   late DateTime _lastDay;
@@ -47,8 +46,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     _firstDayController.text = _formatDate(_firstDay);
     _lastDayController.text = _formatDate(_lastDay);
 
-    // Initialize daily shifts with ones
-    _dailyShifts = List.filled(_getDaysBetween(_firstDay, _lastDay), 1);
+    // Initialize daily shifts with zeros instead of ones
+    _dailyShifts = List.filled(_getDaysBetween(_firstDay, _lastDay), 0);
   }
 
   String _formatDate(DateTime date) {
@@ -121,54 +120,129 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
   }
 
   Future<void> _editDailyShifts() async {
+    // Controller for "Apply to all days"
+    final allDaysController = TextEditingController(text: '0');
+    // Controllers for each day's shift
+    final List<TextEditingController> dayControllers = List.generate(
+      _dailyShifts.length,
+      (i) => TextEditingController(text: _dailyShifts[i].toString()),
+    );
+
     await showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Edit Daily Required Shifts'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _dailyShifts.length,
-                itemBuilder: (context, index) {
-                  final date = DateTime.parse(
-                    _firstDayController.text,
-                  ).add(Duration(days: index));
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        Expanded(child: Text(_formatDate(date))),
-                        SizedBox(
-                          width: 60,
-                          child: TextFormField(
-                            initialValue: _dailyShifts[index].toString(),
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Edit Daily Required Shifts'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Apply to all days section
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Set all days to:',
+                              style: TextStyle(color: Colors.black87),
                             ),
-                            onChanged: (value) {
-                              setState(() {
-                                _dailyShifts[index] = int.tryParse(value) ?? 1;
-                              });
-                            },
                           ),
-                        ),
-                      ],
+                          SizedBox(
+                            width: 60,
+                            child: TextFormField(
+                              controller: allDaysController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton(
+                            onPressed: () {
+                              final value =
+                                  int.tryParse(allDaysController.text) ?? 0;
+                              for (int i = 0; i < dayControllers.length; i++) {
+                                dayControllers[i].text = value.toString();
+                              }
+                              setStateDialog(
+                                () {},
+                              ); // Rebuild dialog to update fields
+                            },
+                            child: const Text(
+                              'Apply',
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
+                    const Divider(height: 32),
+                    // Daily shifts list
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: dayControllers.length,
+                        itemBuilder: (context, index) {
+                          final date = DateTime.parse(
+                            _firstDayController.text,
+                          ).add(Duration(days: index));
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row(
+                              children: [
+                                Expanded(child: Text(_formatDate(date))),
+                                SizedBox(
+                                  width: 60,
+                                  child: TextFormField(
+                                    controller: dayControllers[index],
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Done'),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
+
+    // Dialog kapandıktan sonra controller'lardaki değerleri _dailyShifts'e aktar
+    setState(() {
+      for (int i = 0; i < _dailyShifts.length; i++) {
+        _dailyShifts[i] = int.tryParse(dayControllers[i].text) ?? 0;
+      }
+    });
   }
 
   void _addParticipant(String name) {
@@ -228,7 +302,6 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -236,7 +309,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       final formattedFirstDay = _formatDate(firstDay);
       final formattedLastDay = _formatDate(lastDay);
 
-      // Create room document
+      // _dailyShifts burada kullanıcı tarafından düzenlenmiş haliyle kaydedilecek
+      // (yeniden sıfırlama veya varsayılana çekme yok!)
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
         'name': _nameController.text,
         'description': _descriptionController.text,
