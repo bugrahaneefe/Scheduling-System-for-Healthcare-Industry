@@ -25,7 +25,9 @@ class SetDutiesView extends StatefulWidget {
 }
 
 class _SetDutiesViewState extends State<SetDutiesView> {
-  final TextEditingController _shiftsController = TextEditingController(text: '10');
+  final TextEditingController _shiftsController = TextEditingController(
+    text: '10',
+  );
   late ValueNotifier<Map<DateTime, int>> _selectedDaysNotifier;
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
@@ -48,21 +50,24 @@ class _SetDutiesViewState extends State<SetDutiesView> {
 
   Future<void> _loadPreferences() async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(widget.roomId)
-          .collection('preferences')
-          .doc(widget.doctorName) // Doktor indexi yerine ismini kullanıyoruz
-          .get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .collection('preferences')
+              .doc(
+                widget.doctorName,
+              ) // Doktor indexi yerine ismini kullanıyoruz
+              .get();
 
       if (doc.exists) {
         final data = doc.data()!;
         _shiftsController.text = data['shiftsCount'].toString();
-        
+
         if (data['availability'] != null) {
           final List<int> availability = List<int>.from(data['availability']);
           final Map<DateTime, int> selectedDays = {};
-          
+
           DateTime current = widget.firstDay;
           for (int i = 0; i < availability.length; i++) {
             if (availability[i] != 0) {
@@ -75,10 +80,12 @@ class _SetDutiesViewState extends State<SetDutiesView> {
             }
             current = current.add(const Duration(days: 1));
           }
-          
+
           if (mounted) {
             setState(() {
-              _selectedDaysNotifier.value = Map<DateTime, int>.from(selectedDays);
+              _selectedDaysNotifier.value = Map<DateTime, int>.from(
+                selectedDays,
+              );
             });
           }
         }
@@ -114,19 +121,26 @@ class _SetDutiesViewState extends State<SetDutiesView> {
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     // Create a normalized date for consistency
-    final normalizedDate = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
-    
+    final normalizedDate = DateTime(
+      selectedDay.year,
+      selectedDay.month,
+      selectedDay.day,
+    );
+
     // Only allow selection within the valid date range
-    if (normalizedDate.isBefore(widget.firstDay) || normalizedDate.isAfter(widget.lastDay)) {
+    if (normalizedDate.isBefore(widget.firstDay) ||
+        normalizedDate.isAfter(widget.lastDay)) {
       return;
     }
 
     // Create new map with current values
-    final newSelectedDays = Map<DateTime, int>.from(_selectedDaysNotifier.value);
+    final newSelectedDays = Map<DateTime, int>.from(
+      _selectedDaysNotifier.value,
+    );
 
     setState(() {
       _focusedDay = focusedDay;
-      
+
       // Toggle between states: null -> 1 -> -1 -> null
       if (!newSelectedDays.containsKey(normalizedDate)) {
         // Not selected -> Available (+1)
@@ -138,7 +152,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
         // Unavailable -> Not selected (remove)
         newSelectedDays.remove(normalizedDate);
       }
-      
+
       // Update the notifier to trigger UI rebuild
       _selectedDaysNotifier.value = Map<DateTime, int>.from(newSelectedDays);
     });
@@ -147,9 +161,9 @@ class _SetDutiesViewState extends State<SetDutiesView> {
   Map<String, dynamic> _getDutyData() {
     final List<int> availability = [];
     DateTime current = widget.firstDay;
-    
+
     print('Generating availability for ${widget.doctorName}'); // Debug print
-    
+
     while (current.compareTo(widget.lastDay) <= 0) {
       final normalizedDate = DateTime(current.year, current.month, current.day);
       final value = _selectedDaysNotifier.value[normalizedDate] ?? 0;
@@ -158,7 +172,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
     }
 
     final shiftsCount = int.parse(_shiftsController.text);
-    
+
     print('Doctor: ${widget.doctorName}'); // Debug print
     print('Shifts count: $shiftsCount'); // Debug print
     print('Availability array: $availability'); // Debug print
@@ -178,15 +192,20 @@ class _SetDutiesViewState extends State<SetDutiesView> {
     }
   }
 
-  Widget _buildCalendarDay(DateTime date, bool isEnabled, Map<DateTime, int> selectedDays) {
+  Widget _buildCalendarDay(
+    DateTime date,
+    bool isEnabled,
+    Map<DateTime, int> selectedDays,
+  ) {
     final normalizedDate = DateTime(date.year, date.month, date.day);
-    final color = isEnabled 
-        ? (selectedDays.containsKey(normalizedDate)
-            ? selectedDays[normalizedDate] == 1
-                ? const Color(0xFF5C9D5C)  // Green for available
-                : const Color(0xFFCE5A57)  // Red for unavailable
-            : Colors.transparent)
-        : Colors.transparent;
+    final color =
+        isEnabled
+            ? (selectedDays.containsKey(normalizedDate)
+                ? selectedDays[normalizedDate] == 1
+                    ? const Color(0xFF5C9D5C) // Green for available
+                    : const Color(0xFFCE5A57) // Red for unavailable
+                : Colors.transparent)
+            : Colors.transparent;
 
     return Container(
       margin: const EdgeInsets.all(4.0),
@@ -194,16 +213,18 @@ class _SetDutiesViewState extends State<SetDutiesView> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
-        border: isEnabled && color == Colors.transparent 
-            ? Border.all(color: Colors.grey[600]!, width: 1)
-            : null,
+        border:
+            isEnabled && color == Colors.transparent
+                ? Border.all(color: Colors.grey[600]!, width: 1)
+                : null,
       ),
       child: Text(
         '${date.day}',
         style: TextStyle(
-          color: isEnabled 
-              ? (color == Colors.transparent ? Colors.white : Colors.black)
-              : Colors.grey,
+          color:
+              isEnabled
+                  ? (color == Colors.transparent ? Colors.white : Colors.black)
+                  : Colors.grey,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -215,9 +236,13 @@ class _SetDutiesViewState extends State<SetDutiesView> {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       appBar: AppBar(
-        title: Text('Set Duties - ${widget.doctorName}'),
+        title: Text(
+          'Set Duties - ${widget.doctorName}',
+          style: const TextStyle(color: Colors.white), // Title text white
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white), // Back icon white
       ),
       body: Column(
         children: [
@@ -259,7 +284,8 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                   lastDay: widget.lastDay,
                   focusedDay: _focusedDay,
                   calendarFormat: _calendarFormat,
-                  selectedDayPredicate: (day) => _selectedDaysNotifier.value.containsKey(day),
+                  selectedDayPredicate:
+                      (day) => _selectedDaysNotifier.value.containsKey(day),
                   onDaySelected: _onDaySelected,
                   onPageChanged: (focusedDay) {
                     setState(() {
@@ -268,9 +294,18 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                   },
                   enabledDayPredicate: (day) {
                     final compareDate = DateTime(day.year, day.month, day.day);
-                    final firstDate = DateTime(widget.firstDay.year, widget.firstDay.month, widget.firstDay.day);
-                    final lastDate = DateTime(widget.lastDay.year, widget.lastDay.month, widget.lastDay.day);
-                    return !compareDate.isBefore(firstDate) && !compareDate.isAfter(lastDate);
+                    final firstDate = DateTime(
+                      widget.firstDay.year,
+                      widget.firstDay.month,
+                      widget.firstDay.day,
+                    );
+                    final lastDate = DateTime(
+                      widget.lastDay.year,
+                      widget.lastDay.month,
+                      widget.lastDay.day,
+                    );
+                    return !compareDate.isBefore(firstDate) &&
+                        !compareDate.isAfter(lastDate);
                   },
                   calendarStyle: CalendarStyle(
                     selectedDecoration: const BoxDecoration(
@@ -291,16 +326,32 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                     formatButtonVisible: false,
                     titleCentered: true,
                     titleTextStyle: TextStyle(color: Colors.white),
-                    leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
-                    rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+                    leftChevronIcon: Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                    ),
+                    rightChevronIcon: Icon(
+                      Icons.chevron_right,
+                      color: Colors.white,
+                    ),
                   ),
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, date, _) {
-                      final isEnabled = !date.isBefore(widget.firstDay) && !date.isAfter(widget.lastDay);
-                      return _buildCalendarDay(date, isEnabled, _selectedDaysNotifier.value);
+                      final isEnabled =
+                          !date.isBefore(widget.firstDay) &&
+                          !date.isAfter(widget.lastDay);
+                      return _buildCalendarDay(
+                        date,
+                        isEnabled,
+                        _selectedDaysNotifier.value,
+                      );
                     },
                     selectedBuilder: (context, date, _) {
-                      return _buildCalendarDay(date, true, _selectedDaysNotifier.value);
+                      return _buildCalendarDay(
+                        date,
+                        true,
+                        _selectedDaysNotifier.value,
+                      );
                     },
                   ),
                 );
@@ -334,19 +385,14 @@ class _SetDutiesViewState extends State<SetDutiesView> {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: color == Colors.transparent 
-                ? Border.all(color: Colors.grey[600]!, width: 1)
-                : null,
+            border:
+                color == Colors.transparent
+                    ? Border.all(color: Colors.grey[600]!, width: 1)
+                    : null,
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
   }

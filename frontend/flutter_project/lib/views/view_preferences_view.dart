@@ -16,10 +16,15 @@ class ViewPreferencesView extends StatelessWidget {
     final shiftsCount = preferences['shiftsCount'] as int;
     final availability = List<int>.from(preferences['availability'] as List);
 
-    // Get the room's date range from the availability array length
-    final now = DateTime.now();
-    final firstDay = DateTime(now.year, now.month, now.day);
-    final lastDay = firstDay.add(Duration(days: availability.length - 1));
+    // Parse firstDay with null check and fallback
+    final firstDay =
+        preferences['firstDay'] != null
+            ? DateTime.parse(preferences['firstDay'] as String)
+            : DateTime.now();
+    final lastDay =
+        preferences['lastDay'] != null
+            ? DateTime.parse(preferences['lastDay'] as String)
+            : firstDay.add(Duration(days: availability.length - 1));
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),

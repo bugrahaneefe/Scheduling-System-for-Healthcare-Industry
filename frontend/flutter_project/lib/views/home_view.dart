@@ -39,7 +39,18 @@ class _HomeViewState extends State<HomeView>
     return Stack(
       children: [
         Scaffold(
-          appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: const IconThemeData(
+              color: Colors.white,
+            ), // Set back icon color to white
+            titleTextStyle: const TextStyle(
+              color: Colors.white, // Set title color to white
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           bottomNavigationBar: TabBar(
             controller: _tabController,
             labelColor: Colors.white,

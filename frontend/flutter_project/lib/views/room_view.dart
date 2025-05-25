@@ -112,6 +112,21 @@ class _RoomViewState extends State<RoomView> {
 
   Future<void> _loadAllDoctorPreferences() async {
     try {
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
+      if (!roomDoc.exists) {
+        print('Room document not found');
+        return;
+      }
+
+      final roomData = roomDoc.data()!;
+      final firstDay = roomData['firstDay'] as String;
+      final lastDay = roomData['lastDay'] as String;
+
       final preferencesSnapshot =
           await FirebaseFirestore.instance
               .collection('rooms')
@@ -122,11 +137,9 @@ class _RoomViewState extends State<RoomView> {
       setState(() {
         _doctorPreferences.clear();
         for (var doc in preferencesSnapshot.docs) {
-          // Doktor ismini doğrudan document ID olarak kullanıyoruz
           final doctorName = doc.id;
           final data = doc.data();
 
-          // Doktor hala odada var mı kontrol ediyoruz
           if (_participants.any((p) => p['name'] == doctorName)) {
             final List<int> availability =
                 (data['availability'] as List<dynamic>?)
@@ -134,12 +147,14 @@ class _RoomViewState extends State<RoomView> {
                     .toList() ??
                 [];
 
-            // İndex yerine doktor ismi ile saklıyoruz
+            // Always include firstDay and lastDay from room document
             _doctorPreferences[_participants.indexWhere(
               (p) => p['name'] == doctorName,
             )] = {
               'shiftsCount': data['shiftsCount'] as int,
               'availability': availability,
+              'firstDay': firstDay,
+              'lastDay': lastDay,
             };
           }
         }
@@ -1897,13 +1912,12 @@ class _RoomViewState extends State<RoomView> {
               shape: BoxShape.circle,
             ),
           ),
-          if (participant['userId']?.isNotEmpty ==
-              true) // Sadece atanmış kullanıcılar için
+          if (participant['userId']?.isNotEmpty == true)
             TextButton(
               onPressed:
-                  isCurrentUser // Kendisi ise (host olsa bile)
+                  isCurrentUser
                       ? () => _openSetDutiesScreen(participant, index)
-                      : hasPreferences // Kendisi değilse ve preferences varsa
+                      : hasPreferences
                       ? () {
                         Navigator.push(
                           context,
@@ -1916,7 +1930,7 @@ class _RoomViewState extends State<RoomView> {
                           ),
                         );
                       }
-                      : null, // Kendisi değilse ve preferences yoksa butonu devre dışı bırak
+                      : null,
               child: Text(
                 isCurrentUser
                     ? hasPreferences
