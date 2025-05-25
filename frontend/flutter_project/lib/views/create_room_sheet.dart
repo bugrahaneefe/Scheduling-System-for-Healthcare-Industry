@@ -208,26 +208,21 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
     // Validate dates
     if (firstDay.isBefore(todayNormalized)) {
-      setState(() {
-        _errorMessage = 'First day cannot be before today';
-      });
+      await _showErrorDialog('First day cannot be before today');
       return;
     }
 
     if (!lastDay.isAfter(firstDay)) {
-      setState(() {
-        _errorMessage = 'Last day must be after first day';
-      });
+      await _showErrorDialog('Last day must be after first day');
       return;
     }
 
     // Add validation for consecutive days' shifts
     final doctorCount = _selectedParticipants.length;
     if (!_validateConsecutiveDaysShifts(_dailyShifts, doctorCount)) {
-      setState(() {
-        _errorMessage =
-            'The sum of shifts for any two consecutive days cannot exceed the total number of doctors';
-      });
+      await _showErrorDialog(
+        'The sum of shifts for any two consecutive days cannot exceed the total number of doctors',
+      );
       return;
     }
 
@@ -241,7 +236,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       final formattedFirstDay = _formatDate(firstDay);
       final formattedLastDay = _formatDate(lastDay);
 
-      // Create room document with normalized dates
+      // Create room document
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
         'name': _nameController.text,
         'description': _descriptionController.text,
@@ -264,14 +259,34 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to create room: $e';
-      });
+      if (mounted) {
+        await _showErrorDialog('Failed to create room: $e');
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  Future<void> _showErrorDialog(String message) async {
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E2E),
+            title: const Text('Error', style: TextStyle(color: Colors.white)),
+            content: Text(message, style: const TextStyle(color: Colors.white)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK', style: TextStyle(color: Colors.blue)),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -479,15 +494,6 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                           )
                           : const Text('Create Room'),
                 ),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
               ],
             ),
           ),
