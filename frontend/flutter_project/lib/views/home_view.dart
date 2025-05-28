@@ -167,7 +167,12 @@ class _HomeViewState extends State<HomeView>
                                             fontWeight: FontWeight.bold,
                                           ),
                                         )
-                                        : const CircularProgressIndicator(),
+                                        : const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF1D61E7),
+                                              ),
+                                        ),
                                     const SizedBox(height: 4),
                                     authVM.currentUser?.title != null
                                         ? Text(
@@ -177,7 +182,12 @@ class _HomeViewState extends State<HomeView>
                                             fontSize: 16,
                                           ),
                                         )
-                                        : const CircularProgressIndicator(),
+                                        : const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF1D61E7),
+                                              ),
+                                        ),
                                     const SizedBox(height: 8),
                                   ],
                                 ),
@@ -258,8 +268,12 @@ class _HomeViewState extends State<HomeView>
                                           return const SizedBox(
                                             height: 200,
                                             child: Center(
-                                              child:
-                                                  CircularProgressIndicator(),
+                                              child: CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Color(0xFF1D61E7)),
+                                              ),
                                             ),
                                           );
                                         }
@@ -302,7 +316,11 @@ class _HomeViewState extends State<HomeView>
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF1D61E7),
+                                  ),
+                                ),
                               );
                             }
 
