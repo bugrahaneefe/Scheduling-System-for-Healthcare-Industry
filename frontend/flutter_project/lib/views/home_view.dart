@@ -439,26 +439,48 @@ class _HomeViewState extends State<HomeView>
               ),
               direction: DismissDirection.endToStart,
               confirmDismiss: (direction) async {
-                return await showDialog(
+                return await showDialog<bool>(
                   context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Confirm Delete'),
-                      content: const Text(
-                        'Are you sure you want to delete this room?',
+                  builder:
+                      (_) => AlertDialog(
+                        backgroundColor: Colors.white, // white dialog
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        title: const Text(
+                          'Confirm Delete',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        content: const Text(
+                          'Are you sure you want to delete this room?',
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                        actions: [
+                          // ­— CANCEL: text-only, brand-blue label ­—
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(color: Color(0xFF1D61E7)),
+                            ),
+                          ),
+
+                          // ­— DELETE: filled brand-blue button with white text ­—
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFF1D61E7),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    );
-                  },
                 );
               },
               onDismissed: (direction) async {
