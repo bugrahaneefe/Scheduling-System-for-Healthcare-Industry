@@ -330,6 +330,7 @@ class _RoomViewState extends State<RoomView> {
         context: context,
         builder:
             (context) => AlertDialog(
+              backgroundColor: Colors.white,
               title: const Text('Remove Assignment'),
               content: Text(
                 'Do you want to remove the assigned user from ${participant['name']}?',
@@ -337,10 +338,20 @@ class _RoomViewState extends State<RoomView> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.black, // black “Cancel” text
+                  ),
                   child: const Text('Cancel'),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red, // red background
+                    foregroundColor: Colors.white, // white “Remove” text
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                   child: const Text('Remove'),
                 ),
               ],

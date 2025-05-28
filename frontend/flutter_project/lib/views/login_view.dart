@@ -106,7 +106,7 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
-      resizeToAvoidBottomInset: false, // Add this line
+      resizeToAvoidBottomInset: true, // Add this line
       appBar: AppBar(
         title: null, // Removed the title
       ),
@@ -205,6 +205,7 @@ class _LoginViewState extends State<LoginView> {
                           children: [
                             // Email field
                             TextFormField(
+                              cursorColor: Color(0xFF1D61E7),
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.mail,
@@ -226,6 +227,7 @@ class _LoginViewState extends State<LoginView> {
                             const SizedBox(height: 10),
                             // Password field
                             TextFormField(
+                              cursorColor: Color(0xFF1D61E7),
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock,
@@ -374,12 +376,14 @@ class _LoginViewState extends State<LoginView> {
                   // Add this at the end of the Stack children list
                   if (_isLoading)
                     Positioned.fill(
-                      child: Container(
-                        color: Colors.black,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                      child: AbsorbPointer(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                         ),
