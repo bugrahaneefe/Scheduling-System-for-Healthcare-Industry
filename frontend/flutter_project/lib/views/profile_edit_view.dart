@@ -105,69 +105,97 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                   children: [
                     TextFormField(
                       controller: _nameController,
+                      cursorColor: Colors.black,
                       style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Name',
                         labelStyle: TextStyle(color: Colors.black),
                         prefixIcon: Icon(Icons.person, color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black, width: 2),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _titleController,
+                      cursorColor: Colors.black,
                       style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Title',
                         labelStyle: TextStyle(color: Colors.black),
                         prefixIcon: Icon(Icons.work, color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black, width: 2),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     Theme(
-                      data: Theme.of(
-                        context,
-                      ).copyWith(canvasColor: Colors.white),
+                      data: Theme.of(context).copyWith(
+                        canvasColor: Colors.white,
+                        textSelectionTheme: const TextSelectionThemeData(
+                          cursorColor: Colors.black,
+                          selectionHandleColor: Colors.black,
+                        ),
+                      ),
                       child: IntlPhoneField(
                         controller: _phoneController,
                         initialCountryCode: 'TR',
                         style: const TextStyle(color: Colors.black),
                         dropdownTextStyle: const TextStyle(color: Colors.black),
-                        dropdownIcon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.black,
-                        ),
+                        cursorColor: Colors.black,
+                        dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.black),
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
                           labelStyle: const TextStyle(color: Colors.black),
                           hintText: widget.user.phoneNumber,
-                          prefixIcon: const Icon(
-                            Icons.phone,
-                            color: Colors.black,
+                          prefixIcon: const Icon(Icons.phone, color: Colors.black),
+                          border: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black),
                           ),
-                          border: const OutlineInputBorder(),
+                          enabledBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black, width: 2),
+                          ),
                         ),
                         pickerDialogStyle: PickerDialogStyle(
-                          backgroundColor: Colors.white, // sheet background
-                          countryCodeStyle: const TextStyle(
-                            color: Colors.black,
-                          ),
-                          countryNameStyle: const TextStyle(
-                            color: Colors.black,
-                          ),
+                          backgroundColor: Colors.white,
+                          countryCodeStyle: const TextStyle(color: Colors.black),
+                          countryNameStyle: const TextStyle(color: Colors.black),
                           listTileDivider: const Divider(color: Colors.grey),
+                          searchFieldInputDecoration: InputDecoration(
+                            labelText: 'Search country',
+                            labelStyle: const TextStyle(color: Colors.black),
+                            suffixIcon: const Icon(Icons.search, color: Colors.black),
+                            enabledBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black),
+                            ),
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.black, width: 2),
+                            ),
+                          ),
+                          searchFieldCursorColor: Colors.black,
                           listTilePadding: const EdgeInsets.symmetric(
                             vertical: 8,
                             horizontal: 16,
                           ),
                           padding: const EdgeInsets.all(8),
-                          searchFieldCursorColor: Colors.black,
-                          searchFieldPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                          width:
-                              MediaQuery.of(context).size.width *
-                              0.9, // optional
+                          width: MediaQuery.of(context).size.width * 0.9,
                         ),
                         onChanged: (phone) {
                           _completePhoneNumber = phone.completeNumber;
