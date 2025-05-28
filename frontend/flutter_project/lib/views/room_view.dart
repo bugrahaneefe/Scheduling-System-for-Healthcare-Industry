@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'package:project491/views/home_view.dart';
 import 'package:project491/views/preview_schedule_view.dart';
 import 'package:project491/views/set_duties_view.dart';
 import 'package:project491/views/view_preferences_view.dart';
@@ -864,13 +863,28 @@ class _RoomViewState extends State<RoomView> {
                       itemBuilder: (context, dayIndex) {
                         final date = weekSchedule.keys.toList()[dayIndex];
                         final assignments = weekSchedule[date]!;
+                        final parts = date.split('.');
+                        final dt = DateTime(
+                          int.parse(parts[2]),
+                          int.parse(parts[1]),
+                          int.parse(parts[0]),
+                        );
+                        final weekdayNames = [
+                          'Monday',
+                          'Tuesday',
+                          'Wednesday',
+                          'Thursday',
+                          'Friday',
+                          'Saturday',
+                          'Sunday',
+                        ];
                         return Column(
                           children: [
                             ListTile(
                               title: Row(
                                 children: [
                                   Text(
-                                    date,
+                                    '$date ${weekdayNames[dt.weekday - 1]}',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500,
@@ -1819,15 +1833,16 @@ class _RoomViewState extends State<RoomView> {
         print('Final schedule: $schedule'); // Debug print
 
         Navigator.pop(context); // Remove loading dialog
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => PreviewScheduleView(
+        final result = await Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder:
+                (_, __, ___) => PreviewScheduleView(
                   participants: _participants,
                   roomId: widget.roomId,
                   scheduleData: schedule,
                 ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
         );
 
@@ -2008,8 +2023,33 @@ class _RoomViewState extends State<RoomView> {
 
                         final data =
                             snapshot.data!.data() as Map<String, dynamic>;
-                        final firstDay = data['firstDay'] ?? '';
-                        final lastDay = data['lastDay'] ?? '';
+                        final firstDayStr = data['firstDay'] ?? '';
+                        final lastDayStr = data['lastDay'] ?? '';
+                        const _weekdayNames = [
+                          'Mon',
+                          'Tue',
+                          'Wed',
+                          'Thu',
+                          'Fri',
+                          'Sat',
+                          'Sun',
+                        ];
+
+                        DateTime? fd, ld;
+                        try {
+                          fd = DateTime.parse(firstDayStr);
+                          ld = DateTime.parse(lastDayStr);
+                        } catch (_) {}
+
+                        // build the display strings
+                        final firstDisplay =
+                            fd != null
+                                ? '${_weekdayNames[fd.weekday - 1]} $firstDayStr'
+                                : firstDayStr;
+                        final lastDisplay =
+                            ld != null
+                                ? '${_weekdayNames[ld.weekday - 1]} $lastDayStr'
+                                : lastDayStr;
 
                         return Container(
                           width: double.infinity,
@@ -2026,7 +2066,7 @@ class _RoomViewState extends State<RoomView> {
                             children: [
                               // top row: “first - last”
                               Text(
-                                '$firstDay  /  $lastDay',
+                                '$firstDisplay  /  $lastDisplay',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
