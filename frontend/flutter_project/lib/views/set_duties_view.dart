@@ -25,6 +25,7 @@ class SetDutiesView extends StatefulWidget {
 }
 
 class _SetDutiesViewState extends State<SetDutiesView> {
+  final FocusNode _shiftsFocus = FocusNode();
   TextEditingController? _shiftsController;
   late ValueNotifier<Map<DateTime, int>> _selectedDaysNotifier;
   late CalendarFormat _calendarFormat;
@@ -42,6 +43,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
 
   @override
   void dispose() {
+    _shiftsFocus.dispose();
     _selectedDaysNotifier.dispose();
     _shiftsController?.dispose();
     super.dispose();
@@ -247,7 +249,8 @@ class _SetDutiesViewState extends State<SetDutiesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1B),
+      backgroundColor: const Color(0x1E1E1E),
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           'Set Duties - ${widget.doctorName}',
@@ -255,136 +258,179 @@ class _SetDutiesViewState extends State<SetDutiesView> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white), // Back icon white
+        leading: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ), // Back icon white
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _shiftsController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Number of Shifts',
-                labelStyle: TextStyle(color: Colors.white60),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white60),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(), // Dismiss keyboard
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                focusNode: _shiftsFocus, //  ← NEW
+                controller: _shiftsController,
+                keyboardType:
+                    const TextInputType //  ← keep the pure numeric pad
+                    .numberWithOptions(signed: false, decimal: false),
+                textInputAction:
+                    TextInputAction.done, //  ← shows “Done” / ✅ key
+                onEditingComplete:
+                    () => _shiftsFocus.unfocus(), // closes on iOS
+                onSubmitted: (_) => _shiftsFocus.unfocus(), // closes on Android
+                style: const TextStyle(color: Colors.white),
+                cursorColor: Colors.white,
+                decoration: const InputDecoration(
+                  labelText: 'Number of Shifts',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white60),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildLegendItem(const Color(0xFF5C9D5C), 'Available'),
-                _buildLegendItem(const Color(0xFFCE5A57), 'Unavailable'),
-                _buildLegendItem(Colors.transparent, 'No Preference'),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildLegendItem(const Color(0xFF5C9D5C), 'Available'),
+                  _buildLegendItem(const Color(0xFFCE5A57), 'Unavailable'),
+                  _buildLegendItem(Colors.transparent, 'No Preference'),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder<Map<DateTime, int>>(
-              valueListenable: _selectedDaysNotifier,
-              builder: (context, selectedDays, _) {
-                return TableCalendar(
-                  firstDay: widget.firstDay,
-                  lastDay: widget.lastDay,
-                  focusedDay: _focusedDay,
-                  calendarFormat: _calendarFormat,
-                  selectedDayPredicate:
-                      (day) => _selectedDaysNotifier.value.containsKey(day),
-                  onDaySelected: _onDaySelected,
-                  onPageChanged: (focusedDay) {
-                    setState(() {
-                      _focusedDay = focusedDay;
-                    });
-                  },
-                  enabledDayPredicate: (day) {
-                    final compareDate = DateTime(day.year, day.month, day.day);
-                    final firstDate = DateTime(
-                      widget.firstDay.year,
-                      widget.firstDay.month,
-                      widget.firstDay.day,
-                    );
-                    final lastDate = DateTime(
-                      widget.lastDay.year,
-                      widget.lastDay.month,
-                      widget.lastDay.day,
-                    );
-                    return !compareDate.isBefore(firstDate) &&
-                        !compareDate.isAfter(lastDate);
-                  },
-                  calendarStyle: CalendarStyle(
-                    selectedDecoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.transparent,
+            Expanded(
+              child: ValueListenableBuilder<Map<DateTime, int>>(
+                valueListenable: _selectedDaysNotifier,
+                builder: (context, selectedDays, _) {
+                  return GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    child: TableCalendar(
+                      firstDay: widget.firstDay,
+                      lastDay: widget.lastDay,
+                      focusedDay: _focusedDay,
+                      calendarFormat: _calendarFormat,
+                      selectedDayPredicate:
+                          (day) => _selectedDaysNotifier.value.containsKey(day),
+                      onDaySelected: _onDaySelected,
+                      onPageChanged: (focusedDay) {
+                        setState(() {
+                          _focusedDay = focusedDay;
+                        });
+                      },
+                      enabledDayPredicate: (day) {
+                        final compareDate = DateTime(
+                          day.year,
+                          day.month,
+                          day.day,
+                        );
+                        final firstDate = DateTime(
+                          widget.firstDay.year,
+                          widget.firstDay.month,
+                          widget.firstDay.day,
+                        );
+                        final lastDate = DateTime(
+                          widget.lastDay.year,
+                          widget.lastDay.month,
+                          widget.lastDay.day,
+                        );
+                        return !compareDate.isBefore(firstDate) &&
+                            !compareDate.isAfter(lastDate);
+                      },
+                      calendarStyle: CalendarStyle(
+                        selectedDecoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
+                        ),
+                        todayDecoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.transparent,
+                        ),
+                        selectedTextStyle: const TextStyle(color: Colors.white),
+                        todayTextStyle: const TextStyle(color: Colors.blue),
+                        defaultTextStyle: const TextStyle(color: Colors.white),
+                        weekendTextStyle: const TextStyle(
+                          color: Colors.white70,
+                        ),
+                        disabledTextStyle: const TextStyle(color: Colors.grey),
+                      ),
+                      headerStyle: const HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                        titleTextStyle: TextStyle(color: Colors.white),
+                        leftChevronIcon: Icon(
+                          Icons.chevron_left,
+                          color: Colors.white,
+                        ),
+                        rightChevronIcon: Icon(
+                          Icons.chevron_right,
+                          color: Colors.white,
+                        ),
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                        defaultBuilder: (context, date, _) {
+                          final isEnabled =
+                              !date.isBefore(widget.firstDay) &&
+                              !date.isAfter(widget.lastDay);
+                          return _buildCalendarDay(
+                            date,
+                            isEnabled,
+                            _selectedDaysNotifier.value,
+                          );
+                        },
+                        selectedBuilder: (context, date, _) {
+                          return _buildCalendarDay(
+                            date,
+                            true,
+                            _selectedDaysNotifier.value,
+                          );
+                        },
+                      ),
                     ),
-                    todayDecoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.transparent,
-                    ),
-                    selectedTextStyle: const TextStyle(color: Colors.white),
-                    todayTextStyle: const TextStyle(color: Colors.blue),
-                    defaultTextStyle: const TextStyle(color: Colors.white),
-                    weekendTextStyle: const TextStyle(color: Colors.white70),
-                    disabledTextStyle: const TextStyle(color: Colors.grey),
-                  ),
-                  headerStyle: const HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                    titleTextStyle: TextStyle(color: Colors.white),
-                    leftChevronIcon: Icon(
-                      Icons.chevron_left,
-                      color: Colors.white,
-                    ),
-                    rightChevronIcon: Icon(
-                      Icons.chevron_right,
-                      color: Colors.white,
-                    ),
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, date, _) {
-                      final isEnabled =
-                          !date.isBefore(widget.firstDay) &&
-                          !date.isAfter(widget.lastDay);
-                      return _buildCalendarDay(
-                        date,
-                        isEnabled,
-                        _selectedDaysNotifier.value,
-                      );
-                    },
-                    selectedBuilder: (context, date, _) {
-                      return _buildCalendarDay(
-                        date,
-                        true,
-                        _selectedDaysNotifier.value,
-                      );
-                    },
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _handleSave,
-                    child: const Text('Save Preferences'),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1D61E7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: _handleSave,
+                      child: const Text('Save Preferences'),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
