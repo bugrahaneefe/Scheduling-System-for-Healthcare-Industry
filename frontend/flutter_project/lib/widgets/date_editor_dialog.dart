@@ -24,16 +24,13 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // If firstDay is before today, set to today
     if (widget.firstDay.isBefore(today)) {
       _firstDay = today;
-      // If lastDay is before or same as today, set to tomorrow
-      if (widget.lastDay.isBefore(today) ||
-          widget.lastDay.isAtSameMomentAs(today)) {
-        _lastDay = today.add(const Duration(days: 1));
-      } else {
-        _lastDay = widget.lastDay;
-      }
+      _lastDay =
+          widget.lastDay.isBefore(today) ||
+                  widget.lastDay.isAtSameMomentAs(today)
+              ? today.add(const Duration(days: 1))
+              : widget.lastDay;
     } else {
       _firstDay = widget.firstDay;
       _lastDay = widget.lastDay;
@@ -43,10 +40,10 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color(0xFF1E1E2E),
+      backgroundColor: Colors.white,
       title: const Text(
         'Edit Room Dates',
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.black),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -54,11 +51,11 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
           ListTile(
             title: const Text(
               'First Day',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.black),
             ),
             subtitle: Text(
               _formatDate(_firstDay),
-              style: const TextStyle(color: Colors.white70),
+              style: const TextStyle(color: Colors.black54),
             ),
             onTap: () async {
               final now = DateTime.now();
@@ -71,9 +68,9 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.dark(
-                        primary: Colors.blue,
-                        surface: Color(0xFF1E1E2E),
+                      colorScheme: const ColorScheme.light(
+                        primary: Color(0xFF1D61E7),
+                        surface: Colors.white,
                       ),
                     ),
                     child: child!,
@@ -91,11 +88,11 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
           ListTile(
             title: const Text(
               'Last Day',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.black),
             ),
             subtitle: Text(
               _formatDate(_lastDay),
-              style: const TextStyle(color: Colors.white70),
+              style: const TextStyle(color: Colors.black54),
             ),
             onTap: () async {
               final DateTime? picked = await showDatePicker(
@@ -106,9 +103,9 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.dark(
-                        primary: Colors.blue,
-                        surface: Color(0xFF1E1E2E),
+                      colorScheme: const ColorScheme.light(
+                        primary: Color(0xFF1D61E7),
+                        surface: Colors.white,
                       ),
                     ),
                     child: child!,
@@ -125,16 +122,22 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+          child: const Text('Cancel', style: TextStyle(color: Colors.black)),
         ),
         TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: const Color(0xFF1D61E7),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
           onPressed: () {
             Navigator.pop(context, {
               'firstDay': _firstDay,
               'lastDay': _lastDay,
             });
           },
-          child: const Text('Save', style: TextStyle(color: Colors.blue)),
+          child: const Text('Save', style: TextStyle(color: Colors.white)),
         ),
       ],
     );

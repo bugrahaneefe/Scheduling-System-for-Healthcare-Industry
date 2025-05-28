@@ -1206,16 +1206,12 @@ class _RoomViewState extends State<RoomView> {
         return;
       }
 
-      // Show warning dialog before proceeding
       final bool? shouldProceed = await showDialog<bool>(
         context: context,
         builder:
             (context) => AlertDialog(
-              backgroundColor: const Color(0xFF1E1E2E),
-              title: const Text(
-                'Warning',
-                style: TextStyle(color: Colors.white),
-              ),
+              backgroundColor: Colors.white,
+              title: const Text('Warning'),
               content: const Text(
                 'Changing room dates will reset:\n\n'
                 '• All doctors\' duty preferences\n'
@@ -1223,21 +1219,24 @@ class _RoomViewState extends State<RoomView> {
                 '• Daily required shifts (will be set to 1)\n'
                 '• Any existing schedule\n\n'
                 'Do you want to continue?',
-                style: TextStyle(color: Colors.white),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Text('Cancel'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.black),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Color(0xFF1D61E7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                   child: const Text(
                     'Continue',
-                    style: TextStyle(color: Color(0xFF1D61E7)),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -1250,92 +1249,6 @@ class _RoomViewState extends State<RoomView> {
       final firstDay = DateTime.parse(data['firstDay'] as String);
       final lastDay = DateTime.parse(data['lastDay'] as String);
 
-      // --- Show First Day and Last Day as two rows ---
-      FutureBuilder<DocumentSnapshot>(
-        future:
-            FirebaseFirestore.instance
-                .collection('rooms')
-                .doc(widget.roomId)
-                .get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(height: 32);
-          }
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const SizedBox(height: 32);
-          }
-          final data = snapshot.data!.data() as Map<String, dynamic>;
-          final firstDay = data['firstDay'] ?? '';
-          final lastDay = data['lastDay'] ?? '';
-          return Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: Color(0xFF1D61E7).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      color: Color(0xFF1D61E7),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'First Day: ',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      firstDay,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      color: Color(0xFF1D61E7),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Last Day: ',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      lastDay,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      );
-      // --- END BLOCK ---
-
-      // Rest of existing date editor code...
       final result = await showDialog<Map<String, DateTime>>(
         context: context,
         builder:
@@ -1343,23 +1256,15 @@ class _RoomViewState extends State<RoomView> {
       );
 
       if (result != null) {
-        // Format dates to YYYY-MM-DD
         final newFirstDay =
             '${result['firstDay']!.year}-${result['firstDay']!.month.toString().padLeft(2, '0')}-${result['firstDay']!.day.toString().padLeft(2, '0')}';
         final newLastDay =
             '${result['lastDay']!.year}-${result['lastDay']!.month.toString().padLeft(2, '0')}-${result['lastDay']!.day.toString().padLeft(2, '0')}';
 
-        // Calculate number of days between new dates
         final daysDifference =
             result['lastDay']!.difference(result['firstDay']!).inDays + 1;
+        final List<int> newDailyShifts = List.filled(daysDifference, 1);
 
-        // Create new arrays with proper length
-        final List<int> newDailyShifts = List.filled(
-          daysDifference,
-          1,
-        ); // Default value of 1 shift per day
-
-        // Show progress dialog
         if (mounted) {
           showDialog(
             context: context,
@@ -1369,7 +1274,6 @@ class _RoomViewState extends State<RoomView> {
           );
         }
 
-        // Update room dates and arrays
         await FirebaseFirestore.instance
             .collection('rooms')
             .doc(widget.roomId)
@@ -1379,7 +1283,6 @@ class _RoomViewState extends State<RoomView> {
               'dailyShifts': newDailyShifts,
             });
 
-        // Reset all preferences since date range changed
         final batch = FirebaseFirestore.instance.batch();
         final preferencesSnapshot =
             await FirebaseFirestore.instance
@@ -1387,37 +1290,28 @@ class _RoomViewState extends State<RoomView> {
                 .doc(widget.roomId)
                 .collection('preferences')
                 .get();
-
         for (var doc in preferencesSnapshot.docs) {
           batch.delete(doc.reference);
         }
         await batch.commit();
 
-        // Clear local preferences
         setState(() {
           _doctorPreferences.clear();
         });
 
-        // Also clear any existing schedule
         await FirebaseFirestore.instance
             .collection('rooms')
             .doc(widget.roomId)
             .update({'appliedSchedule': null});
 
-        // Notify all assigned users (except host) about the date change
         final hostParticipant = _participants.firstWhere(
           (p) => p['isHost'] == true,
           orElse: () => <String, dynamic>{},
         );
         final hostUserId = hostParticipant['userId'];
-
         final roomName = widget.roomName;
-        final notificationMessage =
-            'Your host in "$roomName" updated start and end date. Please confirm your preferences.';
-
         final now = DateTime.now();
 
-        // Find all assigned users except host
         final assignedUsers = _participants.where(
           (p) =>
               p['userId'] != null &&
@@ -1425,7 +1319,6 @@ class _RoomViewState extends State<RoomView> {
               p['isHost'] != true,
         );
 
-        // Send notifications to regular users
         for (final user in assignedUsers) {
           final userId = user['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
@@ -1434,7 +1327,8 @@ class _RoomViewState extends State<RoomView> {
                 .doc(userId)
                 .collection('notifications')
                 .add({
-                  'message': notificationMessage,
+                  'message':
+                      'Your host in "$roomName" updated start and end date. Please confirm your preferences.',
                   'roomId': widget.roomId,
                   'roomName': roomName,
                   'timestamp': now,
@@ -1443,7 +1337,6 @@ class _RoomViewState extends State<RoomView> {
           }
         }
 
-        // Send notification to host
         if (hostUserId != null && hostUserId.toString().isNotEmpty) {
           await FirebaseFirestore.instance
               .collection('users')
@@ -1458,30 +1351,45 @@ class _RoomViewState extends State<RoomView> {
               });
         }
 
-        // Dismiss progress dialog
-        if (mounted) {
+        if (mounted && Navigator.canPop(context)) {
           Navigator.pop(context);
+        }
 
-          // Show detailed success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Room dates updated. All preferences and schedules have been reset. '
-                'Please inform doctors to set their preferences again.',
-              ),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 5),
-            ),
+        // Show white popup instead of snackbar
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder:
+                (_) => AlertDialog(
+                  backgroundColor: Colors.white,
+                  title: const Text('Room Updated'),
+                  content: const Text(
+                    'Room dates updated.\n\nAll preferences and schedules have been reset.\n\nPlease inform doctors to set their preferences again.',
+                  ),
+                  actions: [
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Color(0xFF1D61E7),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
           );
         }
 
-        // Reload all room data
         await _refreshRoom();
         await _loadAllDoctorPreferences();
         await _loadSchedules();
       }
     } catch (e) {
-      // Dismiss progress dialog if showing
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
