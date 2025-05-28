@@ -27,15 +27,32 @@ class ViewPreferencesView extends StatelessWidget {
             : firstDay.add(Duration(days: availability.length - 1));
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1B),
+      backgroundColor: const Color(0x1E1E1E),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          '$doctorName\'s Preferences',
-          style: const TextStyle(color: Colors.white),
+        leading: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: FittedBox(
+          fit: BoxFit.scaleDown, //    down only (never up)
+          child: Text(
+            "$doctorName's Preferences",
+            maxLines: 2, // ② keep a single line
+            style: const TextStyle(color: Colors.white),
+            overflow: TextOverflow.ellipsis, // ③ still add “…” if necessary
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -43,10 +60,10 @@ class ViewPreferencesView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.blue.withOpacity(0.1),
+              color: Color(0xFF1D61E7).withOpacity(0.1),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.blue.withOpacity(0.3)),
+                side: BorderSide(color: Colors.white.withOpacity(0.5)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -57,7 +74,7 @@ class ViewPreferencesView extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.work_history,
-                          color: Colors.blue,
+                          color: Color(0xFF1D61E7),
                           size: 24,
                         ),
                         const SizedBox(width: 8),
@@ -90,7 +107,7 @@ class ViewPreferencesView extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.calendar_month,
-                          color: Colors.blue,
+                          color: Color(0xFF1D61E7),
                           size: 24,
                         ),
                         const SizedBox(width: 8),
