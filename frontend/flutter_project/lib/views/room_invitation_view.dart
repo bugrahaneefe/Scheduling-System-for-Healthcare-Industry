@@ -163,17 +163,14 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: const Color(0xFF1D61E7), // Changed to blue background
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.blue.withOpacity(0.3),
-                          ),
                         ),
                         child: Row(
                           children: [
                             const Icon(
                               Icons.person,
-                              color: Colors.blue,
+                              color: Colors.white, // Changed to white icon
                               size: 36,
                             ),
                             const SizedBox(width: 16),
@@ -181,10 +178,10 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Joining as:',
                                     style: TextStyle(
-                                      color: Colors.blue.shade200,
+                                      color: Colors.white, // Changed to white text
                                       fontSize: 14,
                                     ),
                                   ),
@@ -200,7 +197,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                   Text(
                                     _userData?['title'] ?? 'No title',
                                     style: TextStyle(
-                                      color: Colors.blue.shade200,
+                                      color: Colors.white70, // Changed to semi-transparent white
                                       fontSize: 14,
                                     ),
                                   ),
@@ -238,13 +235,23 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               ElevatedButton(
                                 onPressed: _joinRoom,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: const Color(0xFF1D61E7), // Changed to blue background
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 32,
                                     vertical: 16,
                                   ),
                                 ),
-                                child: const Text('Join Room'),
+                                child: _isLoading
+                                    ? const CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      )
+                                    : const Text(
+                                        'Join Room',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.white, // Changed to white text
+                                        ),
+                                      ),
                               ),
                               const SizedBox(height: 16),
                               TextButton(
