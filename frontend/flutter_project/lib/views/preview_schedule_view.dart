@@ -69,24 +69,48 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
   ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Remove Assignment'),
-            content: Text('Remove ${assignment['name']} from $date?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: const Text(
+          'Remove Assignment',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          'Do you want to remove ${assignment['name']} from $date?',
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+            ),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF1D61E7)),
+            ),
           ),
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirm == true) {
@@ -124,27 +148,52 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Add Assignment for $date'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: availableParticipants.length,
-                itemBuilder: (context, index) {
-                  final participant = availableParticipants[index];
-                  return ListTile(
-                    title: Text(participant['name']),
-                    subtitle: Text(
-                      participant['assignedUserName'] ?? 'Unassigned',
-                    ),
-                    onTap: () => Navigator.pop(context, participant),
-                  );
-                },
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: Text(
+          'Add Assignment for $date',
+          style: const TextStyle(color: Colors.black),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: availableParticipants.length,
+            itemBuilder: (context, index) {
+              final participant = availableParticipants[index];
+              return ListTile(
+                title: Text(
+                  participant['name'],
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                subtitle: Text(
+                  participant['assignedUserName'] ?? 'Unassigned',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                onTap: () => Navigator.pop(context, participant),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF1D61E7)),
+            ),
           ),
+        ],
+      ),
     );
 
     if (selectedParticipant != null) {
@@ -261,25 +310,6 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate duty counts for each participant
-    final Map<String, int> dutyCounts = {};
-    widget.scheduleData.forEach((date, doctors) {
-      for (final doctor in doctors) {
-        dutyCounts[doctor] = (dutyCounts[doctor] ?? 0) + 1;
-      }
-    });
-
-    // Optionally, get participant display names from participants list
-    String getDisplayName(String name) {
-      final participant = widget.participants.firstWhere(
-        (p) => p['name'] == name,
-        orElse: () => {'name': name, 'assignedUserName': null},
-      );
-      return participant['assignedUserName'] != null
-          ? '${participant['name']} (${participant['assignedUserName']})'
-          : name;
-    }
-
     // Sort schedule keys (dates)
     List<String> sortedDates = _schedule.keys.toList();
     try {
@@ -368,235 +398,127 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     // DO NOT share this controller between multiple ScrollViews!
     // Instead, create it inside the widget that uses it.
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1B),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Preview Schedule',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
+      backgroundColor: const Color(0x1E1E1E),
+      bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 40.0, bottom: 16.0),
-              child: Card(
-                color: Colors.blue.withOpacity(0.1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 16,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Duties per Participant',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Use a local controller for each Scrollbar/ScrollView pair
-                      SizedBox(
-                        height: 56,
-                        child: Builder(
-                          builder: (context) {
-                            final horizontalScrollController =
-                                ScrollController();
-                            return Stack(
-                              children: [
-                                // Duty chips row
-                                SingleChildScrollView(
-                                  controller: horizontalScrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children:
-                                        dutyCounts.entries.map((entry) {
-                                          return Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 8,
-                                              horizontal: 16,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue.withOpacity(
-                                                0.2,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  getDisplayName(entry.key),
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 4,
-                                                        horizontal: 12,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    entry.value.toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        }).toList(),
-                                  ),
-                                ),
-                                // Scrollbar at the bottom with a little padding
-                                Positioned(
-                                  left: 0,
-                                  right: 0,
-                                  bottom:
-                                      4, // add a little padding from the bottom
-                                  child: Scrollbar(
-                                    controller: horizontalScrollController,
-                                    thumbVisibility: true,
-                                    thickness: 6,
-                                    radius: const Radius.circular(8),
-                                    notificationPredicate: (_) => false,
-                                    child: SizedBox(height: 8),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+        child: ElevatedButton(
+          onPressed: () => _applySchedule(context, _schedule),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1D61E7),
+            minimumSize: const Size.fromHeight(50),
+          ),
+          child: const Text(
+            'Apply Schedule',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white,
             ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: _schedule.length,
-                itemBuilder: (context, index) {
-                  String date = sortedDates[index];
-                  List<Map<String, String>> names = _schedule[date]!;
-
-                  final isToday = date == todayStr;
-
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
-                    color:
-                        isToday
-                            ? Colors.blue.withOpacity(0.25)
-                            : Colors.white.withOpacity(0.1),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            date + (isToday ? " (Today)" : ""),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              backgroundColor:
-                                  isToday
-                                      ? Colors.blue.withOpacity(0.15)
-                                      : null,
-                            ),
-                          ),
-                          const Divider(color: Colors.white30),
-                          ...names.map(
-                            (info) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 4.0,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: const Text(
+                        'Preview Schedule',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),  // Balance the back button
+                ],
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: _schedule.length,
+                  itemBuilder: (context, index) {
+                    String date = sortedDates[index];
+                    List<Map<String, String>> names = _schedule[date]!;
+                    final isToday = date == todayStr;
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      color: Colors.white,  // All cards are now white
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              date + (isToday ? " (Today)" : ""),
+                              style: const TextStyle(  // Black text for all dates
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      '• ${info['name']} (${info['assignedUser']})',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 16,
+                            ),
+                            const Divider(color: Colors.black38),
+                            ...names.map(
+                              (info) => Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '• ${info['name']} (${info['assignedUser']})',
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                      size: 20,
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                      onPressed: () => _removeAssignment(date, info),
                                     ),
-                                    onPressed:
-                                        () => _removeAssignment(date, info),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add, color: Colors.green),
-                            onPressed: () => _showAddAssignmentDialog(date),
-                          ),
-                        ],
+                            IconButton(
+                              icon: Icon(
+                                Icons.add,
+                                color: isToday ? Colors.white : const Color(0xFF1D61E7),
+                              ),
+                              onPressed: () => _showAddAssignmentDialog(date),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () => _applySchedule(context, _schedule),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: const Size.fromHeight(50),
-                ),
-                child: const Text(
-                  'Apply Schedule',
-                  style: TextStyle(fontSize: 18),
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
