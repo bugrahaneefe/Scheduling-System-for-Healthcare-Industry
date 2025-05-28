@@ -51,54 +51,71 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
           'Reset Password',
           style: TextStyle(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ), // Makes back button white
+        leading: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              'Enter your mail to receive password reset mail',
+              style: TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _emailController,
-              style: const TextStyle(
-                color: Colors.white,
-              ), // Makes input text white
-              decoration: const InputDecoration(
+              style: const TextStyle(color: Colors.black),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
                 labelText: 'Email',
-                labelStyle: TextStyle(
-                  color: Colors.white,
-                ), // Makes label text white
+                labelStyle: TextStyle(color: Colors.black),
                 hintText: 'Enter your email address',
-                hintStyle: TextStyle(
-                  color: Colors.white70,
-                ), // Makes hint text white with opacity
-                prefixIcon: Icon(
-                  Icons.email,
-                  color: Colors.white,
-                ), // Makes icon white
-                enabledBorder: OutlineInputBorder(
+                hintStyle: TextStyle(color: Colors.grey.withOpacity(0.5)),
+                prefixIcon: Icon(Icons.email, color: Color(0xFF1D61E7)),
+                enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
                 ),
-                focusedBorder: OutlineInputBorder(
+                focusedBorder: const OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
                 ),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
+
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.white, // White background
+                backgroundColor: const Color(0xFF1D61E7),
+                foregroundColor: Colors.white,
               ),
               onPressed: _isLoading ? null : _resetPassword,
               child:
                   _isLoading
-                      ? const CircularProgressIndicator()
+                      ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                       : const Text('Send Reset Link'),
             ),
+
             if (_message != null)
               Container(
                 margin: const EdgeInsets.only(top: 16),

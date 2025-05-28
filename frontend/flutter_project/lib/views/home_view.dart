@@ -112,21 +112,17 @@ class _HomeViewState extends State<HomeView>
           bottomNavigationBar: Container(
             decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(
-                top: BorderSide(
-                  color: Colors.black,
-                  width: 0.5,
-                ), // ← black line
-              ),
+              border: Border(top: BorderSide(color: Colors.black, width: 0.5)),
             ),
+            height: 72,
             child: TabBar(
               controller: _tabController,
-              labelColor: Color(0xFF1D61E7), // selected label
-              unselectedLabelColor: Color(0xFF1D61E7), // unselected label
-              indicatorColor: Color(0xFF1D61E7), // underline indicator
+              labelColor: Color(0xFF1D61E7),
+              unselectedLabelColor: Color(0xFF1D61E7),
+              indicatorColor: Color(0xFF1D61E7),
               tabs: const [
-                Tab(icon: Icon(Icons.home)),
-                Tab(icon: Icon(Icons.notifications)),
+                Tab(icon: Icon(Icons.home, size: 44)), // increased size
+                Tab(icon: Icon(Icons.notifications, size: 44)),
               ],
             ),
           ),
@@ -167,7 +163,12 @@ class _HomeViewState extends State<HomeView>
                                             fontWeight: FontWeight.bold,
                                           ),
                                         )
-                                        : const CircularProgressIndicator(),
+                                        : const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF1D61E7),
+                                              ),
+                                        ),
                                     const SizedBox(height: 4),
                                     authVM.currentUser?.title != null
                                         ? Text(
@@ -177,7 +178,12 @@ class _HomeViewState extends State<HomeView>
                                             fontSize: 16,
                                           ),
                                         )
-                                        : const CircularProgressIndicator(),
+                                        : const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF1D61E7),
+                                              ),
+                                        ),
                                     const SizedBox(height: 8),
                                   ],
                                 ),
@@ -258,8 +264,12 @@ class _HomeViewState extends State<HomeView>
                                           return const SizedBox(
                                             height: 200,
                                             child: Center(
-                                              child:
-                                                  CircularProgressIndicator(),
+                                              child: CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Color(0xFF1D61E7)),
+                                              ),
                                             ),
                                           );
                                         }
@@ -290,62 +300,80 @@ class _HomeViewState extends State<HomeView>
                             ),
                           ),
                         ),
-                        StreamBuilder<QuerySnapshot>(
-                          stream:
-                              FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(authService.value.currentUser!.uid)
-                                  .collection('notifications')
-                                  .orderBy('timestamp', descending: true)
-                                  .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            if (!snapshot.hasData ||
-                                snapshot.data!.docs.isEmpty) {
-                              return const Center(
-                                child: Text(
-                                  'No notifications',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              );
-                            }
-
-                            return ListView.builder(
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                final notification = snapshot.data!.docs[index];
-                                final data =
-                                    notification.data() as Map<String, dynamic>;
-                                final timestamp =
-                                    (data['timestamp'] as Timestamp).toDate();
-                                final formattedTime =
-                                    '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
-
-                                return ListTile(
-                                  title: Text(
-                                    data['message'] as String,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    formattedTime,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  leading: Icon(
-                                    data['type'] == 'room_dates_updated_host'
-                                        ? Icons.edit_calendar
-                                        : Icons.calendar_today,
-                                    color: Color(0xFF1D61E7),
+                        RefreshIndicator(
+                          color: Color(0xFF1D61E7),
+                          backgroundColor: Colors.white,
+                          onRefresh: () async {
+                            setState(() {});
+                          },
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream:
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(authService.value.currentUser!.uid)
+                                    .collection('notifications')
+                                    .orderBy('timestamp', descending: true)
+                                    .snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFF1D61E7),
+                                    ),
                                   ),
                                 );
-                              },
-                            );
-                          },
+                              }
+
+                              if (!snapshot.hasData ||
+                                  snapshot.data!.docs.isEmpty) {
+                                return const Center(
+                                  child: Text(
+                                    'No notifications',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }
+
+                              return ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: snapshot.data!.docs.length,
+                                itemBuilder: (context, index) {
+                                  final notification =
+                                      snapshot.data!.docs[index];
+                                  final data =
+                                      notification.data()
+                                          as Map<String, dynamic>;
+                                  final timestamp =
+                                      (data['timestamp'] as Timestamp).toDate();
+                                  final formattedTime =
+                                      '${timestamp.day.toString().padLeft(2, '0')}.${timestamp.month.toString().padLeft(2, '0')}.${timestamp.year} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+
+                                  return ListTile(
+                                    title: Text(
+                                      data['message'] as String,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      formattedTime,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    leading: Icon(
+                                      data['type'] == 'room_dates_updated_host'
+                                          ? Icons.edit_calendar
+                                          : Icons.calendar_today,
+                                      color: Color(0xFF1D61E7),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -358,12 +386,12 @@ class _HomeViewState extends State<HomeView>
         Positioned(
           left: 0,
           right: 0,
-          bottom: 30,
+          bottom: 35,
           child: Container(
             alignment: Alignment.center,
             child: FloatingActionButton(
               backgroundColor: Color(0xFF1D61E7),
-              mini: true,
+              mini: false,
               elevation: 4,
               onPressed: () async {
                 final authVM = Provider.of<AuthViewModel>(
@@ -374,7 +402,7 @@ class _HomeViewState extends State<HomeView>
                   _showCreateRoomSheet(context);
                 }
               },
-              child: const Icon(Icons.add, color: Colors.white),
+              child: const Icon(Icons.add, size: 32, color: Colors.white),
             ),
           ),
         ),

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -64,9 +66,10 @@ class _SignupViewState extends State<SignupView> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        backgroundColor: const Color(0x1E1E1E),
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: null,
+          title: const Text('Sign up', style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: Container(
@@ -102,7 +105,7 @@ class _SignupViewState extends State<SignupView> {
                       const Icon(
                         Icons.calendar_today,
                         size: 48,
-                        color: Color(0xFF375DFB),
+                        color: Color(0xFF1D61E7),
                       ),
                       const SizedBox(height: 20),
                       // "Create Account" text
@@ -141,7 +144,7 @@ class _SignupViewState extends State<SignupView> {
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
-                                color: Color(0xFF4D81E7),
+                                color: Color(0xFF1D61E7),
                               ),
                             ),
                           ),
@@ -180,9 +183,9 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.person,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'full name',
+                                hintText: 'Name & Surname',
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -207,9 +210,9 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.work,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'title',
+                                hintText: 'Job Description',
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -221,35 +224,16 @@ class _SignupViewState extends State<SignupView> {
                               onChanged: authViewModel.updateTitle,
                             ),
                             const SizedBox(height: 10),
-                            // Email field
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(
-                                  Icons.mail,
-                                  color: Color(0xFF375DFB),
-                                ),
-                                hintText: 'email',
-                                hintStyle: TextStyle(color: Colors.grey),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                  horizontal: 10.0,
-                                ),
-                              ),
-                              style: const TextStyle(color: Colors.black),
-                              onChanged: authViewModel.updateEmail,
-                            ),
-                            const SizedBox(height: 10),
                             // Birthday field
                             TextFormField(
                               readOnly: true,
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.calendar_today,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText:
-                                    _selectedBirthday ?? 'select birthday',
+                                    _selectedBirthday ?? 'Select Birthday',
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -261,9 +245,29 @@ class _SignupViewState extends State<SignupView> {
                               onTap: () async {
                                 DateTime? pickedDate = await showDatePicker(
                                   context: context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: DateTime(
+                                    DateTime.now().year - 20,
+                                    DateTime.now().month,
+                                    DateTime.now().day,
+                                  ),
                                   firstDate: DateTime(1900),
                                   lastDate: DateTime.now(),
+                                  builder:
+                                      (context, child) => Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: const Color(
+                                              0xFF1D61E7,
+                                            ), // header & selected day
+                                            onSurface:
+                                                Colors.black, // day numbers
+                                          ),
+                                          dialogBackgroundColor: const Color(
+                                            0xFF1D61E7,
+                                          ), // whole sheet back
+                                        ),
+                                        child: child!,
+                                      ),
                                 );
                                 if (pickedDate != null) {
                                   setState(() {
@@ -275,18 +279,74 @@ class _SignupViewState extends State<SignupView> {
                               },
                             ),
                             const SizedBox(height: 10),
-                            // Phone number field
+                            // Phone number field  ⟵ PUT THIS INSTEAD OF THE OLD TextFormField
+                            Theme(
+                              data: Theme.of(
+                                context,
+                              ).copyWith(canvasColor: Colors.white),
+                              child: IntlPhoneField(
+                                initialCountryCode: 'TR',
+                                style: const TextStyle(color: Colors.black),
+                                dropdownTextStyle: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                                dropdownIcon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: Color(0xFF1D61E7),
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Phone Number',
+                                  labelStyle: const TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                  hintText:
+                                      authViewModel.phoneNumber.isEmpty
+                                          ? '+90 5xx xxx xxxx'
+                                          : authViewModel.phoneNumber,
+                                  prefixIcon: const Icon(
+                                    Icons.phone,
+                                    color: Color(0xFF1D61E7),
+                                  ),
+                                  border: const OutlineInputBorder(),
+                                ),
+                                pickerDialogStyle: PickerDialogStyle(
+                                  backgroundColor: Colors.white,
+                                  countryCodeStyle: const TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                  countryNameStyle: const TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                  listTileDivider: const Divider(
+                                    color: Colors.grey,
+                                  ),
+                                  listTilePadding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 16,
+                                  ),
+                                  padding: const EdgeInsets.all(8),
+                                  searchFieldCursorColor: Color(0xFF1D61E7),
+                                  searchFieldPadding:
+                                      const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                  width: MediaQuery.of(context).size.width * .9,
+                                ),
+                                onChanged:
+                                    (phone) => authViewModel.updatePhoneNumber(
+                                      phone.completeNumber,
+                                    ),
+                              ),
+                            ),
+                            const Divider(color: Colors.black),
+                            // Email field
                             TextFormField(
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ], // Restrict input to digits only
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
-                                  Icons.phone,
-                                  color: Color(0xFF375DFB),
+                                  Icons.mail,
+                                  color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'phone number',
+                                hintText: 'Email',
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -295,9 +355,7 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
-                              onChanged:
-                                  authViewModel
-                                      .updatePhoneNumber, // Add this method in AuthViewModel
+                              onChanged: authViewModel.updateEmail,
                             ),
                             const SizedBox(height: 10),
                             // Password field
@@ -305,9 +363,9 @@ class _SignupViewState extends State<SignupView> {
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'password',
+                                hintText: 'Password',
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -475,7 +533,7 @@ class _SignupViewState extends State<SignupView> {
                   if (_isLoading)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black54,
+                        color: Colors.black,
                         child: const Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(

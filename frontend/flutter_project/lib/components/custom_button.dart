@@ -18,9 +18,11 @@ class CustomButton extends StatelessWidget {
 
     return SizedBox(
       height: buttonType == "main" ? 56 : 48, // Adjust height for main button
-      width: buttonType == "main"
-          ? screenWidth * 0.9 // Slightly smaller than screen width
-          : screenWidth / 3,  // 1/3 of screen width for menu button
+      width:
+          buttonType == "main"
+              ? screenWidth *
+                  0.9 // Slightly smaller than screen width
+              : screenWidth / 3, // 1/3 of screen width for menu button
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -35,7 +37,7 @@ class CustomButton extends StatelessWidget {
           style: const TextStyle(
             color: Colors.white,
             fontSize: 14,
-            fontFamily: 'Inter',     // Ensure Inter is added to pubspec.yaml
+            fontFamily: 'Inter', // Ensure Inter is added to pubspec.yaml
             fontWeight: FontWeight.w500, // Medium weight
           ),
         ),
