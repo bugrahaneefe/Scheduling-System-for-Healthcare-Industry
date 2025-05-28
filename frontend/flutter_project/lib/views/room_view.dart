@@ -545,20 +545,18 @@ class _RoomViewState extends State<RoomView> {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
-                style: TextButton.styleFrom(foregroundColor: Colors.black),
+                style: TextButton.styleFrom(foregroundColor: Color(0xFF1D61E7)),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: TextButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Colors.red, // 🔴 red background
+                  foregroundColor: Colors.white, // white text
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
-                ),
+                child: const Text('Delete'),
               ),
             ],
           ),

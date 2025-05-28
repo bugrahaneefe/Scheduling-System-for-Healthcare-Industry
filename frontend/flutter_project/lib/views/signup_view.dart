@@ -532,13 +532,11 @@ class _SignupViewState extends State<SignupView> {
                   // Add loading indicator overlay
                   if (_isLoading)
                     Positioned.fill(
-                      child: Container(
-                        color: Colors.black,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                      child: AbsorbPointer(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
                           ),
                         ),
                       ),

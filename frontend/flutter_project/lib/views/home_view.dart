@@ -467,17 +467,15 @@ class _HomeViewState extends State<HomeView>
 
                           // ­— DELETE: filled brand-blue button with white text ­—
                           TextButton(
+                            onPressed: () => Navigator.pop(context, true),
                             style: TextButton.styleFrom(
-                              backgroundColor: const Color(0xFF1D61E7),
+                              backgroundColor: Colors.red, // 🔴 red background
+                              foregroundColor: Colors.white, // white text
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                            child: const Text('Delete'),
                           ),
                         ],
                       ),
