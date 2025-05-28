@@ -496,13 +496,32 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Create New Room',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // ← X button
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+
+                    // Title
+                    Expanded(
+                      child: Text(
+                        'Create New Room',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineSmall?.copyWith(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                    // Placeholder to keep title centered:
+                    const SizedBox(width: 48),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 // Modify Room Name field:
