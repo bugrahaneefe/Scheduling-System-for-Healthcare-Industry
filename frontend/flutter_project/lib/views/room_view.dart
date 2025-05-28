@@ -352,22 +352,48 @@ class _RoomViewState extends State<RoomView> {
       }
     } else if (_isHost && !participant['isHost']) {
       // Show options to remove unassigned participant
-      final bool? confirm = await showDialog<bool>(
+      final confirm = await showDialog<bool>(
         context: context,
         builder:
             (context) => AlertDialog(
-              title: const Text('Remove Participant'),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              title: const Text(
+                'Remove Participant',
+                style: TextStyle(color: Colors.black),
+              ),
               content: Text(
                 'Do you want to remove ${participant['name']} from the room?',
+                style: const TextStyle(color: Colors.black87),
               ),
               actions: [
                 TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Color(0xFF1D61E7)),
+                  ),
                 ),
                 TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Remove'),
+                  child: const Text(
+                    'Remove',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
