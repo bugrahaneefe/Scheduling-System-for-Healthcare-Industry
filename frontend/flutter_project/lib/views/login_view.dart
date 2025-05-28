@@ -105,6 +105,7 @@ class _LoginViewState extends State<LoginView> {
     final authViewModel = Provider.of<AuthViewModel>(context);
 
     return Scaffold(
+      backgroundColor: const Color(0x1E1E1E),
       resizeToAvoidBottomInset: true, // Add this line
       appBar: AppBar(
         title: null, // Removed the title
@@ -128,7 +129,7 @@ class _LoginViewState extends State<LoginView> {
                       const Icon(
                         Icons.calendar_today,
                         size: 48,
-                        color: Color(0xFF375DFB),
+                        color: Color(0xFF1D61E7),
                       ),
                       const SizedBox(height: 20),
                       // "Sign in to your Account" text
@@ -171,7 +172,7 @@ class _LoginViewState extends State<LoginView> {
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
-                                color: Color(0xFF4D81E7),
+                                color: Color(0xFF1D61E7),
                               ),
                             ),
                           ),
@@ -204,7 +205,7 @@ class _LoginViewState extends State<LoginView> {
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.mail,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ), // Changed to blue
                                 hintText: 'eng491', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
@@ -225,7 +226,7 @@ class _LoginViewState extends State<LoginView> {
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ), // Changed to blue
                                 hintText: '123456', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
@@ -287,7 +288,6 @@ class _LoginViewState extends State<LoginView> {
                             fontWeight: FontWeight.w500,
                             fontSize: 12,
                             color: Colors.white,
-                            decoration: TextDecoration.underline,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -369,7 +369,7 @@ class _LoginViewState extends State<LoginView> {
                   if (_isLoading)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black54,
+                        color: Colors.black,
                         child: const Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
