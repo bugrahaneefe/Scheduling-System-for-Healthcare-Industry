@@ -90,6 +90,46 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               : (currentLastDay ?? minDate.add(const Duration(days: 1))),
       firstDate: minDate,
       lastDate: DateTime(2030),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF1D61E7),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
+            ),
+            dialogBackgroundColor: Colors.white,
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: Colors.black,
+              selectionColor: Colors.black12,
+              selectionHandleColor: Colors.black,
+            ),
+            inputDecorationTheme: const InputDecorationTheme(
+              labelStyle: TextStyle(color: Colors.black), // Ensure label text is black
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              hintStyle: TextStyle(color: Colors.black), // Ensure "Enter date" text is black
+            ),
+          ),
+          child: Builder(
+            builder: (context) {
+              return child!;
+            },
+          ),
+        );
+      },
     );
 
     if (picked != null) {
@@ -139,6 +179,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               title: const Text('Edit Daily Required Shifts'),
               content: SizedBox(
                 width: double.maxFinite,
@@ -150,25 +191,36 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(color: Colors.black), // Changed to black border
                       ),
                       child: Row(
                         children: [
-                          Expanded(
+                          const Expanded(
                             child: Text(
                               'Set all days to:',
-                              style: TextStyle(color: Colors.black87),
+                              style: TextStyle(color: Colors.black),
                             ),
                           ),
                           SizedBox(
                             width: 60,
                             child: TextFormField(
                               controller: allDaysController,
+                              cursorColor: Colors.black,
                               keyboardType: TextInputType.number,
+                              style: const TextStyle(color: Colors.black),
                               decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
@@ -184,13 +236,17 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               for (int i = 0; i < dayControllers.length; i++) {
                                 dayControllers[i].text = value.toString();
                               }
-                              setStateDialog(
-                                () {},
-                              ); // Rebuild dialog to update fields
+                              setStateDialog(() {});
                             },
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFF1D61E7),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
                             child: const Text(
                               'Apply',
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ],
@@ -215,9 +271,18 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                   width: 60,
                                   child: TextFormField(
                                     controller: dayControllers[index],
+                                    cursorColor: Colors.black,
                                     keyboardType: TextInputType.number,
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black, width: 2),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -233,7 +298,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Done'),
+                  child: const Text('Done', style: TextStyle(color: Colors.black)), // Changed Done button color
                 ),
               ],
             );
@@ -384,7 +449,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       child: SingleChildScrollView(
         child: Container(
           decoration: const BoxDecoration(
-            color: Color(0xFFF5F5F5), // Light gray background
+            color: Colors.white, // Changed background to white
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
           padding: EdgeInsets.fromLTRB(
@@ -408,138 +473,200 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Room Name',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+                // Modify Room Name field:
+                Focus(
+                  child: Builder(
+                    builder: (context) {
+                      return TextFormField(
+                        controller: _nameController,
+                        cursorColor: Colors.black,
+                        style: const TextStyle(color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Room Name',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        validator: (value) => value?.isEmpty == true ? 'Room name is required' : null,
+                      );
+                    },
                   ),
-                  textInputAction: TextInputAction.next,
-                  validator:
-                      (value) =>
-                          value?.isEmpty == true
-                              ? 'Room name is required'
-                              : null,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+                // Modify Description field:
+                Focus(
+                  child: Builder(
+                    builder: (context) {
+                      return TextFormField(
+                        controller: _descriptionController,
+                        cursorColor: Colors.black,
+                        style: const TextStyle(color: Colors.black),
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        maxLines: 3,
+                        validator: (value) => value?.isEmpty == true ? 'Description is required' : null,
+                      );
+                    },
                   ),
-                  textInputAction: TextInputAction.next,
-                  maxLines: 3,
-                  validator:
-                      (value) =>
-                          value?.isEmpty == true
-                              ? 'Description is required'
-                              : null,
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _firstDayController,
-                        decoration: const InputDecoration(
-                          labelText: 'First Day',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(),
+                      child: Focus(
+                        child: Builder(
+                          builder: (context) {
+                            return TextFormField(
+                              controller: _firstDayController,
+                              cursorColor: Colors.black,
+                              style: const TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                labelText: 'First Day',
+                                labelStyle: const TextStyle(color: Colors.black),
+                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                fillColor: Colors.white,
+                                filled: true,
+                              ),
+                              readOnly: true,
+                              onTap: () => _selectDate(context, true),
+                              validator: (value) => value?.isEmpty == true ? 'First day is required' : null,
+                            );
+                          },
                         ),
-                        readOnly: true,
-                        onTap: () => _selectDate(context, true),
-                        validator:
-                            (value) =>
-                                value?.isEmpty == true
-                                    ? 'First day is required'
-                                    : null,
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: TextFormField(
-                        controller: _lastDayController,
-                        decoration: const InputDecoration(
-                          labelText: 'Last Day',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(),
+                      child: Focus(
+                        child: Builder(
+                          builder: (context) {
+                            return TextFormField(
+                              controller: _lastDayController,
+                              cursorColor: Colors.black,
+                              style: const TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                labelText: 'Last Day',
+                                labelStyle: const TextStyle(color: Colors.black),
+                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                fillColor: Colors.white,
+                                filled: true,
+                              ),
+                              readOnly: true,
+                              onTap: () => _selectDate(context, false),
+                              validator: (value) => value?.isEmpty == true ? 'Last day is required' : null,
+                            );
+                          },
                         ),
-                        readOnly: true,
-                        onTap: () => _selectDate(context, false),
-                        validator:
-                            (value) =>
-                                value?.isEmpty == true
-                                    ? 'Last day is required'
-                                    : null,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _defaultShiftsController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Default Number of Shifts',
-                    hintText:
-                        'Enter default number of shifts for each participant',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+                // Modify Default Number of Shifts field:
+                Focus(
+                  child: Builder(
+                    builder: (context) {
+                      return TextFormField(
+                        controller: _defaultShiftsController,
+                        cursorColor: Colors.black,
+                        style: const TextStyle(color: Colors.black),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Default Number of Shifts',
+                          labelStyle: const TextStyle(color: Colors.black),
+                          hintText: 'Enter default number of shifts for each participant',
+                          hintStyle: const TextStyle(color: Colors.black),
+                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          fillColor: Colors.white,
+                          filled: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter default number of shifts';
+                          }
+                          final shifts = int.tryParse(value);
+                          if (shifts == null || shifts < 0) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _defaultShifts = int.tryParse(value) ?? 0;
+                          });
+                        },
+                      );
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter default number of shifts';
-                    }
-                    final shifts = int.tryParse(value);
-                    if (shifts == null || shifts < 0) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      _defaultShifts = int.tryParse(value) ?? 0;
-                    });
-                  },
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _editDailyShifts,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Edit Daily Required Shifts'),
+                  icon: const Icon(Icons.edit, color: Colors.black), // changed to black
+                  label: const Text(
+                    'Edit Daily Required Shifts',
+                    style: TextStyle(color: Colors.black), // changed to black
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.black), // changed to black border
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _participantNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Add Participant',
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(),
+                      child: Focus(
+                        child: Builder(
+                          builder: (context) {
+                            return TextFormField(
+                              controller: _participantNameController,
+                              cursorColor: Colors.black,
+                              style: const TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                labelText: 'Add Participant',
+                                labelStyle: const TextStyle(color: Colors.black),
+                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
+                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                fillColor: Colors.white,
+                                filled: true,
+                              ),
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _addParticipant(_participantNameController.text),
+                            );
+                          },
                         ),
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) {
-                          _addParticipant(_participantNameController.text);
-                        },
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed:
-                          () =>
-                              _addParticipant(_participantNameController.text),
-                      child: const Text('Add'),
+                    Container(
+                      width: 40, // Fixed size for circular button
+                      height: 40,
+                      child: ElevatedButton(
+                        onPressed: () => _addParticipant(_participantNameController.text),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1D61E7),
+                          padding: EdgeInsets.zero,
+                          shape: const CircleBorder(), // Makes the button circular
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -575,22 +702,29 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                 participant['name'] as String,
                                 style: const TextStyle(color: Colors.black87),
                               ),
-                              trailing:
-                                  participant['isHost'] == true
-                                      ? const Chip(label: Text('Host'))
-                                      : IconButton(
-                                        icon: const Icon(
-                                          Icons.remove_circle,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _selectedParticipants.removeAt(
-                                              index,
-                                            );
-                                          });
-                                        },
+                              trailing: participant['isHost'] == true
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1D61E7), // Changed background color
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
+                                      child: const Text(
+                                        'Host',
+                                        style: TextStyle(color: Colors.white), // Changed text color to white
+                                      ),
+                                    )
+                                  : IconButton(
+                                      icon: const Icon(
+                                        Icons.remove_circle, 
+                                        color: Colors.red, // Changed from Color(0xFF1D61E7) to Colors.red
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedParticipants.removeAt(index);
+                                        });
+                                      },
+                                    ),
                             );
                           },
                         ),
@@ -601,14 +735,23 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _createRoom,
-                  child:
-                      _isLoading
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Text('Create Room'),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black, // changed to black
+                          ),
+                        )
+                      : const Text(
+                          'Create Room',
+                          style: TextStyle(color: Colors.black), // changed to black
+                        ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.black), // changed to black border
+                  ),
                 ),
               ],
             ),

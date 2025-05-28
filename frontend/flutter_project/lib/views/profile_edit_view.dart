@@ -182,19 +182,39 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           initialDate: _selectedBirthday ?? DateTime.now(),
                           firstDate: DateTime(1900),
                           lastDate: DateTime.now(),
-                          builder:
-                              (context, child) => Theme(
-                                data: Theme.of(context).copyWith(
-                                  colorScheme: ColorScheme.light(
-                                    primary: const Color(0xFF1D61E7),
-                                    onSurface: Colors.black,
-                                  ),
-                                  dialogBackgroundColor: const Color(
-                                    0xFF1D61E7,
-                                  ),
-                                ),
-                                child: child!,
+                          builder: (context, child) => Theme(
+                            data: ThemeData.light().copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: Color(0xFF1D61E7),
+                                onPrimary: Colors.white,
+                                onSurface: Colors.black,
                               ),
+                              textButtonTheme: TextButtonThemeData(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                ),
+                              ),
+                              dialogBackgroundColor: Colors.white,
+                              textSelectionTheme: const TextSelectionThemeData(
+                                cursorColor: Colors.black,
+                                selectionColor: Colors.black12,
+                              ),
+                              inputDecorationTheme: const InputDecorationTheme(
+                                labelStyle: TextStyle(color: Colors.black),
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
+                                hintStyle: TextStyle(color: Colors.black), // Ensure "Enter date" text is black
+                              ),
+                            ),
+                            child: child!,
+                          ),
                         );
                         if (picked != null)
                           setState(() => _selectedBirthday = picked);
