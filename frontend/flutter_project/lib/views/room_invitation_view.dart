@@ -112,9 +112,30 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
 
       if (userDoc.data()?['rooms']?.contains(widget.roomId) ?? false) {
         if (mounted) {
-          _navigateToRoom(currentUserId);
+          _showAlreadyAssignedDialog(); // Use the dialog here
+          setState(() => _isLoading = false);
+          return;
         }
-        return;
+      }
+
+      // Check if participant is already assigned
+      final roomDoc = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .get();
+      
+      final participants = List<Map<String, dynamic>>.from(roomDoc.data()?['participants'] ?? []);
+      final assignedParticipant = participants.firstWhere(
+        (p) => p['userId'] == currentUserId,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (assignedParticipant.isNotEmpty) {
+        if (mounted) {
+          _showParticipantAssignedDialog(assignedParticipant['name']); // Use the dialog here
+          setState(() => _isLoading = false);
+          return;
+        }
       }
 
       // Add room to user's rooms array
@@ -268,6 +289,70 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                     ],
                   ),
         ),
+      ),
+    );
+  }
+
+  void _showParticipantAssignedDialog(String participantName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: const Text(
+          'Participant Assigned',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          'This participant is already assigned to $participantName.',
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF1D61E7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAlreadyAssignedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: const Text(
+          'Already Assigned',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: const Text(
+          'You are already assigned to another participant in this room.',
+          style: TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF1D61E7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }

@@ -197,59 +197,110 @@ class _RoomViewState extends State<RoomView> {
         // Show warning for assigned participant
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Participant Assigned'),
-                content: Text(
-                  'This participant is already assigned to ${participant['name']}.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Participant Assigned',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              'This participant is already assigned to ${participant['name']}.',
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                ],
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
               ),
+            ],
+          ),
         );
       } else if (isAlreadyAssigned) {
         // Show warning that user is already assigned
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Already Assigned'),
-                content: const Text(
-                  'You are already assigned to another participant in this room.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Already Assigned',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: const Text(
+              'You are already assigned to another participant in this room.',
+              style: TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                ],
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
               ),
+            ],
+          ),
         );
       } else {
         // Show confirmation for unassigned participant
         final bool? confirm = await showDialog<bool>(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Assign Participant'),
-                content: Text(
-                  'Do you want to assign yourself to ${participant['name']}? \n You won\'t be able to unassign yourself later.',
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Assign Participant',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              'Do you want to assign yourself to ${participant['name']}? \n\nYou won\'t be able to unassign yourself later.',
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Yes'),
-                  ),
-                ],
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF1D61E7)),
+                ),
               ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Yes',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         );
 
         if (confirm == true) {
@@ -962,24 +1013,48 @@ class _RoomViewState extends State<RoomView> {
   ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Remove Assignment'),
-            content: Text('Remove ${assignment['name']} from $date?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: const Text(
+          'Remove Assignment',
+          style: TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          'Do you want to remove ${assignment['name']} from $date?',
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
+            ),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF1D61E7)),
+            ),
           ),
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Remove',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirm == true) {
@@ -1027,27 +1102,52 @@ class _RoomViewState extends State<RoomView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Add Assignment for $date'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: availableParticipants.length,
-                itemBuilder: (context, index) {
-                  final participant = availableParticipants[index];
-                  return ListTile(
-                    title: Text(participant['name']),
-                    subtitle: Text(
-                      participant['assignedUserName'] ?? 'Unassigned',
-                    ),
-                    onTap: () => Navigator.pop(context, participant),
-                  );
-                },
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: Text(
+          'Add Assignment for $date',
+          style: const TextStyle(color: Colors.black),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: availableParticipants.length,
+            itemBuilder: (context, index) {
+              final participant = availableParticipants[index];
+              return ListTile(
+                title: Text(
+                  participant['name'],
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                subtitle: Text(
+                  participant['assignedUserName'] ?? 'Unassigned',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                onTap: () => Navigator.pop(context, participant),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF1D61E7)),
+            ),
           ),
+        ],
+      ),
     );
 
     if (selectedParticipant != null) {
