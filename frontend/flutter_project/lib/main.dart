@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: Colors.transparent,
-          appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF1D61E7)),
+          appBarTheme: const AppBarTheme(backgroundColor: Colors.transparent),
         ),
         home: StreamBuilder<User?>(
           stream: authService.value.authStateChanges,
