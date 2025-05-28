@@ -278,10 +278,12 @@ class _LoginViewState extends State<LoginView> {
                       TextButton(
                         onPressed: () {
                           FocusScope.of(context).unfocus();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ResetPasswordView(),
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (_, __, ___) => const ResetPasswordView(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
                             ),
                           );
                         },
