@@ -42,104 +42,117 @@ class _HomeViewState extends State<HomeView>
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            iconTheme: const IconThemeData(
-              color: Colors.white,
-            ), // Set back icon color to white
-            titleTextStyle: const TextStyle(
-              color: Colors.white, // Set title color to white
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+            iconTheme: const IconThemeData(color: Colors.white),
+            title: const Text(
+              'Nöbetim',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          bottomNavigationBar: TabBar(
-            controller: _tabController,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: const [Tab(text: 'Home'), Tab(text: 'Notifications')],
+          bottomNavigationBar: Container(
+            color: Colors.white, // background color
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.blue, // selected label
+              unselectedLabelColor: Colors.blue, // unselected label
+              indicatorColor: Colors.blue, // underline indicator
+              tabs: const [
+                Tab(icon: Icon(Icons.home)),
+                Tab(icon: Icon(Icons.notifications)),
+              ],
+            ),
           ),
           body: Consumer<AuthViewModel>(
             builder: (context, authVM, child) {
               return Column(
                 children: [
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
+                  SafeArea(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              authVM.currentUser?.name != null
-                                  ? Text(
-                                    authVM.currentUser!.name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                  : const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                              authVM.currentUser?.title != null
-                                  ? Text(
-                                    authVM.currentUser!.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  )
-                                  : const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                              TextButton(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    builder:
-                                        (context) => ProfileEditView(
-                                          user: authVM.currentUser!,
-                                        ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Edit Profile',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(2, 0, 2, 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.logout, color: Colors.white),
-                          onPressed: () async {
-                            if (context.mounted) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LoginView(),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    authVM.currentUser?.name != null
+                                        ? Text(
+                                          authVM.currentUser!.name,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                        : const CircularProgressIndicator(),
+                                    const SizedBox(height: 4),
+                                    authVM.currentUser?.title != null
+                                        ? Text(
+                                          authVM.currentUser!.title,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                        )
+                                        : const CircularProgressIndicator(),
+                                    const SizedBox(height: 8),
+                                    TextButton(
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          builder:
+                                              (context) => ProfileEditView(
+                                                user: authVM.currentUser!,
+                                              ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        'Edit Profile',
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                              authVM.clearUserData();
-                              await authService.value.signOut();
-                            }
-                          },
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.logout,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () async {
+                                  if (context.mounted) {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const LoginView(),
+                                      ),
+                                    );
+                                    authVM.clearUserData();
+                                    await authService.value.signOut();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -149,6 +162,8 @@ class _HomeViewState extends State<HomeView>
                       controller: _tabController,
                       children: [
                         RefreshIndicator(
+                          color: Colors.blue, // spinner color
+                          backgroundColor: Colors.white, // circle background
                           onRefresh: () async {
                             await Provider.of<AuthViewModel>(
                               context,
@@ -278,6 +293,7 @@ class _HomeViewState extends State<HomeView>
           child: Container(
             alignment: Alignment.center,
             child: FloatingActionButton(
+              backgroundColor: Colors.blue,
               mini: true,
               elevation: 4,
               onPressed: () async {
@@ -289,7 +305,7 @@ class _HomeViewState extends State<HomeView>
                   _showCreateRoomSheet(context);
                 }
               },
-              child: const Icon(Icons.add),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
         ),
@@ -414,13 +430,13 @@ class _HomeViewState extends State<HomeView>
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -451,16 +467,25 @@ class _HomeViewState extends State<HomeView>
                         Text(
                           roomData['name'] ?? 'Unnamed Room',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
+                        Row(
+                          children: const [
+                            Expanded(child: Divider(color: Colors.grey)),
+                            Icon(
+                              Icons.chevron_right,
+                              color: Colors.black,
+                            ), // <-- trailing icon
+                          ],
+                        ),
                         Text(
                           roomData['description'] ?? 'No description',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 16,
                           ),
                         ),
