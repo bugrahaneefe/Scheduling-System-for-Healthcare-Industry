@@ -99,9 +99,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.black,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
             ),
             dialogBackgroundColor: Colors.white,
             textSelectionTheme: const TextSelectionThemeData(
@@ -110,7 +108,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               selectionHandleColor: Colors.black,
             ),
             inputDecorationTheme: const InputDecorationTheme(
-              labelStyle: TextStyle(color: Colors.black), // Ensure label text is black
+              labelStyle: TextStyle(
+                color: Colors.black,
+              ), // Ensure label text is black
               border: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.black),
               ),
@@ -120,7 +120,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.black),
               ),
-              hintStyle: TextStyle(color: Colors.black), // Ensure "Enter date" text is black
+              hintStyle: TextStyle(
+                color: Colors.black,
+              ), // Ensure "Enter date" text is black
             ),
           ),
           child: Builder(
@@ -192,7 +194,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black), // Changed to black border
+                        border: Border.all(
+                          color: Colors.black,
+                        ), // Changed to black border
                       ),
                       child: Row(
                         children: [
@@ -216,7 +220,10 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                   borderSide: BorderSide(color: Colors.black),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                  borderSide: BorderSide(
+                                    color: Colors.black,
+                                    width: 2,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(color: Colors.black),
@@ -275,13 +282,20 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                     keyboardType: TextInputType.number,
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black, width: 2),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                          width: 2,
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -298,7 +312,10 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Done', style: TextStyle(color: Colors.black)), // Changed Done button color
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(color: Colors.black),
+                  ), // Changed Done button color
                 ),
               ],
             );
@@ -428,14 +445,29 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     await showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1E1E2E),
-            title: const Text('Invalid Shifts', style: TextStyle(color: Colors.white)),
-            content: Text(message, style: const TextStyle(color: Colors.white)),
+          (_) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Invalid Shifts',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(color: Colors.black87),
+            ),
             actions: [
               TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.blue)),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -484,13 +516,24 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         decoration: InputDecoration(
                           labelText: 'Room Name',
                           labelStyle: const TextStyle(color: Colors.black),
-                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.black),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
+                          ),
                           fillColor: Colors.white,
                           filled: true,
                         ),
                         textInputAction: TextInputAction.next,
-                        validator: (value) => value?.isEmpty == true ? 'Room name is required' : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty == true
+                                    ? 'Room name is required'
+                                    : null,
                       );
                     },
                   ),
@@ -507,14 +550,25 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         decoration: InputDecoration(
                           labelText: 'Description',
                           labelStyle: const TextStyle(color: Colors.black),
-                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.black),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
+                          ),
                           fillColor: Colors.white,
                           filled: true,
                         ),
                         textInputAction: TextInputAction.next,
                         maxLines: 3,
-                        validator: (value) => value?.isEmpty == true ? 'Description is required' : null,
+                        validator:
+                            (value) =>
+                                value?.isEmpty == true
+                                    ? 'Description is required'
+                                    : null,
                       );
                     },
                   ),
@@ -532,15 +586,30 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
                                 labelText: 'First Day',
-                                labelStyle: const TextStyle(color: Colors.black),
-                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                labelStyle: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2,
+                                  ),
+                                ),
                                 fillColor: Colors.white,
                                 filled: true,
                               ),
                               readOnly: true,
                               onTap: () => _selectDate(context, true),
-                              validator: (value) => value?.isEmpty == true ? 'First day is required' : null,
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty == true
+                                          ? 'First day is required'
+                                          : null,
                             );
                           },
                         ),
@@ -557,15 +626,30 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
                                 labelText: 'Last Day',
-                                labelStyle: const TextStyle(color: Colors.black),
-                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                labelStyle: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2,
+                                  ),
+                                ),
                                 fillColor: Colors.white,
                                 filled: true,
                               ),
                               readOnly: true,
                               onTap: () => _selectDate(context, false),
-                              validator: (value) => value?.isEmpty == true ? 'Last day is required' : null,
+                              validator:
+                                  (value) =>
+                                      value?.isEmpty == true
+                                          ? 'Last day is required'
+                                          : null,
                             );
                           },
                         ),
@@ -586,10 +670,18 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         decoration: InputDecoration(
                           labelText: 'Default Number of Shifts',
                           labelStyle: const TextStyle(color: Colors.black),
-                          hintText: 'Enter default number of shifts for each participant',
+                          hintText:
+                              'Enter default number of shifts for each participant',
                           hintStyle: const TextStyle(color: Colors.black),
-                          border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                          focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.black),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
+                          ),
                           fillColor: Colors.white,
                           filled: true,
                         ),
@@ -615,14 +707,19 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: _editDailyShifts,
-                  icon: const Icon(Icons.edit, color: Colors.black), // changed to black
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.black,
+                  ), // changed to black
                   label: const Text(
                     'Edit Daily Required Shifts',
                     style: TextStyle(color: Colors.black), // changed to black
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.black), // changed to black border
+                    side: const BorderSide(
+                      color: Colors.black,
+                    ), // changed to black border
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -638,14 +735,28 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
                                 labelText: 'Add Participant',
-                                labelStyle: const TextStyle(color: Colors.black),
-                                border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black)),
-                                focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black, width: 2)),
+                                labelStyle: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black,
+                                    width: 2,
+                                  ),
+                                ),
                                 fillColor: Colors.white,
                                 filled: true,
                               ),
                               textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) => _addParticipant(_participantNameController.text),
+                              onFieldSubmitted:
+                                  (_) => _addParticipant(
+                                    _participantNameController.text,
+                                  ),
                             );
                           },
                         ),
@@ -656,15 +767,16 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                       width: 40, // Fixed size for circular button
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () => _addParticipant(_participantNameController.text),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                        ),
+                        onPressed:
+                            () => _addParticipant(
+                              _participantNameController.text,
+                            ),
+                        child: const Icon(Icons.add, color: Colors.white),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1D61E7),
                           padding: EdgeInsets.zero,
-                          shape: const CircleBorder(), // Makes the button circular
+                          shape:
+                              const CircleBorder(), // Makes the button circular
                         ),
                       ),
                     ),
@@ -702,29 +814,43 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                 participant['name'] as String,
                                 style: const TextStyle(color: Colors.black87),
                               ),
-                              trailing: participant['isHost'] == true
-                                  ? Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1D61E7), // Changed background color
-                                        borderRadius: BorderRadius.circular(8),
+                              trailing:
+                                  participant['isHost'] == true
+                                      ? Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF1D61E7,
+                                          ), // Changed background color
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Host',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ), // Changed text color to white
+                                        ),
+                                      )
+                                      : IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle,
+                                          color:
+                                              Colors
+                                                  .red, // Changed from Color(0xFF1D61E7) to Colors.red
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedParticipants.removeAt(
+                                              index,
+                                            );
+                                          });
+                                        },
                                       ),
-                                      child: const Text(
-                                        'Host',
-                                        style: TextStyle(color: Colors.white), // Changed text color to white
-                                      ),
-                                    )
-                                  : IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle, 
-                                        color: Colors.red, // Changed from Color(0xFF1D61E7) to Colors.red
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedParticipants.removeAt(index);
-                                        });
-                                      },
-                                    ),
                             );
                           },
                         ),
@@ -735,22 +861,27 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _createRoom,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black, // changed to black
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black, // changed to black
+                            ),
+                          )
+                          : const Text(
+                            'Create Room',
+                            style: TextStyle(
+                              color: Colors.black,
+                            ), // changed to black
                           ),
-                        )
-                      : const Text(
-                          'Create Room',
-                          style: TextStyle(color: Colors.black), // changed to black
-                        ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.black), // changed to black border
+                    side: const BorderSide(
+                      color: Colors.black,
+                    ), // changed to black border
                   ),
                 ),
               ],
