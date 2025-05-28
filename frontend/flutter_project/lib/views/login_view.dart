@@ -106,7 +106,7 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
-      resizeToAvoidBottomInset: true, // Add this line
+      resizeToAvoidBottomInset: false, // Add this line
       appBar: AppBar(
         title: null, // Removed the title
       ),
@@ -207,7 +207,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: 'eng491', // Changed this line
+                                hintText: 'email', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -228,7 +228,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: '123456', // Changed this line
+                                hintText: 'password', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -274,6 +274,7 @@ class _LoginViewState extends State<LoginView> {
                       // "Forgot Your Password?" button
                       TextButton(
                         onPressed: () {
+                          FocusScope.of(context).unfocus();
                           Navigator.push(
                             context,
                             MaterialPageRoute(

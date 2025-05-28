@@ -64,9 +64,10 @@ class _SignupViewState extends State<SignupView> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        backgroundColor: const Color(0x1E1E1E),
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: null,
+          title: const Text('Sign up', style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: Container(
@@ -102,7 +103,7 @@ class _SignupViewState extends State<SignupView> {
                       const Icon(
                         Icons.calendar_today,
                         size: 48,
-                        color: Color(0xFF375DFB),
+                        color: Color(0xFF1D61E7),
                       ),
                       const SizedBox(height: 20),
                       // "Create Account" text
@@ -141,7 +142,7 @@ class _SignupViewState extends State<SignupView> {
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
-                                color: Color(0xFF4D81E7),
+                                color: Color(0xFF1D61E7),
                               ),
                             ),
                           ),
@@ -180,7 +181,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.person,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText: 'full name',
                                 hintStyle: TextStyle(color: Colors.grey),
@@ -207,7 +208,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.work,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText: 'title',
                                 hintStyle: TextStyle(color: Colors.grey),
@@ -226,7 +227,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.mail,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText: 'email',
                                 hintStyle: TextStyle(color: Colors.grey),
@@ -246,7 +247,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.calendar_today,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText:
                                     _selectedBirthday ?? 'select birthday',
@@ -261,9 +262,29 @@ class _SignupViewState extends State<SignupView> {
                               onTap: () async {
                                 DateTime? pickedDate = await showDatePicker(
                                   context: context,
-                                  initialDate: DateTime.now(),
+                                  initialDate: DateTime(
+                                    DateTime.now().year - 20,
+                                    DateTime.now().month,
+                                    DateTime.now().day,
+                                  ),
                                   firstDate: DateTime(1900),
                                   lastDate: DateTime.now(),
+                                  builder:
+                                      (context, child) => Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: const Color(
+                                              0xFF1D61E7,
+                                            ), // header & selected day
+                                            onSurface:
+                                                Colors.black, // day numbers
+                                          ),
+                                          dialogBackgroundColor: const Color(
+                                            0xFF1D61E7,
+                                          ), // whole sheet back
+                                        ),
+                                        child: child!,
+                                      ),
                                 );
                                 if (pickedDate != null) {
                                   setState(() {
@@ -284,7 +305,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: const InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.phone,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText: 'phone number',
                                 hintStyle: TextStyle(color: Colors.grey),
@@ -305,7 +326,7 @@ class _SignupViewState extends State<SignupView> {
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(
                                   Icons.lock,
-                                  color: Color(0xFF375DFB),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 hintText: 'password',
                                 hintStyle: const TextStyle(color: Colors.grey),
@@ -475,7 +496,7 @@ class _SignupViewState extends State<SignupView> {
                   if (_isLoading)
                     Positioned.fill(
                       child: Container(
-                        color: Colors.black54,
+                        color: Colors.black,
                         child: const Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
