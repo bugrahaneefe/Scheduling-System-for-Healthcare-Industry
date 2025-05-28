@@ -18,11 +18,13 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late ScrollController _roomsScrollController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _roomsScrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AuthViewModel>(context, listen: false).loadCurrentUser();
     });
@@ -30,6 +32,7 @@ class _HomeViewState extends State<HomeView>
 
   @override
   void dispose() {
+    _roomsScrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -39,6 +42,7 @@ class _HomeViewState extends State<HomeView>
     return Stack(
       children: [
         Scaffold(
+          backgroundColor: const Color(0x1E1E1E),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -51,14 +55,69 @@ class _HomeViewState extends State<HomeView>
                 fontWeight: FontWeight.bold,
               ),
             ),
+            actions: [
+              PopupMenuButton<String>(
+                color: Colors.white,
+                icon: const Icon(Icons.menu),
+                onSelected: (choice) {
+                  final authVM = Provider.of<AuthViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  if (choice == 'edit') {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder:
+                          (_) => ProfileEditView(user: authVM.currentUser!),
+                    );
+                  } else if (choice == 'logout') {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginView()),
+                    );
+                    authVM.clearUserData();
+                    authService.value.signOut();
+                  }
+                },
+                itemBuilder:
+                    (ctx) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: ListTile(
+                          leading: const Icon(Icons.edit, color: Colors.black),
+                          title: const Text('Edit Profile'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'logout',
+                        child: ListTile(
+                          leading: const Icon(
+                            Icons.logout,
+                            color: Colors.black,
+                          ),
+                          title: const Text('Logout'),
+                        ),
+                      ),
+                    ],
+              ),
+            ],
           ),
           bottomNavigationBar: Container(
-            color: Colors.white, // background color
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: Colors.black,
+                  width: 0.5,
+                ), // ← black line
+              ),
+            ),
             child: TabBar(
               controller: _tabController,
-              labelColor: Colors.blue, // selected label
-              unselectedLabelColor: Colors.blue, // unselected label
-              indicatorColor: Colors.blue, // underline indicator
+              labelColor: Color(0xFF1D61E7), // selected label
+              unselectedLabelColor: Color(0xFF1D61E7), // unselected label
+              indicatorColor: Color(0xFF1D61E7), // underline indicator
               tabs: const [
                 Tab(icon: Icon(Icons.home)),
                 Tab(icon: Icon(Icons.notifications)),
@@ -77,11 +136,11 @@ class _HomeViewState extends State<HomeView>
                           margin: const EdgeInsets.fromLTRB(2, 0, 2, 8),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color: Color(0xFF1D61E7),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
+                                color: Colors.black,
                                 blurRadius: 6,
                                 offset: const Offset(0, 3),
                               ),
@@ -114,42 +173,8 @@ class _HomeViewState extends State<HomeView>
                                         )
                                         : const CircularProgressIndicator(),
                                     const SizedBox(height: 8),
-                                    TextButton(
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          builder:
-                                              (context) => ProfileEditView(
-                                                user: authVM.currentUser!,
-                                              ),
-                                        );
-                                      },
-                                      child: const Text(
-                                        'Edit Profile',
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                    ),
                                   ],
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.logout,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () async {
-                                  if (context.mounted) {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const LoginView(),
-                                      ),
-                                    );
-                                    authVM.clearUserData();
-                                    await authService.value.signOut();
-                                  }
-                                },
                               ),
                             ],
                           ),
@@ -162,7 +187,7 @@ class _HomeViewState extends State<HomeView>
                       controller: _tabController,
                       children: [
                         RefreshIndicator(
-                          color: Colors.blue, // spinner color
+                          color: Color(0xFF1D61E7), // spinner color
                           backgroundColor: Colors.white, // circle background
                           onRefresh: () async {
                             await Provider.of<AuthViewModel>(
@@ -171,52 +196,92 @@ class _HomeViewState extends State<HomeView>
                             ).loadCurrentUser();
                             setState(() {});
                           },
-                          child: ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                ),
-                                child: FutureBuilder<List<Widget>>(
-                                  future: _buildRoomsList(
-                                    authVM.currentUser?.rooms ?? [],
-                                  ),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const SizedBox(
-                                        height: 200,
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      );
-                                    }
-
-                                    if (authVM.currentUser?.rooms.isEmpty ??
-                                        true) {
-                                      return const SizedBox(
-                                        height: 200,
-                                        child: Center(
+                          child: RawScrollbar(
+                            controller: _roomsScrollController,
+                            thumbVisibility: true,
+                            thickness: 2,
+                            radius: const Radius.circular(2),
+                            thumbColor: Colors.white,
+                            child: GlowingOverscrollIndicator(
+                              axisDirection: AxisDirection.down,
+                              color: Colors.white,
+                              child: ListView(
+                                controller: _roomsScrollController,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Center(
                                           child: Text(
-                                            'No room assigned',
+                                            'My Rooms',
+                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }
+                                        SizedBox(height: 4),
+                                        const Divider(
+                                          color: Colors.white70,
+                                          thickness: 1,
+                                          indent: 16,
+                                          endIndent: 16,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
 
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: snapshot.data ?? [],
-                                    );
-                                  },
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: FutureBuilder<List<Widget>>(
+                                      future: _buildRoomsList(
+                                        authVM.currentUser?.rooms ?? [],
+                                      ),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return const SizedBox(
+                                            height: 200,
+                                            child: Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          );
+                                        }
+                                        if (authVM.currentUser?.rooms.isEmpty ??
+                                            true) {
+                                          return const SizedBox(
+                                            height: 200,
+                                            child: Center(
+                                              child: Text(
+                                                'No room assigned',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: snapshot.data ?? [],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                         StreamBuilder<QuerySnapshot>(
@@ -263,15 +328,13 @@ class _HomeViewState extends State<HomeView>
                                   ),
                                   subtitle: Text(
                                     formattedTime,
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                    ),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   leading: Icon(
                                     data['type'] == 'room_dates_updated_host'
                                         ? Icons.edit_calendar
                                         : Icons.calendar_today,
-                                    color: Colors.blue,
+                                    color: Color(0xFF1D61E7),
                                   ),
                                 );
                               },
@@ -293,7 +356,7 @@ class _HomeViewState extends State<HomeView>
           child: Container(
             alignment: Alignment.center,
             child: FloatingActionButton(
-              backgroundColor: Colors.blue,
+              backgroundColor: Color(0xFF1D61E7),
               mini: true,
               elevation: 4,
               onPressed: () async {
@@ -475,7 +538,7 @@ class _HomeViewState extends State<HomeView>
                         const SizedBox(height: 8),
                         Row(
                           children: const [
-                            Expanded(child: Divider(color: Colors.grey)),
+                            Expanded(child: Divider(color: Colors.black)),
                             Icon(
                               Icons.chevron_right,
                               color: Colors.black,
