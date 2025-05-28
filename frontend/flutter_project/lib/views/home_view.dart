@@ -68,6 +68,12 @@ class _HomeViewState extends State<HomeView>
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                      ),
                       builder:
                           (_) => ProfileEditView(user: authVM.currentUser!),
                     );
@@ -592,7 +598,10 @@ class _HomeViewState extends State<HomeView>
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF1D61E7),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder:
           (context) => CreateRoomSheet(
             hostId: authService.value.currentUser!.uid,
