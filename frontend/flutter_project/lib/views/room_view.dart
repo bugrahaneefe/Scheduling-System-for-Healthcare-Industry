@@ -39,6 +39,9 @@ class _RoomViewState extends State<RoomView> {
   final ScrollController _scheduleScrollController = ScrollController();
   Map<int, Map<String, dynamic>> _doctorPreferences = {};
 
+  // Add this field to track if schedule is applied
+  bool _isScheduleApplied = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +56,13 @@ class _RoomViewState extends State<RoomView> {
       }
     });
     _loadAllDoctorPreferences();
+    _checkScheduleStatus();
+  }
+
+  void _checkScheduleStatus() {
+    setState(() {
+      _isScheduleApplied = _appliedSchedule != null;
+    });
   }
 
   @override
@@ -73,6 +83,7 @@ class _RoomViewState extends State<RoomView> {
         _appliedSchedule = _convertScheduleData(
           roomDoc.data()?['appliedSchedule'],
         );
+        _isScheduleApplied = _appliedSchedule != null;
       });
     }
   }
@@ -1397,6 +1408,295 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
+  Future<void> _handlePreviewSchedule() async {
+    final roomDoc =
+        await FirebaseFirestore.instance
+            .collection('rooms')
+            .doc(widget.roomId)
+            .get();
+
+    if (!roomDoc.exists) {
+      _showError('Room data not found');
+      return;
+    }
+
+    final data = roomDoc.data();
+    final firstDay = DateTime.parse(
+      data?['firstDay'] as String,
+    );
+    final lastDay = DateTime.parse(
+      data?['lastDay'] as String,
+    );
+    final dailyShifts = List<int>.from(
+      data?['dailyShifts'] ?? [],
+    );
+    final defaultShifts = data?['defaultShifts'] ?? 0;
+
+    final numDays = lastDay.difference(firstDay).inDays + 1;
+
+    // Find the doctor with the most shifts
+    final maxShiftsEntry = _participants
+        .map((participant) {
+          final shiftsCount =
+              _doctorPreferences[_participants.indexOf(
+                participant,
+              )]?['shiftsCount'] ??
+              defaultShifts;
+          return {
+            'name': participant['name'],
+            'shiftsCount': shiftsCount,
+          };
+        })
+        .reduce(
+          (a, b) =>
+              a['shiftsCount'] > b['shiftsCount'] ? a : b,
+        );
+
+    final maxShifts = maxShiftsEntry['shiftsCount'];
+    final maxShiftsDoctorName = maxShiftsEntry['name'];
+
+    if (numDays < maxShifts * 2) {
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text(
+                'Invalid Schedule',
+                style: TextStyle(color: Colors.black),
+              ),
+              content: Text(
+                'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
+                'Number of days: $numDays\n\n'
+                'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
+                style: const TextStyle(
+                  color: Colors.black,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(
+                      0xFF1D61E7,
+                    ), // blue fill
+                    shape: RoundedRectangleBorder(
+                      // nice rounded corners
+                      borderRadius: BorderRadius.circular(
+                        6,
+                      ),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ), // white label
+                  ),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+
+    // Calculate total shifts
+    final totalDoctorShifts = _participants.fold<int>(
+      0,
+      (sum, participant) =>
+          sum +
+          ((_doctorPreferences[_participants.indexOf(
+                    participant,
+                  )]?['shiftsCount'] ??
+                  defaultShifts)
+              as int),
+    );
+    final totalDailyShifts = dailyShifts.fold<int>(
+      0,
+      (sum, shifts) => sum + shifts,
+    );
+
+    if (totalDoctorShifts < totalDailyShifts) {
+      showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2E),
+              title: const Text(
+                'Invalid Schedule',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: Text(
+                'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
+                'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
+                'Total of the daily required shifts: $totalDailyShifts',
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Color(0xFF1D61E7),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      // Filter participants to get only doctors (non-host users)
+      final doctors =
+          _participants
+              .asMap()
+              .entries
+              .map(
+                (entry) => entry.value['name'] as String,
+              )
+              .toList();
+
+      if (doctors.isEmpty) {
+        Navigator.pop(context);
+        _showError(
+          'No doctors found in the room. Please add participants first.',
+        );
+        return;
+      }
+
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
+      final data = roomDoc.data();
+      final firstDay = data?['firstDay'] as String;
+      final lastDay = data?['lastDay'] as String;
+      final dailyShifts = List<int>.from(
+        data?['dailyShifts'] ?? [],
+      );
+      final defaultShifts =
+          data?['defaultShifts'] ?? 0; // <-- EKLENDİ
+
+      // Prepare the input data with doctors from participants
+      final numShifts = List<int>.generate(
+        doctors.length,
+        (i) =>
+            _doctorPreferences[i]?['shiftsCount'] ??
+            defaultShifts, // <-- 10 yerine defaultShifts
+      );
+
+      final availabilityMatrix = List<
+        List<int>
+      >.generate(doctors.length, (i) {
+        final prefs = _doctorPreferences[i];
+        final List<int> availability =
+            (prefs?['availability'] as List<dynamic>?)
+                ?.map((e) => e as int)
+                .toList() ??
+            List<int>.filled(dailyShifts.length, 0);
+        print(
+          'Doctor ${doctors[i]} (index $i) availability: $availability',
+        );
+        return availability;
+      });
+
+      final inputData = {
+        'firstDay': firstDay,
+        'lastDay': lastDay,
+        'doctors': doctors,
+        'numShifts': numShifts,
+        'dailyShifts': dailyShifts,
+        'availabilityMatrix': availabilityMatrix,
+      };
+
+      print('Algorithm Input Data:');
+      print('Doctors order: $doctors'); // Debug print
+      print(
+        'Number of Shifts per Doctor: $numShifts',
+      ); // Debug print
+      print('Daily Required Shifts: $dailyShifts');
+      print(
+        'Availability Matrix: $availabilityMatrix',
+      ); // Debug print
+
+      // Make API request
+      final response = await http.post(
+        Uri.parse(
+          'http://127.0.0.1:8000/api/generate-schedule/',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(inputData),
+      );
+
+      if (response.statusCode == 200) {
+        final resultData = jsonDecode(response.body);
+        print('API Response: $resultData'); // Debug print
+
+        // Extract the schedule from the response
+        final scheduleData =
+            resultData['schedule']
+                as Map<String, dynamic>;
+
+        // Convert API response to schedule format
+        final Map<String, List<String>> schedule = {};
+        scheduleData.forEach((date, doctors) {
+          if (doctors is List) {
+            print(
+              'Processing date: $date, doctors: $doctors',
+            ); // Debug print
+            schedule[date] = List<String>.from(doctors);
+          }
+        });
+
+        print('Final schedule: $schedule'); // Debug print
+
+        Navigator.pop(context); // Remove loading dialog
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => PreviewScheduleView(
+                  participants: _participants,
+                  roomId: widget.roomId,
+                  scheduleData: schedule,
+                ),
+          ),
+        );
+
+        // If returned with refresh flag, reload the data
+        if (result == true) {
+          await _loadSchedules();
+          await _refreshRoom();
+        }
+      } else {
+        Navigator.pop(context); // Remove loading dialog
+        _showError(
+          'Failed to fetch schedule: ${response.body}',
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Remove loading dialog
+      _showError('Error occurred: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -1470,58 +1770,67 @@ class _RoomViewState extends State<RoomView> {
                                 case 'share':
                                   _shareRoomInvitation();
                                   break;
+                                case 'preview':
+                                  await _handlePreviewSchedule();
+                                  break;
                                 case 'delete':
                                   _deleteRoom();
                                   break;
                               }
                             },
-                            itemBuilder:
-                                (context) => [
-                                  const PopupMenuItem(
-                                    value: 'editShifts',
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.work_history,
-                                        color: Colors.black,
-                                      ),
-                                      title: Text('Edit daily required shifts'),
-                                    ),
+                            itemBuilder: (context) => [
+                              if (_isScheduleApplied) const PopupMenuItem(
+                                value: 'preview',
+                                child: ListTile(
+                                  leading: Icon(Icons.preview, color: Colors.black),
+                                  title: Text('Preview New Schedule'),
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'editShifts',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.work_history,
+                                    color: Colors.black,
                                   ),
-                                  const PopupMenuItem(
-                                    value: 'editDates',
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.calendar_month,
-                                        color: Colors.black,
-                                      ),
-                                      title: Text('Edit room dates'),
-                                    ),
+                                  title: Text('Edit daily required shifts'),
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'editDates',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.calendar_month,
+                                    color: Colors.black,
                                   ),
-                                  const PopupMenuItem(
-                                    value: 'share',
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.share,
-                                        color: Colors.black,
-                                      ),
-                                      title: Text('Share invitation'),
-                                    ),
+                                  title: Text('Edit room dates'),
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'share',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.share,
+                                    color: Colors.black,
                                   ),
-                                  const PopupMenuDivider(),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      title: Text(
-                                        'Delete room',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ),
+                                  title: Text('Share invitation'),
+                                ),
+                              ),
+                              const PopupMenuDivider(),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
                                   ),
-                                ],
+                                  title: Text(
+                                    'Delete room',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         if (!_isHost) const SizedBox(width: 48),
                       ],
@@ -1595,297 +1904,9 @@ class _RoomViewState extends State<RoomView> {
                     if (_appliedSchedule != null)
                       _buildScheduleList(_appliedSchedule),
                     const SizedBox(height: 16),
-                    if (_isHost)
+                    if (_isHost && !_isScheduleApplied)
                       ElevatedButton(
-                        onPressed: () async {
-                          final roomDoc =
-                              await FirebaseFirestore.instance
-                                  .collection('rooms')
-                                  .doc(widget.roomId)
-                                  .get();
-
-                          if (!roomDoc.exists) {
-                            _showError('Room data not found');
-                            return;
-                          }
-
-                          final data = roomDoc.data();
-                          final firstDay = DateTime.parse(
-                            data?['firstDay'] as String,
-                          );
-                          final lastDay = DateTime.parse(
-                            data?['lastDay'] as String,
-                          );
-                          final dailyShifts = List<int>.from(
-                            data?['dailyShifts'] ?? [],
-                          );
-                          final defaultShifts = data?['defaultShifts'] ?? 0;
-
-                          final numDays =
-                              lastDay.difference(firstDay).inDays + 1;
-
-                          // Find the doctor with the most shifts
-                          final maxShiftsEntry = _participants
-                              .map((participant) {
-                                final shiftsCount =
-                                    _doctorPreferences[_participants.indexOf(
-                                      participant,
-                                    )]?['shiftsCount'] ??
-                                    defaultShifts;
-                                return {
-                                  'name': participant['name'],
-                                  'shiftsCount': shiftsCount,
-                                };
-                              })
-                              .reduce(
-                                (a, b) =>
-                                    a['shiftsCount'] > b['shiftsCount'] ? a : b,
-                              );
-
-                          final maxShifts = maxShiftsEntry['shiftsCount'];
-                          final maxShiftsDoctorName = maxShiftsEntry['name'];
-
-                          if (numDays < maxShifts * 2) {
-                            showDialog(
-                              context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    backgroundColor: Colors.white,
-                                    title: const Text(
-                                      'Invalid Schedule',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                    content: Text(
-                                      'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
-                                      'Number of days: $numDays\n\n'
-                                      'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        style: TextButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF1D61E7,
-                                          ), // blue fill
-                                          shape: RoundedRectangleBorder(
-                                            // nice rounded corners
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text(
-                                          'OK',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ), // white label
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                            );
-                            return;
-                          }
-
-                          // Calculate total shifts
-                          final totalDoctorShifts = _participants.fold<int>(
-                            0,
-                            (sum, participant) =>
-                                sum +
-                                ((_doctorPreferences[_participants.indexOf(
-                                          participant,
-                                        )]?['shiftsCount'] ??
-                                        defaultShifts)
-                                    as int),
-                          );
-                          final totalDailyShifts = dailyShifts.fold<int>(
-                            0,
-                            (sum, shifts) => sum + shifts,
-                          );
-
-                          if (totalDoctorShifts < totalDailyShifts) {
-                            showDialog(
-                              context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    backgroundColor: const Color(0xFF1E1E2E),
-                                    title: const Text(
-                                      'Invalid Schedule',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    content: Text(
-                                      'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
-                                      'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
-                                      'Total of the daily required shifts: $totalDailyShifts',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text(
-                                          'OK',
-                                          style: TextStyle(
-                                            color: Color(0xFF1D61E7),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                            );
-                            return;
-                          }
-
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (BuildContext context) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                          );
-
-                          try {
-                            // Filter participants to get only doctors (non-host users)
-                            final doctors =
-                                _participants
-                                    .asMap()
-                                    .entries
-                                    .map(
-                                      (entry) => entry.value['name'] as String,
-                                    )
-                                    .toList();
-
-                            if (doctors.isEmpty) {
-                              Navigator.pop(context);
-                              _showError(
-                                'No doctors found in the room. Please add participants first.',
-                              );
-                              return;
-                            }
-
-                            final roomDoc =
-                                await FirebaseFirestore.instance
-                                    .collection('rooms')
-                                    .doc(widget.roomId)
-                                    .get();
-
-                            final data = roomDoc.data();
-                            final firstDay = data?['firstDay'] as String;
-                            final lastDay = data?['lastDay'] as String;
-                            final dailyShifts = List<int>.from(
-                              data?['dailyShifts'] ?? [],
-                            );
-                            final defaultShifts =
-                                data?['defaultShifts'] ?? 0; // <-- EKLENDİ
-
-                            // Prepare the input data with doctors from participants
-                            final numShifts = List<int>.generate(
-                              doctors.length,
-                              (i) =>
-                                  _doctorPreferences[i]?['shiftsCount'] ??
-                                  defaultShifts, // <-- 10 yerine defaultShifts
-                            );
-
-                            final availabilityMatrix = List<
-                              List<int>
-                            >.generate(doctors.length, (i) {
-                              final prefs = _doctorPreferences[i];
-                              final List<int> availability =
-                                  (prefs?['availability'] as List<dynamic>?)
-                                      ?.map((e) => e as int)
-                                      .toList() ??
-                                  List<int>.filled(dailyShifts.length, 0);
-                              print(
-                                'Doctor ${doctors[i]} (index $i) availability: $availability',
-                              );
-                              return availability;
-                            });
-
-                            final inputData = {
-                              'firstDay': firstDay,
-                              'lastDay': lastDay,
-                              'doctors': doctors,
-                              'numShifts': numShifts,
-                              'dailyShifts': dailyShifts,
-                              'availabilityMatrix': availabilityMatrix,
-                            };
-
-                            print('Algorithm Input Data:');
-                            print('Doctors order: $doctors'); // Debug print
-                            print(
-                              'Number of Shifts per Doctor: $numShifts',
-                            ); // Debug print
-                            print('Daily Required Shifts: $dailyShifts');
-                            print(
-                              'Availability Matrix: $availabilityMatrix',
-                            ); // Debug print
-
-                            // Make API request
-                            final response = await http.post(
-                              Uri.parse(
-                                'http://127.0.0.1:8000/api/generate-schedule/',
-                              ),
-                              headers: {'Content-Type': 'application/json'},
-                              body: jsonEncode(inputData),
-                            );
-
-                            if (response.statusCode == 200) {
-                              final resultData = jsonDecode(response.body);
-                              print('API Response: $resultData'); // Debug print
-
-                              // Extract the schedule from the response
-                              final scheduleData =
-                                  resultData['schedule']
-                                      as Map<String, dynamic>;
-
-                              // Convert API response to schedule format
-                              final Map<String, List<String>> schedule = {};
-                              scheduleData.forEach((date, doctors) {
-                                if (doctors is List) {
-                                  print(
-                                    'Processing date: $date, doctors: $doctors',
-                                  ); // Debug print
-                                  schedule[date] = List<String>.from(doctors);
-                                }
-                              });
-
-                              print('Final schedule: $schedule'); // Debug print
-
-                              Navigator.pop(context); // Remove loading dialog
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => PreviewScheduleView(
-                                        participants: _participants,
-                                        roomId: widget.roomId,
-                                        scheduleData: schedule,
-                                      ),
-                                ),
-                              );
-
-                              // If returned with refresh flag, reload the data
-                              if (result == true) {
-                                await _loadSchedules();
-                                await _refreshRoom();
-                              }
-                            } else {
-                              Navigator.pop(context); // Remove loading dialog
-                              _showError(
-                                'Failed to fetch schedule: ${response.body}',
-                              );
-                            }
-                          } catch (e) {
-                            Navigator.pop(context); // Remove loading dialog
-                            _showError('Error occurred: $e');
-                          }
-                        },
+                        onPressed: _handlePreviewSchedule,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF1D61E7),
                           shape: RoundedRectangleBorder(
