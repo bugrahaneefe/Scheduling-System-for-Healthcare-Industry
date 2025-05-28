@@ -656,11 +656,9 @@ class _RoomViewState extends State<RoomView> {
               child: Text(
                 'All',
                 style: TextStyle(
-                  color: !_showOnlyMySchedule ? Colors.blue : Colors.white,
-                  fontWeight:
-                      !_showOnlyMySchedule
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                  color:
+                      !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -669,9 +667,8 @@ class _RoomViewState extends State<RoomView> {
               child: Text(
                 'Me',
                 style: TextStyle(
-                  color: _showOnlyMySchedule ? Colors.blue : Colors.white,
-                  fontWeight:
-                      _showOnlyMySchedule ? FontWeight.bold : FontWeight.normal,
+                  color: _showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -680,7 +677,7 @@ class _RoomViewState extends State<RoomView> {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: const Color(0xFF1D61E7).withOpacity(0.25),
             borderRadius: BorderRadius.circular(8),
           ),
           child: ListView.builder(
@@ -700,7 +697,7 @@ class _RoomViewState extends State<RoomView> {
                     color: Colors.white,
                     fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     backgroundColor:
-                        isToday ? Colors.blue.withOpacity(0.3) : null,
+                        isToday ? Color(0xFF1D61E7).withOpacity(0.3) : null,
                   ),
                 ),
                 subtitle: Column(
@@ -986,9 +983,11 @@ class _RoomViewState extends State<RoomView> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Color(0xFF1D61E7).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Color(0xFF1D61E7).withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -1030,7 +1029,7 @@ class _RoomViewState extends State<RoomView> {
                             },
                             child: const Text(
                               'Apply',
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(color: Color(0xFF1D61E7)),
                             ),
                           ),
                         ],
@@ -1119,7 +1118,7 @@ class _RoomViewState extends State<RoomView> {
                                   onPressed: () => Navigator.pop(context),
                                   child: const Text(
                                     'OK',
-                                    style: TextStyle(color: Colors.blue),
+                                    style: TextStyle(color: Color(0xFF1D61E7)),
                                   ),
                                 ),
                               ],
@@ -1145,7 +1144,7 @@ class _RoomViewState extends State<RoomView> {
                   },
                   child: const Text(
                     'Save',
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(color: Color(0xFF1D61E7)),
                   ),
                 ),
               ],
@@ -1200,7 +1199,7 @@ class _RoomViewState extends State<RoomView> {
                   onPressed: () => Navigator.pop(context, true),
                   child: const Text(
                     'Continue',
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(color: Color(0xFF1D61E7)),
                   ),
                 ),
               ],
@@ -1234,7 +1233,7 @@ class _RoomViewState extends State<RoomView> {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.15),
+              color: Color(0xFF1D61E7).withOpacity(0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -1245,7 +1244,7 @@ class _RoomViewState extends State<RoomView> {
                   children: [
                     const Icon(
                       Icons.calendar_today,
-                      color: Colors.blue,
+                      color: Color(0xFF1D61E7),
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -1271,7 +1270,7 @@ class _RoomViewState extends State<RoomView> {
                   children: [
                     const Icon(
                       Icons.calendar_today,
-                      color: Colors.blue,
+                      color: Color(0xFF1D61E7),
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -1458,7 +1457,7 @@ class _RoomViewState extends State<RoomView> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        backgroundColor: const Color(0xFF0D0D1B),
+        backgroundColor: const Color(0x1E1E1E),
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: () async {
@@ -1478,20 +1477,21 @@ class _RoomViewState extends State<RoomView> {
                           MainAxisAlignment
                               .spaceBetween, // Changed to spaceBetween
                       children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
+                        Container(
+                          margin: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
                             color: Colors.white,
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                          onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HomeView(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
                         ),
                         Expanded(
                           child: Center(
@@ -1507,29 +1507,81 @@ class _RoomViewState extends State<RoomView> {
                           ),
                         ),
                         if (_isHost)
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.share,
-                                  color: Colors.white,
-                                ),
-                                onPressed: _shareRoomInvitation,
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
-                                onPressed: _deleteRoom,
-                              ),
-                            ],
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
+                            ),
+                            color: Colors.white,
+                            onSelected: (choice) async {
+                              switch (choice) {
+                                case 'editShifts':
+                                  _editDailyShifts();
+                                  break;
+                                case 'editDates':
+                                  _editRoomDates();
+                                  break;
+                                case 'share':
+                                  _shareRoomInvitation();
+                                  break;
+                                case 'delete':
+                                  _deleteRoom();
+                                  break;
+                              }
+                            },
+                            itemBuilder:
+                                (context) => [
+                                  const PopupMenuItem(
+                                    value: 'editShifts',
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.work_history,
+                                        color: Colors.black,
+                                      ),
+                                      title: Text('Edit daily required shifts'),
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'editDates',
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.calendar_month,
+                                        color: Colors.black,
+                                      ),
+                                      title: Text('Edit room dates'),
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'share',
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.share,
+                                        color: Colors.black,
+                                      ),
+                                      title: Text('Share invitation'),
+                                    ),
+                                  ),
+                                  const PopupMenuDivider(),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      title: Text(
+                                        'Delete room',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                           ),
                         if (!_isHost) const SizedBox(width: 48),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    // --- Show First Day and Last Day as two rows ---
+                    // --- One card: date range at top, description below -----------------
                     FutureBuilder<DocumentSnapshot>(
                       future:
                           FirebaseFirestore.instance
@@ -1544,104 +1596,67 @@ class _RoomViewState extends State<RoomView> {
                         if (!snapshot.hasData || !snapshot.data!.exists) {
                           return const SizedBox(height: 32);
                         }
+
                         final data =
                             snapshot.data!.data() as Map<String, dynamic>;
                         final firstDay = data['firstDay'] ?? '';
                         final lastDay = data['lastDay'] ?? '';
+
                         return Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 16,
-                          ),
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.15),
+                            color: const Color(
+                              0xFF1D61E7,
+                            ), // unified blue background
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_today,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'First Day: ',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    firstDay,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                              // top row: “first - last”
+                              Text(
+                                '$firstDay  /  $lastDay',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 4),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_today,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Last Day: ',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    lastDay,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
+                              const Divider(
+                                color: Colors.white54,
+                                thickness: 1,
+                              ),
+                              const SizedBox(height: 4),
+
+                              // room description
+                              Text(
+                                widget.roomDescription,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
                         );
                       },
                     ),
-                    // --- END BLOCK ---
+                    const SizedBox(height: 10),
+                    const Divider(height: 10),
                     if (_appliedSchedule != null)
                       _buildScheduleList(_appliedSchedule),
                     const SizedBox(height: 16),
-                    if (_isHost) ...[
-                      ElevatedButton(
-                        onPressed: _editDailyShifts,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'Edit Daily Required Shifts',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
                     if (_isHost)
                       ElevatedButton(
                         onPressed: () async {
                           final roomDoc =
-                              await FirebaseFirestore.instance.collection('rooms').doc(widget.roomId).get();
+                              await FirebaseFirestore.instance
+                                  .collection('rooms')
+                                  .doc(widget.roomId)
+                                  .get();
 
                           if (!roomDoc.exists) {
                             _showError('Room data not found');
@@ -1649,18 +1664,37 @@ class _RoomViewState extends State<RoomView> {
                           }
 
                           final data = roomDoc.data();
-                          final firstDay = DateTime.parse(data?['firstDay'] as String);
-                          final lastDay = DateTime.parse(data?['lastDay'] as String);
-                          final dailyShifts = List<int>.from(data?['dailyShifts'] ?? []);
+                          final firstDay = DateTime.parse(
+                            data?['firstDay'] as String,
+                          );
+                          final lastDay = DateTime.parse(
+                            data?['lastDay'] as String,
+                          );
+                          final dailyShifts = List<int>.from(
+                            data?['dailyShifts'] ?? [],
+                          );
                           final defaultShifts = data?['defaultShifts'] ?? 0;
 
-                          final numDays = lastDay.difference(firstDay).inDays + 1;
+                          final numDays =
+                              lastDay.difference(firstDay).inDays + 1;
 
                           // Find the doctor with the most shifts
-                          final maxShiftsEntry = _participants.map((participant) {
-                            final shiftsCount = _doctorPreferences[_participants.indexOf(participant)]?['shiftsCount'] ?? defaultShifts;
-                            return {'name': participant['name'], 'shiftsCount': shiftsCount};
-                          }).reduce((a, b) => a['shiftsCount'] > b['shiftsCount'] ? a : b);
+                          final maxShiftsEntry = _participants
+                              .map((participant) {
+                                final shiftsCount =
+                                    _doctorPreferences[_participants.indexOf(
+                                      participant,
+                                    )]?['shiftsCount'] ??
+                                    defaultShifts;
+                                return {
+                                  'name': participant['name'],
+                                  'shiftsCount': shiftsCount,
+                                };
+                              })
+                              .reduce(
+                                (a, b) =>
+                                    a['shiftsCount'] > b['shiftsCount'] ? a : b,
+                              );
 
                           final maxShifts = maxShiftsEntry['shiftsCount'];
                           final maxShiftsDoctorName = maxShiftsEntry['name'];
@@ -1668,28 +1702,44 @@ class _RoomViewState extends State<RoomView> {
                           if (numDays < maxShifts * 2) {
                             showDialog(
                               context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: const Color(0xFF1E1E2E),
-                                title: const Text(
-                                  'Invalid Schedule',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                content: Text(
-                                  'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
-                                  'Number of days: $numDays\n\n'
-                                  'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text(
-                                      'OK',
-                                      style: TextStyle(color: Colors.blue),
+                              builder:
+                                  (context) => AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    title: const Text(
+                                      'Invalid Schedule',
+                                      style: TextStyle(color: Colors.black),
                                     ),
+                                    content: Text(
+                                      'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
+                                      'Number of days: $numDays\n\n'
+                                      'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFF1D61E7,
+                                          ), // blue fill
+                                          shape: RoundedRectangleBorder(
+                                            // nice rounded corners
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                        ),
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text(
+                                          'OK',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ), // white label
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
                             );
                             return;
                           }
@@ -1697,35 +1747,49 @@ class _RoomViewState extends State<RoomView> {
                           // Calculate total shifts
                           final totalDoctorShifts = _participants.fold<int>(
                             0,
-                            (sum, participant) => sum + ((_doctorPreferences[_participants.indexOf(participant)]?['shiftsCount'] ?? defaultShifts) as int),
+                            (sum, participant) =>
+                                sum +
+                                ((_doctorPreferences[_participants.indexOf(
+                                          participant,
+                                        )]?['shiftsCount'] ??
+                                        defaultShifts)
+                                    as int),
                           );
-                          final totalDailyShifts = dailyShifts.fold<int>(0, (sum, shifts) => sum + shifts);
+                          final totalDailyShifts = dailyShifts.fold<int>(
+                            0,
+                            (sum, shifts) => sum + shifts,
+                          );
 
                           if (totalDoctorShifts < totalDailyShifts) {
                             showDialog(
                               context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: const Color(0xFF1E1E2E),
-                                title: const Text(
-                                  'Invalid Schedule',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                content: Text(
-                                  'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
-                                  'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
-                                  'Total of the daily required shifts: $totalDailyShifts',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text(
-                                      'OK',
-                                      style: TextStyle(color: Colors.blue),
+                              builder:
+                                  (context) => AlertDialog(
+                                    backgroundColor: const Color(0xFF1E1E2E),
+                                    title: const Text(
+                                      'Invalid Schedule',
+                                      style: TextStyle(color: Colors.white),
                                     ),
+                                    content: Text(
+                                      'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
+                                      'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
+                                      'Total of the daily required shifts: $totalDailyShifts',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text(
+                                          'OK',
+                                          style: TextStyle(
+                                            color: Color(0xFF1D61E7),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
                             );
                             return;
                           }
@@ -1877,7 +1941,7 @@ class _RoomViewState extends State<RoomView> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Color(0xFF1D61E7),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -1888,47 +1952,6 @@ class _RoomViewState extends State<RoomView> {
                         ),
                       ),
                     const SizedBox(height: 20),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            widget.roomDescription,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (_isHost) ...[
-                            const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: _editRoomDates,
-                              icon: const Icon(
-                                Icons.calendar_today,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'Edit Room Dates',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     const Center(
                       child: Text(
                         'Participants',
@@ -1937,7 +1960,6 @@ class _RoomViewState extends State<RoomView> {
                           fontWeight: FontWeight.w500,
                           fontSize: 20,
                           color: Colors.white,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
@@ -2027,7 +2049,8 @@ class _RoomViewState extends State<RoomView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
-        border: isHost ? Border.all(color: Colors.blue, width: 3.0) : null,
+        border:
+            isHost ? Border.all(color: Color(0xFF1D61E7), width: 3.0) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.5),
@@ -2039,7 +2062,7 @@ class _RoomViewState extends State<RoomView> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.person, color: Colors.blue),
+          const Icon(Icons.person, color: Color(0xFF1D61E7)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -2098,7 +2121,7 @@ class _RoomViewState extends State<RoomView> {
                 style: TextStyle(
                   color:
                       isCurrentUser || hasPreferences
-                          ? Colors.blue
+                          ? Color(0xFF1D61E7)
                           : Colors.grey,
                 ),
               ),
