@@ -1017,47 +1017,46 @@ class _RoomViewState extends State<RoomView> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E2E),
-              title: const Text(
-                'Edit Daily Required Shifts',
-                style: TextStyle(color: Colors.white),
-              ),
+              backgroundColor: Colors.white,
+              title: const Text('Edit Daily Required Shifts'),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Apply to all days section
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Color(0xFF1D61E7).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Color(0xFF1D61E7).withOpacity(0.3),
-                        ),
+                        border: Border.all(color: Colors.black),
                       ),
                       child: Row(
                         children: [
-                          Expanded(
+                          const Expanded(
                             child: Text(
                               'Set all days to:',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                              ),
+                              style: TextStyle(color: Colors.black),
                             ),
                           ),
                           SizedBox(
                             width: 60,
                             child: TextFormField(
                               controller: allDaysController,
+                              cursorColor: Colors.black,
                               keyboardType: TextInputType.number,
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.black),
                               decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white38),
+                                  borderSide: BorderSide(color: Colors.black),
                                 ),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -1076,16 +1075,21 @@ class _RoomViewState extends State<RoomView> {
                               }
                               setStateDialog(() {});
                             },
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFF1D61E7),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
                             child: const Text(
                               'Apply',
-                              style: TextStyle(color: Color(0xFF1D61E7)),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Divider(color: Colors.white24, height: 32),
-                    // Daily shifts list
+                    const Divider(height: 32),
                     Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
@@ -1101,21 +1105,25 @@ class _RoomViewState extends State<RoomView> {
                                 Expanded(
                                   child: Text(
                                     '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}',
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.black),
                                   ),
                                 ),
                                 SizedBox(
                                   width: 60,
                                   child: TextFormField(
                                     controller: dayControllers[index],
+                                    cursorColor: Colors.black,
                                     keyboardType: TextInputType.number,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.black),
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black, width: 2),
+                                      ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.white38,
-                                        ),
+                                        borderSide: BorderSide(color: Colors.black),
                                       ),
                                     ),
                                   ),
@@ -1132,75 +1140,81 @@ class _RoomViewState extends State<RoomView> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final updatedShifts = <int>[];
-                    for (final c in dayControllers) {
-                      updatedShifts.add(int.tryParse(c.text) ?? 0);
-                    }
-                    if (!_validateConsecutiveDaysShifts(
-                      updatedShifts,
-                      _participants.length,
-                    )) {
-                      // Show error dialog above this dialog
-                      await showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder:
-                            (context) => AlertDialog(
-                              backgroundColor: const Color(0xFF1E1E2E),
-                              title: const Text(
-                                'Invalid Shifts',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              content: const Text(
-                                'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text(
-                                    'OK',
-                                    style: TextStyle(color: Color(0xFF1D61E7)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                      );
-                      return;
-                    }
-
-                    await FirebaseFirestore.instance
-                        .collection('rooms')
-                        .doc(widget.roomId)
-                        .update({'dailyShifts': updatedShifts});
-
-                    if (mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Daily shifts updated successfully'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Save',
-                    style: TextStyle(color: Color(0xFF1D61E7)),
-                  ),
+                  child: const Text('Done', style: TextStyle(color: Colors.black)),
                 ),
               ],
             );
           },
         );
       },
+    );
+
+    final updatedShifts = <int>[];
+    for (final c in dayControllers) {
+      updatedShifts.add(int.tryParse(c.text) ?? 0);
+    }
+    if (!_validateConsecutiveDaysShifts(
+      updatedShifts,
+      _participants.length,
+    )) {
+      // Show error dialog above this dialog
+      await showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1E1E2E),
+              title: const Text(
+                'Invalid Shifts',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: const Text(
+                'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
+                style: TextStyle(color: Colors.white),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Color(0xFF1D61E7)),
+                  ),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('rooms')
+        .doc(widget.roomId)
+        .update({'dailyShifts': updatedShifts});
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text('Shifts Updated'),
+        content: const Text(
+          'Daily required shifts have been updated successfully.',
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF1D61E7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
