@@ -559,11 +559,10 @@ class _HomeViewState extends State<HomeView>
                 ),
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => RoomView(
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (_, __, ___) => RoomView(
                               roomId: roomId,
                               roomName: roomData['name'] ?? 'Unnamed Room',
                               roomDescription:
@@ -573,6 +572,8 @@ class _HomeViewState extends State<HomeView>
                               ),
                               currentUserId: authService.value.currentUser!.uid,
                             ),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
                       ),
                     );
                   },
