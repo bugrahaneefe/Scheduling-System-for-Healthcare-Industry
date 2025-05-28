@@ -70,7 +70,7 @@ class _SignupViewState extends State<SignupView> {
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: const Text('Sign up', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.transparent,
+          backgroundColor: const Color(0x1E1E1E),
           elevation: 0,
           leading: Container(
             margin: const EdgeInsets.all(8.0),
