@@ -490,17 +490,27 @@ class _RoomViewState extends State<RoomView> {
       context: context,
       builder:
           (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: const Text('Delete Room'),
             content: const Text('Are you sure you want to delete this room?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
+                style: TextButton.styleFrom(foregroundColor: Colors.black),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -508,13 +518,11 @@ class _RoomViewState extends State<RoomView> {
 
     if (confirm == true) {
       try {
-        // Delete the room document
         await FirebaseFirestore.instance
             .collection('rooms')
             .doc(widget.roomId)
             .delete();
 
-        // Remove room from all participants' rooms arrays
         for (var participant in _participants) {
           if (participant['userId']?.isNotEmpty == true) {
             await FirebaseFirestore.instance
@@ -526,7 +534,6 @@ class _RoomViewState extends State<RoomView> {
           }
         }
 
-        // --- DELETE ALL NOTIFICATIONS RELATED TO THIS ROOM FOR ALL USERS ---
         for (var participant in _participants) {
           final userId = participant['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
@@ -543,7 +550,6 @@ class _RoomViewState extends State<RoomView> {
             }
           }
         }
-        // --- END NOTIFICATION DELETION ---
 
         if (mounted) {
           Navigator.pop(context); // Return to home view
@@ -556,29 +562,61 @@ class _RoomViewState extends State<RoomView> {
 
   Future<void> _shareRoomInvitation() async {
     if (!_isHost) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Only the host can share room invitations'),
-          backgroundColor: Colors.red,
-        ),
+      await showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text('Not allowed'),
+              content: const Text('Only the host can share room invitations.'),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D61E7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
       );
       return;
     }
 
-    // Generate a shareable link with the room ID
+    // build the deep-link
     final inviteLink = 'project491://room/${widget.roomId}';
 
-    // Copy to clipboard
+    // copy to clipboard
     await Clipboard.setData(ClipboardData(text: inviteLink));
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invitation link copied to clipboard!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: Colors.white, // set white background
+            title: const Text('Invitation link'),
+            content: const Text('The link has been copied to your clipboard.'),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+    );
   }
 
   void _showError(String message) {
