@@ -1640,40 +1640,96 @@ class _RoomViewState extends State<RoomView> {
                     if (_isHost)
                       ElevatedButton(
                         onPressed: () async {
-                          // Prevent preview if there are unassigned participants
-                          final hasUnassigned = _participants.any(
-                            (p) =>
-                                (p['userId'] == null ||
-                                    p['userId'].toString().isEmpty) &&
-                                p['isHost'] != true,
-                          );
-                          if (hasUnassigned) {
+                          final roomDoc =
+                              await FirebaseFirestore.instance.collection('rooms').doc(widget.roomId).get();
+
+                          if (!roomDoc.exists) {
+                            _showError('Room data not found');
+                            return;
+                          }
+
+                          final data = roomDoc.data();
+                          final firstDay = DateTime.parse(data?['firstDay'] as String);
+                          final lastDay = DateTime.parse(data?['lastDay'] as String);
+                          final dailyShifts = List<int>.from(data?['dailyShifts'] ?? []);
+                          final defaultShifts = data?['defaultShifts'] ?? 0;
+
+                          final numDays = lastDay.difference(firstDay).inDays + 1;
+
+                          // Find the doctor with the most shifts
+                          final maxShiftsEntry = _participants.map((participant) {
+                            final shiftsCount = _doctorPreferences[_participants.indexOf(participant)]?['shiftsCount'] ?? defaultShifts;
+                            return {'name': participant['name'], 'shiftsCount': shiftsCount};
+                          }).reduce((a, b) => a['shiftsCount'] > b['shiftsCount'] ? a : b);
+
+                          final maxShifts = maxShiftsEntry['shiftsCount'];
+                          final maxShiftsDoctorName = maxShiftsEntry['name'];
+
+                          if (numDays < maxShifts * 2) {
                             showDialog(
                               context: context,
-                              builder:
-                                  (context) => AlertDialog(
-                                    backgroundColor: const Color(0xFF1E1E2E),
-                                    title: const Text(
-                                      'Cannot Preview Schedule',
-                                      style: TextStyle(color: Colors.white),
+                              builder: (context) => AlertDialog(
+                                backgroundColor: const Color(0xFF1E1E2E),
+                                title: const Text(
+                                  'Invalid Schedule',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                content: Text(
+                                  'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
+                                  'Number of days: $numDays\n\n'
+                                  'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      'OK',
+                                      style: TextStyle(color: Colors.blue),
                                     ),
-                                    content: const Text(
-                                      'There are unassigned participants in the room. Please assign all participants before previewing the schedule.',
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: const Text(
-                                          'OK',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
-                                      ),
-                                    ],
                                   ),
+                                ],
+                              ),
                             );
                             return;
                           }
+
+                          // Calculate total shifts
+                          final totalDoctorShifts = _participants.fold<int>(
+                            0,
+                            (sum, participant) => sum + ((_doctorPreferences[_participants.indexOf(participant)]?['shiftsCount'] ?? defaultShifts) as int),
+                          );
+                          final totalDailyShifts = dailyShifts.fold<int>(0, (sum, shifts) => sum + shifts);
+
+                          if (totalDoctorShifts < totalDailyShifts) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: const Color(0xFF1E1E2E),
+                                title: const Text(
+                                  'Invalid Schedule',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                content: Text(
+                                  'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
+                                  'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
+                                  'Total of the daily required shifts: $totalDailyShifts',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      'OK',
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
+
                           showDialog(
                             context: context,
                             barrierDismissible: false,

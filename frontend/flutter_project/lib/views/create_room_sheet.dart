@@ -301,7 +301,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     final doctorCount = _selectedParticipants.length;
     if (!_validateConsecutiveDaysShifts(_dailyShifts, doctorCount)) {
       await _showErrorDialog(
-        'The sum of shifts for any two consecutive days cannot exceed the total number of doctors',
+        'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
       );
       return;
     }
@@ -365,7 +365,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       builder:
           (context) => AlertDialog(
             backgroundColor: const Color(0xFF1E1E2E),
-            title: const Text('Error', style: TextStyle(color: Colors.white)),
+            title: const Text('Invalid Shifts', style: TextStyle(color: Colors.white)),
             content: Text(message, style: const TextStyle(color: Colors.white)),
             actions: [
               TextButton(
