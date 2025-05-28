@@ -886,8 +886,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black, // changed to black
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                           : const Text(

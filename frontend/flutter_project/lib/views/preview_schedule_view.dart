@@ -69,48 +69,49 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
   ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: const Text(
-          'Remove Assignment',
-          style: TextStyle(color: Colors.black),
-        ),
-        content: Text(
-          'Do you want to remove ${assignment['name']} from $date?',
-          style: const TextStyle(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Remove Assignment',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              'Do you want to remove ${assignment['name']} from $date?',
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF1D61E7)),
+                ),
               ),
-            ),
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF1D61E7)),
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Remove',
-              style: TextStyle(color: Colors.white),
-            ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirm == true) {
@@ -148,52 +149,53 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: Text(
-          'Add Assignment for $date',
-          style: const TextStyle(color: Colors.black),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: availableParticipants.length,
-            itemBuilder: (context, index) {
-              final participant = availableParticipants[index];
-              return ListTile(
-                title: Text(
-                  participant['name'],
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                subtitle: Text(
-                  participant['assignedUserName'] ?? 'Unassigned',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-                onTap: () => Navigator.pop(context, participant),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: Text(
+              'Add Assignment for $date',
+              style: const TextStyle(color: Colors.black),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableParticipants.length,
+                itemBuilder: (context, index) {
+                  final participant = availableParticipants[index];
+                  return ListTile(
+                    title: Text(
+                      participant['name'],
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    subtitle: Text(
+                      participant['assignedUserName'] ?? 'Unassigned',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    onTap: () => Navigator.pop(context, participant),
+                  );
+                },
               ),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF1D61E7)),
-            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF1D61E7)),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (selectedParticipant != null) {
@@ -229,7 +231,12 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+        builder:
+            (context) => const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
       );
 
       // Convert schedule to format expected by Firestore
@@ -409,10 +416,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           ),
           child: const Text(
             'Apply Schedule',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ),
@@ -448,7 +452,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48),  // Balance the back button
+                  const SizedBox(width: 48), // Balance the back button
                 ],
               ),
               const SizedBox(height: 20),
@@ -466,7 +470,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                         horizontal: 16,
                         vertical: 8,
                       ),
-                      color: Colors.white,  // All cards are now white
+                      color: Colors.white, // All cards are now white
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -474,7 +478,8 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                           children: [
                             Text(
                               date + (isToday ? " (Today)" : ""),
-                              style: const TextStyle(  // Black text for all dates
+                              style: const TextStyle(
+                                // Black text for all dates
                                 color: Colors.black,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -483,7 +488,9 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                             const Divider(color: Colors.black38),
                             ...names.map(
                               (info) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -496,8 +503,13 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                                      onPressed: () => _removeAssignment(date, info),
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                        size: 20,
+                                      ),
+                                      onPressed:
+                                          () => _removeAssignment(date, info),
                                     ),
                                   ],
                                 ),
@@ -506,7 +518,10 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                             IconButton(
                               icon: Icon(
                                 Icons.add,
-                                color: isToday ? Colors.white : const Color(0xFF1D61E7),
+                                color:
+                                    isToday
+                                        ? Colors.white
+                                        : const Color(0xFF1D61E7),
                               ),
                               onPressed: () => _showAddAssignmentDialog(date),
                             ),

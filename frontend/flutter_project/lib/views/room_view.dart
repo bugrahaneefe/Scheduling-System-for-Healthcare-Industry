@@ -1447,7 +1447,11 @@ class _RoomViewState extends State<RoomView> {
             context: context,
             barrierDismissible: false,
             builder:
-                (context) => const Center(child: CircularProgressIndicator()),
+                (context) => const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
           );
         }
 
@@ -1707,7 +1711,11 @@ class _RoomViewState extends State<RoomView> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        );
       },
     );
 

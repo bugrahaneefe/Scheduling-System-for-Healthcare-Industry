@@ -109,8 +109,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                       : const Text('Send Reset Link'),

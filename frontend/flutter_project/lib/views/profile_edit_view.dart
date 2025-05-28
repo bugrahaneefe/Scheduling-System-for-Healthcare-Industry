@@ -157,12 +157,18 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                         style: const TextStyle(color: Colors.black),
                         dropdownTextStyle: const TextStyle(color: Colors.black),
                         cursorColor: Colors.black,
-                        dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+                        dropdownIcon: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
                           labelStyle: const TextStyle(color: Colors.black),
                           hintText: widget.user.phoneNumber,
-                          prefixIcon: const Icon(Icons.phone, color: Colors.black),
+                          prefixIcon: const Icon(
+                            Icons.phone,
+                            color: Colors.black,
+                          ),
                           border: const OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.black),
                           ),
@@ -170,23 +176,36 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                             borderSide: BorderSide(color: Colors.black),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.black, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.black,
+                              width: 2,
+                            ),
                           ),
                         ),
                         pickerDialogStyle: PickerDialogStyle(
                           backgroundColor: Colors.white,
-                          countryCodeStyle: const TextStyle(color: Colors.black),
-                          countryNameStyle: const TextStyle(color: Colors.black),
+                          countryCodeStyle: const TextStyle(
+                            color: Colors.black,
+                          ),
+                          countryNameStyle: const TextStyle(
+                            color: Colors.black,
+                          ),
                           listTileDivider: const Divider(color: Colors.grey),
                           searchFieldInputDecoration: InputDecoration(
                             labelText: 'Search country',
                             labelStyle: const TextStyle(color: Colors.black),
-                            suffixIcon: const Icon(Icons.search, color: Colors.black),
+                            suffixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.black,
+                            ),
                             enabledBorder: const UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.black),
                             ),
                             focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.black, width: 2),
+                              borderSide: BorderSide(
+                                color: Colors.black,
+                                width: 2,
+                              ),
                             ),
                           ),
                           searchFieldCursorColor: Colors.black,
@@ -210,39 +229,53 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           initialDate: _selectedBirthday ?? DateTime.now(),
                           firstDate: DateTime(1900),
                           lastDate: DateTime.now(),
-                          builder: (context, child) => Theme(
-                            data: ThemeData.light().copyWith(
-                              colorScheme: const ColorScheme.light(
-                                primary: Color(0xFF1D61E7),
-                                onPrimary: Colors.white,
-                                onSurface: Colors.black,
-                              ),
-                              textButtonTheme: TextButtonThemeData(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.black,
+                          builder:
+                              (context, child) => Theme(
+                                data: ThemeData.light().copyWith(
+                                  colorScheme: const ColorScheme.light(
+                                    primary: Color(0xFF1D61E7),
+                                    onPrimary: Colors.white,
+                                    onSurface: Colors.black,
+                                  ),
+                                  textButtonTheme: TextButtonThemeData(
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black,
+                                    ),
+                                  ),
+                                  dialogBackgroundColor: Colors.white,
+                                  textSelectionTheme:
+                                      const TextSelectionThemeData(
+                                        cursorColor: Colors.black,
+                                        selectionColor: Colors.black12,
+                                      ),
+                                  inputDecorationTheme:
+                                      const InputDecorationTheme(
+                                        labelStyle: TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        hintStyle: TextStyle(
+                                          color: Colors.black,
+                                        ), // Ensure "Enter date" text is black
+                                      ),
                                 ),
+                                child: child!,
                               ),
-                              dialogBackgroundColor: Colors.white,
-                              textSelectionTheme: const TextSelectionThemeData(
-                                cursorColor: Colors.black,
-                                selectionColor: Colors.black12,
-                              ),
-                              inputDecorationTheme: const InputDecorationTheme(
-                                labelStyle: TextStyle(color: Colors.black),
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black, width: 2),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                                hintStyle: TextStyle(color: Colors.black), // Ensure "Enter date" text is black
-                              ),
-                            ),
-                            child: child!,
-                          ),
                         );
                         if (picked != null)
                           setState(() => _selectedBirthday = picked);
@@ -312,8 +345,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                         : const Text(

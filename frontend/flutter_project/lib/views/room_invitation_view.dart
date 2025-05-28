@@ -145,7 +145,11 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
           padding: const EdgeInsets.all(16.0),
           child:
               _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                   : _error != null
                   ? Center(
                     child: Text(
