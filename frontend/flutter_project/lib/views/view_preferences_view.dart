@@ -1,29 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ViewPreferencesView extends StatelessWidget {
+class ViewPreferencesView extends StatefulWidget {
   final String doctorName;
   final Map<String, dynamic> preferences;
+  final bool isHost;
+  final String roomId;
 
   const ViewPreferencesView({
     Key? key,
     required this.doctorName,
     required this.preferences,
+    required this.isHost,
+    required this.roomId,
   }) : super(key: key);
 
   @override
+  State<ViewPreferencesView> createState() => _ViewPreferencesViewState();
+}
+
+class _ViewPreferencesViewState extends State<ViewPreferencesView> {
+  late TextEditingController _shiftsController;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shiftsController = TextEditingController(
+      text: widget.preferences['shiftsCount'].toString(),
+    );
+  }
+
+  Future<void> _showMessage(String message, bool isError) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        title: Text(
+          isError ? 'Error' : 'Shift Count Update',
+          style: const TextStyle(color: Colors.black),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF1D61E7),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateShiftsCount() async {
+    final newCount = int.tryParse(_shiftsController.text);
+    if (newCount == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomId)
+          .collection('preferences')
+          .doc(widget.doctorName)
+          .update({'shiftsCount': newCount});
+
+      if (mounted) {
+        await _showMessage('Shift count updated successfully.', false);
+        // Return with updated data
+        Navigator.pop(context, {'shiftsCount': newCount, 'doctorName': widget.doctorName});
+      }
+    } catch (e) {
+      if (mounted) {
+        await _showMessage('Failed to update shift count: $e', true);
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final shiftsCount = preferences['shiftsCount'] as int;
-    final availability = List<int>.from(preferences['availability'] as List);
+    final shiftsCount = widget.preferences['shiftsCount'] as int;
+    final availability = List<int>.from(widget.preferences['availability'] as List);
 
     // Parse firstDay with null check and fallback
     final firstDay =
-        preferences['firstDay'] != null
-            ? DateTime.parse(preferences['firstDay'] as String)
+        widget.preferences['firstDay'] != null
+            ? DateTime.parse(widget.preferences['firstDay'] as String)
             : DateTime.now();
     final lastDay =
-        preferences['lastDay'] != null
-            ? DateTime.parse(preferences['lastDay'] as String)
+        widget.preferences['lastDay'] != null
+            ? DateTime.parse(widget.preferences['lastDay'] as String)
             : firstDay.add(Duration(days: availability.length - 1));
 
     return Scaffold(
@@ -47,7 +128,7 @@ class ViewPreferencesView extends StatelessWidget {
         title: FittedBox(
           fit: BoxFit.scaleDown, //    down only (never up)
           child: Text(
-            "$doctorName's Preferences",
+            "${widget.doctorName}'s Preferences",
             maxLines: 2, // ② keep a single line
             style: const TextStyle(color: Colors.white),
             overflow: TextOverflow.ellipsis, // ③ still add “…” if necessary
@@ -90,13 +171,55 @@ class ViewPreferencesView extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               ),
-                              Text(
-                                shiftsCount.toString(),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
+                              if (widget.isHost) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _shiftsController,
+                                        keyboardType: TextInputType.number,
+                                        style: const TextStyle(color: Colors.white),
+                                        decoration: const InputDecoration(
+                                          enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(color: Colors.white),
+                                          ),
+                                          focusedBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(color: Color(0xFF1D61E7)),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: _isLoading ? null : _updateShiftsCount,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF1D61E7),
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                              ),
+                                            )
+                                          : const Text(
+                                              'Update',
+                                              style: TextStyle(color: Colors.white),
+                                            ),
+                                    ),
+                                  ],
                                 ),
-                              ),
+                              ] else
+                                Text(
+                                  shiftsCount.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
                             ],
                           ),
                         ),

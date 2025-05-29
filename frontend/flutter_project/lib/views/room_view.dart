@@ -2395,13 +2395,20 @@ class _RoomViewState extends State<RoomView> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (context) => ViewPreferencesView(
-                                  doctorName: participant['name'],
-                                  preferences: _doctorPreferences[index]!,
-                                ),
+                            builder: (context) => ViewPreferencesView(
+                              doctorName: participant['name'],
+                              preferences: _doctorPreferences[index]!,
+                              isHost: _isHost,
+                              roomId: widget.roomId,
+                            ),
                           ),
-                        );
+                        ).then((result) async {
+                          if (result != null) {
+                            // Refresh doctor preferences after update
+                            await _loadAllDoctorPreferences();
+                            setState(() {}); // Trigger rebuild
+                          }
+                        });
                       }
                       : null,
               child: Text(
