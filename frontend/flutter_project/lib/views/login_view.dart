@@ -211,7 +211,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: 'email', // Changed this line
+                                hintText: 'Email', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -233,7 +233,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: 'password', // Changed this line
+                                hintText: 'Password', // Changed this line
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(

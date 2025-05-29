@@ -618,7 +618,7 @@ class _RoomViewState extends State<RoomView> {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
-                style: TextButton.styleFrom(foregroundColor: Color(0xFF1D61E7)),
+                style: TextButton.styleFrom(foregroundColor: Colors.black),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -1286,6 +1286,7 @@ class _RoomViewState extends State<RoomView> {
   }
 
   Future<void> _editDailyShifts() async {
+    // --- build the editable controllers -------------------------------------------------
     final roomDoc =
         await FirebaseFirestore.instance
             .collection('rooms')
@@ -1307,8 +1308,10 @@ class _RoomViewState extends State<RoomView> {
       (i) => TextEditingController(text: currentDailyShifts[i].toString()),
     );
 
-    await showDialog(
+    // --- show the dialog ----------------------------------------------------------------
+    final bool? confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: true, // tap-outside just closes it
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
@@ -1321,6 +1324,7 @@ class _RoomViewState extends State<RoomView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // “apply to all” row --------------------------------------------------
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -1345,18 +1349,7 @@ class _RoomViewState extends State<RoomView> {
                               decoration: const InputDecoration(
                                 filled: true,
                                 fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.black,
-                                    width: 2,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black),
-                                ),
+                                border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
@@ -1369,15 +1362,15 @@ class _RoomViewState extends State<RoomView> {
                             onPressed: () {
                               final value =
                                   int.tryParse(allDaysController.text) ?? 0;
-                              for (int i = 0; i < dayControllers.length; i++) {
-                                dayControllers[i].text = value.toString();
+                              for (final c in dayControllers) {
+                                c.text = value.toString();
                               }
                               setStateDialog(() {});
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: const Color(0xFF1D61E7),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
                             child: const Text(
@@ -1389,21 +1382,23 @@ class _RoomViewState extends State<RoomView> {
                       ),
                     ),
                     const Divider(height: 32),
+                    // per-day list --------------------------------------------------------
                     Expanded(
                       child: ListView.builder(
-                        shrinkWrap: true,
                         itemCount: dayControllers.length,
                         itemBuilder: (context, index) {
                           final date = DateTime.parse(
                             firstDay,
                           ).add(Duration(days: index));
+                          final dateStr =
+                              '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}',
+                                    dateStr,
                                     style: const TextStyle(color: Colors.black),
                                   ),
                                 ),
@@ -1413,24 +1408,8 @@ class _RoomViewState extends State<RoomView> {
                                     controller: dayControllers[index],
                                     cursorColor: Colors.black,
                                     keyboardType: TextInputType.number,
-                                    style: const TextStyle(color: Colors.black),
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.black,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Colors.black,
-                                        ),
-                                      ),
+                                      border: OutlineInputBorder(),
                                     ),
                                   ),
                                 ),
@@ -1444,11 +1423,26 @@ class _RoomViewState extends State<RoomView> {
                 ),
               ),
               actions: [
+                // cancel – do nothing ----------------------------------------------------
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, false),
                   child: const Text(
-                    'Done',
+                    'Cancel',
                     style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                // confirm – save ---------------------------------------------------------
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D61E7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Change',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -1458,35 +1452,30 @@ class _RoomViewState extends State<RoomView> {
       },
     );
 
+    // user dismissed dialog without pressing “Change”
+    if (confirmed != true) return;
+
+    // --- apply the updates --------------------------------------------------------------
     final updatedShifts = <int>[];
     for (final c in dayControllers) {
       updatedShifts.add(int.tryParse(c.text) ?? 0);
     }
+
     if (!_validateConsecutiveDaysShifts(updatedShifts, _participants.length)) {
-      // Show error dialog above this dialog
       await showDialog(
         context: context,
         builder:
             (_) => AlertDialog(
               backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              title: const Text(
-                'Invalid Shifts',
-                style: TextStyle(color: Colors.black),
-              ),
+              title: const Text('Invalid Shifts'),
               content: const Text(
-                'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
-                style: TextStyle(color: Colors.black87),
+                'The sum of shifts for any two consecutive days '
+                'cannot exceed the total number of doctors.',
               ),
               actions: [
                 TextButton(
                   style: TextButton.styleFrom(
                     backgroundColor: const Color(0xFF1D61E7),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
                   ),
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
@@ -1518,9 +1507,6 @@ class _RoomViewState extends State<RoomView> {
               TextButton(
                 style: TextButton.styleFrom(
                   backgroundColor: const Color(0xFF1D61E7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: const Text('OK', style: TextStyle(color: Colors.white)),

@@ -464,7 +464,7 @@ class _HomeViewState extends State<HomeView>
                             onPressed: () => Navigator.of(context).pop(false),
                             child: const Text(
                               'Cancel',
-                              style: TextStyle(color: Color(0xFF1D61E7)),
+                              style: TextStyle(color: Colors.black),
                             ),
                           ),
 

@@ -301,7 +301,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 6),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
