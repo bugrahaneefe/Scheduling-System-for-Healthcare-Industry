@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:project491/views/preview_schedule_view.dart';
 import 'package:project491/views/set_duties_view.dart';
 import 'package:project491/views/view_preferences_view.dart';
+import 'package:project491/views/home_view.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../widgets/date_editor_dialog.dart';
@@ -793,20 +794,19 @@ class _RoomViewState extends State<RoomView> {
   Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
     if (schedule == null) return const SizedBox.shrink();
 
-    // — 1) Figure out “All” vs “Me” data —
-    final myName =
-        _participants.firstWhere(
-              (p) => p['userId'] == widget.currentUserId,
-            )['name']
-            as String;
-    final filteredSchedule =
-        _showOnlyMySchedule
-            ? Map.fromEntries(
-              schedule.entries.where(
-                (entry) => entry.value.any((a) => a['name'] == myName),
-              ),
-            )
-            : schedule;
+    // — 1) Figure out "All" vs "Me" data —
+    final currentParticipant = _participants.firstWhere(
+      (p) => p['userId'] == widget.currentUserId,
+      orElse: () => {'name': 'Unknown'}, // Provide fallback
+    );
+    final myName = currentParticipant['name'] as String;
+    final filteredSchedule = _showOnlyMySchedule
+        ? Map.fromEntries(
+            schedule.entries.where(
+              (entry) => entry.value.any((a) => a['name'] == myName),
+            ),
+          )
+        : schedule;
 
     // — 2) Build week groups only if we have data to show —
     final displaySchedule = filteredSchedule;
@@ -2020,7 +2020,15 @@ class _RoomViewState extends State<RoomView> {
                               color: Colors.black,
                             ),
                             onPressed: () {
-                              Navigator.pop(context);
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              } else {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const HomeView()),
+                                  (route) => false,
+                                );
+                              }
                             },
                           ),
                         ),

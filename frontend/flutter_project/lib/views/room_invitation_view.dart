@@ -76,19 +76,13 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder:
-            (context) =>
-                widget.returnToHome
-                    ? const HomeView()
-                    : RoomView(
-                      roomId: widget.roomId,
-                      roomName: _roomData?['name'] ?? '',
-                      roomDescription: _roomData?['description'] ?? '',
-                      participants: List<Map<String, dynamic>>.from(
-                        _roomData?['participants'] ?? [],
-                      ),
-                      currentUserId: currentUserId,
-                    ),
+        builder: (context) => RoomView(
+          roomId: widget.roomId,
+          roomName: _roomData?['name'] ?? '',
+          roomDescription: _roomData?['description'] ?? '',
+          participants: List<Map<String, dynamic>>.from(_roomData?['participants'] ?? []),
+          currentUserId: currentUserId,
+        ),
       ),
       (route) => false, // Remove all previous routes
     );
