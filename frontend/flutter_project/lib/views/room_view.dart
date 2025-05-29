@@ -1349,7 +1349,15 @@ class _RoomViewState extends State<RoomView> {
                               decoration: const InputDecoration(
                                 filled: true,
                                 fillColor: Colors.white,
-                                border: OutlineInputBorder(),
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black),
+                                ),
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
@@ -1409,7 +1417,15 @@ class _RoomViewState extends State<RoomView> {
                                     cursorColor: Colors.black,
                                     keyboardType: TextInputType.number,
                                     decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black, width: 2),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1574,8 +1590,38 @@ class _RoomViewState extends State<RoomView> {
 
       final result = await showDialog<Map<String, DateTime>>(
         context: context,
-        builder:
-            (context) => DateEditorDialog(firstDay: firstDay, lastDay: lastDay),
+        builder: (context) => Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF1D61E7),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
+            ),
+            dialogBackgroundColor: Colors.white,
+            textSelectionTheme: const TextSelectionThemeData(
+              cursorColor: Colors.black,
+              selectionColor: Colors.black12,
+              selectionHandleColor: Colors.black,
+            ),
+            inputDecorationTheme: const InputDecorationTheme(
+              labelStyle: TextStyle(color: Colors.black),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              hintStyle: TextStyle(color: Colors.black),
+            ),
+          ),
+          child: DateEditorDialog(firstDay: firstDay, lastDay: lastDay),
+        ),
       );
 
       if (result != null) {
@@ -2279,6 +2325,7 @@ class _RoomViewState extends State<RoomView> {
                                   child: TextField(
                                     controller: _newParticipantController,
                                     style: const TextStyle(color: Colors.white),
+                                    cursorColor: const Color(0xFF1D61E7),
                                     decoration: const InputDecoration(
                                       hintText: 'Add new participant',
                                       hintStyle: TextStyle(
@@ -2287,6 +2334,12 @@ class _RoomViewState extends State<RoomView> {
                                       enabledBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
                                           color: Colors.white60,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Color(0xFF1D61E7),
+                                          width: 2,
                                         ),
                                       ),
                                     ),

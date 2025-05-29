@@ -204,6 +204,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                                         controller: _shiftsController,
                                         keyboardType: TextInputType.number,
                                         style: const TextStyle(color: Colors.white),
+                                        cursorColor: const Color(0xFF1D61E7),
                                         decoration: const InputDecoration(
                                           enabledBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(color: Colors.white),
