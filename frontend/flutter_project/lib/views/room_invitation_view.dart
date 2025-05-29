@@ -270,7 +270,12 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               ),
                               const SizedBox(height: 16),
                               TextButton(
-                                onPressed: () => Navigator.pop(context),
+                                onPressed: () {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => const HomeView()),
+                                    (route) => false
+                                  );
+                                },
                                 child: const Text(
                                   'Cancel',
                                   style: TextStyle(color: Colors.white70),
