@@ -86,16 +86,14 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             actions: [
               TextButton(
                 style: TextButton.styleFrom(
+                  foregroundColor: Colors.black, // Changed to black
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF1D61E7)),
-                ),
+                child: const Text('Cancel'),
               ),
               TextButton(
                 style: TextButton.styleFrom(
@@ -183,16 +181,14 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             actions: [
               TextButton(
                 style: TextButton.styleFrom(
+                  foregroundColor: Colors.black, // Changed to black
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF1D61E7)),
-                ),
+                child: const Text('Cancel'),
               ),
             ],
           ),
