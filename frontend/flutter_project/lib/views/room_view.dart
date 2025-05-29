@@ -990,7 +990,7 @@ class _RoomViewState extends State<RoomView> {
                                                     children: [
                                                       Expanded(
                                                         child: Text(
-                                                          '${a['name']} (${a['assignedUser']})',
+                                                          '${a['name']}',
                                                           style: const TextStyle(
                                                             color:
                                                                 Colors.white70,
@@ -1013,7 +1013,7 @@ class _RoomViewState extends State<RoomView> {
                                                     ],
                                                   )
                                                   : Text(
-                                                    '${a['name']} (${a['assignedUser']})',
+                                                    '${a['name']}',
                                                     style: const TextStyle(
                                                       color: Colors.white70,
                                                     ),
