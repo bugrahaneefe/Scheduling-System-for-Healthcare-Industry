@@ -197,110 +197,119 @@ class _RoomViewState extends State<RoomView> {
         // Show warning for assigned participant
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            title: const Text(
-              'Participant Assigned',
-              style: TextStyle(color: Colors.black),
-            ),
-            content: Text(
-              'This participant is already assigned to ${participant['name']}.',
-              style: const TextStyle(color: Colors.black87),
-            ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D61E7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                title: const Text(
+                  'Participant Assigned',
+                  style: TextStyle(color: Colors.black),
+                ),
+                content: Text(
+                  'This participant is already assigned to ${participant['name']}.',
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                actions: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D61E7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
       } else if (isAlreadyAssigned) {
         // Show warning that user is already assigned
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            title: const Text(
-              'Already Assigned',
-              style: TextStyle(color: Colors.black),
-            ),
-            content: const Text(
-              'You are already assigned to another participant in this room.',
-              style: TextStyle(color: Colors.black87),
-            ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D61E7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                title: const Text(
+                  'Already Assigned',
+                  style: TextStyle(color: Colors.black),
+                ),
+                content: const Text(
+                  'You are already assigned to another participant in this room.',
+                  style: TextStyle(color: Colors.black87),
+                ),
+                actions: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D61E7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
       } else {
         // Show confirmation for unassigned participant
         final bool? confirm = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            title: const Text(
-              'Assign Participant',
-              style: TextStyle(color: Colors.black),
-            ),
-            content: Text(
-              'Do you want to assign yourself to ${participant['name']}? \n\nYou won\'t be able to unassign yourself later.',
-              style: const TextStyle(color: Colors.black87),
-            ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+          builder:
+              (context) => AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                title: const Text(
+                  'Assign Participant',
+                  style: TextStyle(color: Colors.black),
+                ),
+                content: Text(
+                  'Do you want to assign yourself to ${participant['name']}? \n\nYou won\'t be able to unassign yourself later.',
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                actions: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Color(0xFF1D61E7)),
+                    ),
                   ),
-                ),
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Color(0xFF1D61E7)),
-                ),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D61E7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D61E7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Yes',
-                  style: TextStyle(color: Colors.white),
-                ),
+                ],
               ),
-            ],
-          ),
         );
 
         if (confirm == true) {
@@ -781,49 +790,46 @@ class _RoomViewState extends State<RoomView> {
   Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
     if (schedule == null) return const SizedBox.shrink();
 
-    // Filter schedule if needed
-    Map<String, List<Map<String, String>>> filteredSchedule =
+    // — 1) Figure out “All” vs “Me” data —
+    final myName =
+        _participants.firstWhere(
+              (p) => p['userId'] == widget.currentUserId,
+            )['name']
+            as String;
+    final filteredSchedule =
         _showOnlyMySchedule
             ? Map.fromEntries(
-              schedule.entries.where((entry) {
-                final myParticipantInfo = _participants.firstWhere(
-                  (p) => p['userId'] == widget.currentUserId,
-                  orElse: () => {},
-                );
-                return entry.value.any(
-                  (assignment) =>
-                      assignment['name'] == myParticipantInfo['name'],
-                );
-              }),
+              schedule.entries.where(
+                (entry) => entry.value.any((a) => a['name'] == myName),
+              ),
             )
             : schedule;
 
-    // Group schedule by weeks
-    final Map<int, Map<String, List<Map<String, String>>>> weeklySchedule = {};
-
-    // Sort dates
-    final sortedDates =
-        filteredSchedule.keys.toList()..sort((a, b) {
-          final aDate = DateTime.parse(a.split('.').reversed.join('-'));
-          final bDate = DateTime.parse(b.split('.').reversed.join('-'));
-          return aDate.compareTo(bDate);
-        });
-
-    if (sortedDates.isEmpty) return const SizedBox.shrink();
-
-    // Group into weeks based on first date
-    final firstDate = DateTime.parse(
-      sortedDates.first.split('.').reversed.join('-'),
-    );
-    for (var date in sortedDates) {
-      final currentDate = DateTime.parse(date.split('.').reversed.join('-'));
-      final weekNumber = currentDate.difference(firstDate).inDays ~/ 7;
-      weeklySchedule.putIfAbsent(weekNumber, () => {});
-      weeklySchedule[weekNumber]![date] = filteredSchedule[date]!;
+    // — 2) Build week groups only if we have data to show —
+    final displaySchedule = filteredSchedule;
+    final weeklySchedule = <int, Map<String, List<Map<String, String>>>>{};
+    if (displaySchedule.isNotEmpty) {
+      final sortedDates =
+          displaySchedule.keys.toList()..sort((a, b) {
+            final da = DateTime.parse(a.split('.').reversed.join('-'));
+            final db = DateTime.parse(b.split('.').reversed.join('-'));
+            return da.compareTo(db);
+          });
+      final firstDate = DateTime.parse(
+        sortedDates.first.split('.').reversed.join('-'),
+      );
+      for (var date in sortedDates) {
+        final dt = DateTime.parse(date.split('.').reversed.join('-'));
+        final weekIndex = dt.difference(firstDate).inDays ~/ 7;
+        weeklySchedule.putIfAbsent(weekIndex, () => {})[date] =
+            displaySchedule[date]!;
+      }
     }
 
+    // — 3) Render —
     return Column(
       children: [
+        // 3a) Toggle row
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -850,158 +856,182 @@ class _RoomViewState extends State<RoomView> {
             ),
           ],
         ),
+
+        // 3b) The blue schedule box
         Container(
           height: 300,
           decoration: BoxDecoration(
-            color: const Color(0xFF1D61E7), // Changed to solid blue
+            color: const Color(0xFF1D61E7),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: weeklySchedule.length,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, weekIndex) {
-              final weekSchedule = weeklySchedule[weekIndex]!;
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (weekIndex > 0)
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.arrow_left,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () => _handlePageChange(-1),
-                              ),
-                            Expanded(
-                              child: Text(
-                                _getWeekTitle(weekSchedule),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            if (weekIndex < weeklySchedule.length - 1)
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.arrow_right,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () => _handlePageChange(1),
-                              ),
-                          ],
-                        ),
-                        const Divider(
-                          color: Colors.white,
-                          thickness: 1,
-                          height: 16,
-                        ),
-                      ],
+          child:
+              _showOnlyMySchedule && displaySchedule.isEmpty
+                  // 3b-i) “Me” but nothing to show:
+                  ? Center(
+                    child: Text(
+                      "You don't have any duties in the schedule.",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: weekSchedule.length,
-                      itemBuilder: (context, dayIndex) {
-                        final date = weekSchedule.keys.toList()[dayIndex];
-                        final assignments = weekSchedule[date]!;
-                        final parts = date.split('.');
-                        final dt = DateTime(
-                          int.parse(parts[2]),
-                          int.parse(parts[1]),
-                          int.parse(parts[0]),
-                        );
-                        final weekdayNames = [
-                          'Monday',
-                          'Tuesday',
-                          'Wednesday',
-                          'Thursday',
-                          'Friday',
-                          'Saturday',
-                          'Sunday',
-                        ];
-                        return Column(
-                          children: [
-                            ListTile(
-                              title: Row(
-                                children: [
-                                  Text(
-                                    '$date ${weekdayNames[dt.weekday - 1]}',
+                  )
+                  // 3b-ii) Otherwise your existing PageView:
+                  : PageView.builder(
+                    controller: _pageController,
+                    itemCount: weeklySchedule.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, weekIndex) {
+                      final weekMap = weeklySchedule[weekIndex]!;
+                      return Column(
+                        children: [
+                          // Week header with arrows
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                if (weekIndex > 0)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_left,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => _handlePageChange(-1),
+                                  ),
+                                Expanded(
+                                  child: Text(
+                                    _getWeekTitle(weekMap),
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
                                     ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                  if (_isHost) const Spacer(),
-                                  if (_isHost)
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.add,
-                                        color: Colors.white, // Changed to white
-                                      ),
-                                      onPressed:
-                                          () => _showAddAssignmentDialog(date),
+                                ),
+                                if (weekIndex < weeklySchedule.length - 1)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_right,
+                                      color: Colors.white,
                                     ),
-                                ],
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children:
-                                    assignments.map((a) {
-                                      return _isHost
-                                          ? Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  '${a['name']} (${a['assignedUser']})',
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                  ),
-                                                ),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.delete,
-                                                  color: Colors.red,
-                                                  size: 20,
-                                                ),
-                                                onPressed:
-                                                    () => _removeAssignment(
-                                                      date,
-                                                      a,
-                                                    ),
-                                              ),
-                                            ],
-                                          )
-                                          : Text(
-                                            '${a['name']} (${a['assignedUser']})',
-                                            style: const TextStyle(
-                                              color: Colors.white70,
-                                            ),
-                                          );
-                                    }).toList(),
-                              ),
+                                    onPressed: () => _handlePageChange(1),
+                                  ),
+                              ],
                             ),
-                            if (dayIndex < weekSchedule.length - 1)
-                              const Divider(color: Colors.white24, height: 1),
-                          ],
-                        );
-                      },
-                    ),
+                          ),
+                          const Divider(
+                            color: Colors.white,
+                            thickness: 1,
+                            height: 16,
+                          ),
+
+                          // Day‐by‐day list
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: weekMap.length,
+                              itemBuilder: (context, dayIndex) {
+                                final date = weekMap.keys.toList()[dayIndex];
+                                final assignments = weekMap[date]!;
+                                final parts = date.split('.');
+                                final dt = DateTime(
+                                  int.parse(parts[2]),
+                                  int.parse(parts[1]),
+                                  int.parse(parts[0]),
+                                );
+                                const weekdayNames = [
+                                  'Monday',
+                                  'Tuesday',
+                                  'Wednesday',
+                                  'Thursday',
+                                  'Friday',
+                                  'Saturday',
+                                  'Sunday',
+                                ];
+
+                                return Column(
+                                  children: [
+                                    ListTile(
+                                      title: Row(
+                                        children: [
+                                          Text(
+                                            '$date ${weekdayNames[dt.weekday - 1]}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          if (_isHost) const Spacer(),
+                                          if (_isHost)
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.add,
+                                                color: Colors.white,
+                                              ),
+                                              onPressed:
+                                                  () =>
+                                                      _showAddAssignmentDialog(
+                                                        date,
+                                                      ),
+                                            ),
+                                        ],
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children:
+                                            assignments.map((a) {
+                                              return _isHost
+                                                  ? Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${a['name']} (${a['assignedUser']})',
+                                                          style: const TextStyle(
+                                                            color:
+                                                                Colors.white70,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red,
+                                                          size: 20,
+                                                        ),
+                                                        onPressed:
+                                                            () =>
+                                                                _removeAssignment(
+                                                                  date,
+                                                                  a,
+                                                                ),
+                                                      ),
+                                                    ],
+                                                  )
+                                                  : Text(
+                                                    '${a['name']} (${a['assignedUser']})',
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                    ),
+                                                  );
+                                            }).toList(),
+                                      ),
+                                    ),
+                                    if (dayIndex < weekMap.length - 1)
+                                      const Divider(
+                                        color: Colors.white24,
+                                        height: 1,
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                ],
-              );
-            },
-          ),
         ),
       ],
     );
@@ -1013,48 +1043,49 @@ class _RoomViewState extends State<RoomView> {
   ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: const Text(
-          'Remove Assignment',
-          style: TextStyle(color: Colors.black),
-        ),
-        content: Text(
-          'Do you want to remove ${assignment['name']} from $date?',
-          style: const TextStyle(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: const Text(
+              'Remove Assignment',
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              'Do you want to remove ${assignment['name']} from $date?',
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF1D61E7)),
+                ),
               ),
-            ),
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF1D61E7)),
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Remove',
-              style: TextStyle(color: Colors.white),
-            ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirm == true) {
@@ -1102,52 +1133,53 @@ class _RoomViewState extends State<RoomView> {
 
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: Text(
-          'Add Assignment for $date',
-          style: const TextStyle(color: Colors.black),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: availableParticipants.length,
-            itemBuilder: (context, index) {
-              final participant = availableParticipants[index];
-              return ListTile(
-                title: Text(
-                  participant['name'],
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                subtitle: Text(
-                  participant['assignedUserName'] ?? 'Unassigned',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-                onTap: () => Navigator.pop(context, participant),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            title: Text(
+              'Add Assignment for $date',
+              style: const TextStyle(color: Colors.black),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableParticipants.length,
+                itemBuilder: (context, index) {
+                  final participant = availableParticipants[index];
+                  return ListTile(
+                    title: Text(
+                      participant['name'],
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    subtitle: Text(
+                      participant['assignedUserName'] ?? 'Unassigned',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                    onTap: () => Navigator.pop(context, participant),
+                  );
+                },
               ),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF1D61E7)),
-            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF1D61E7)),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (selectedParticipant != null) {
