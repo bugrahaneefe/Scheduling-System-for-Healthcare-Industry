@@ -2344,6 +2344,7 @@ class _RoomViewState extends State<RoomView> {
     final index = _participants.indexWhere((p) => p['name'] == name);
     final hasPreferences = _doctorPreferences.containsKey(index);
     final isCurrentUser = participant['userId'] == widget.currentUserId;
+    final isUnassigned = participant['userId']?.isEmpty ?? true;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -2433,6 +2434,60 @@ class _RoomViewState extends State<RoomView> {
                           ? Color(0xFF1D61E7)
                           : Colors.grey,
                 ),
+              ),
+            )
+          else if (_isHost && !participant['isHost']) // Add button for unassigned users
+            TextButton(
+              onPressed: () {
+                // Get room document to get dates
+                FirebaseFirestore.instance
+                    .collection('rooms')
+                    .doc(widget.roomId)
+                    .get()
+                    .then((roomDoc) {
+                  if (!roomDoc.exists) return;
+                  
+                  final data = roomDoc.data()!;
+                  final defaultPrefs = {
+                    'shiftsCount': data['defaultShifts'] ?? 0,
+                    'availability': List<int>.filled(
+                      DateTime.parse(data['lastDay'])
+                          .difference(DateTime.parse(data['firstDay']))
+                          .inDays + 1,
+                      0
+                    ),
+                    'firstDay': data['firstDay'],
+                    'lastDay': data['lastDay'],
+                  };
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ViewPreferencesView(
+                        doctorName: participant['name'],
+                        preferences: defaultPrefs,
+                        isHost: true,
+                        roomId: widget.roomId,
+                      ),
+                    ),
+                  ).then((result) async {
+                    if (result != null) {
+                      setState(() {
+                        // Update the local preferences map
+                        _doctorPreferences[index] = {
+                          'shiftsCount': result['shiftsCount'],
+                          'availability': result['availability'],
+                          'firstDay': defaultPrefs['firstDay'],
+                          'lastDay': defaultPrefs['lastDay'],
+                        };
+                      });
+                    }
+                  });
+                });
+              },
+              child: const Text(
+                'Set Shifts',
+                style: TextStyle(color: Color(0xFF1D61E7)),
               ),
             ),
         ],

@@ -71,17 +71,41 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseFirestore.instance
+      final prefsRef = FirebaseFirestore.instance
           .collection('rooms')
           .doc(widget.roomId)
           .collection('preferences')
-          .doc(widget.doctorName)
-          .update({'shiftsCount': newCount});
+          .doc(widget.doctorName);
+
+      final doc = await prefsRef.get();
+      
+      if (doc.exists) {
+        await prefsRef.update({'shiftsCount': newCount});
+      } else {
+        await prefsRef.set({
+          'shiftsCount': newCount,
+          'availability': List<int>.filled(
+            DateTime.parse(widget.preferences['lastDay'])
+                .difference(DateTime.parse(widget.preferences['firstDay']))
+                .inDays + 1,
+            0
+          ),
+        });
+      }
+
+      // Update local state immediately
+      setState(() {
+        widget.preferences['shiftsCount'] = newCount;
+      });
 
       if (mounted) {
         await _showMessage('Shift count updated successfully.', false);
         // Return with updated data
-        Navigator.pop(context, {'shiftsCount': newCount, 'doctorName': widget.doctorName});
+        Navigator.pop(context, {
+          'shiftsCount': newCount,
+          'doctorName': widget.doctorName,
+          'availability': widget.preferences['availability'],
+        });
       }
     } catch (e) {
       if (mounted) {
