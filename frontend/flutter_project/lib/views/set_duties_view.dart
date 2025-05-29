@@ -250,7 +250,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
           'Set Duties - ${widget.doctorName}',

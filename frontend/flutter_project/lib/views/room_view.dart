@@ -41,10 +41,13 @@ class _RoomViewState extends State<RoomView> {
   // Add this field to track if schedule is applied
   bool _isScheduleApplied = false;
   final PageController _pageController = PageController();
+  late final Future<DocumentSnapshot> _roomDocFuture;
 
   @override
   void initState() {
     super.initState();
+    _roomDocFuture =
+        FirebaseFirestore.instance.collection('rooms').doc(widget.roomId).get();
     _participants = widget.participants;
     _isHost = _participants.any(
       (p) => p['isHost'] == true && p['userId'] == widget.currentUserId,
@@ -2139,16 +2142,28 @@ class _RoomViewState extends State<RoomView> {
                     const SizedBox(height: 20),
                     // --- One card: date range at top, description below -----------------
                     FutureBuilder<DocumentSnapshot>(
-                      future:
-                          FirebaseFirestore.instance
-                              .collection('rooms')
-                              .doc(widget.roomId)
-                              .get(),
+                      future: _roomDocFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const SizedBox(height: 32);
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1D61E7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                          );
                         }
+
                         if (!snapshot.hasData || !snapshot.data!.exists) {
                           return const SizedBox(height: 32);
                         }
