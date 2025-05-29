@@ -78,9 +78,12 @@ class _HomeViewState extends State<HomeView>
                           (_) => ProfileEditView(user: authVM.currentUser!),
                     );
                   } else if (choice == 'logout') {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginView()),
+                    Navigator.of(context).pushReplacement(
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => const LoginView(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
                     );
                     authVM.clearUserData();
                     authService.value.signOut();
