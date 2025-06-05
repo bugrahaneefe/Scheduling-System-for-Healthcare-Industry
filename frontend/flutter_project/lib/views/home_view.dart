@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project491/utils/app_localizations.dart';
 import 'package:project491/views/create_room_sheet.dart';
 import 'package:project491/views/profile_edit_view.dart';
 import 'package:project491/views/room_view.dart';
@@ -95,7 +96,7 @@ class _HomeViewState extends State<HomeView>
                         value: 'edit',
                         child: ListTile(
                           leading: const Icon(Icons.edit, color: Colors.black),
-                          title: const Text('Edit Profile'),
+                          title: Text(AppLocalizations.of(context).get('editProfile')),
                         ),
                       ),
                       PopupMenuItem(
@@ -105,7 +106,7 @@ class _HomeViewState extends State<HomeView>
                             Icons.logout,
                             color: Colors.black,
                           ),
-                          title: const Text('Logout'),
+                          title: Text(AppLocalizations.of(context).get('logout')),
                         ),
                       ),
                     ],
@@ -224,7 +225,7 @@ class _HomeViewState extends State<HomeView>
                                 controller: _roomsScrollController,
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 children: [
-                                  const Padding(
+                                  Padding(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 8,
@@ -233,7 +234,7 @@ class _HomeViewState extends State<HomeView>
                                       children: [
                                         Center(
                                           child: Text(
-                                            'My Rooms',
+                                            AppLocalizations.of(context).get('myRooms'),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.white,
@@ -278,11 +279,11 @@ class _HomeViewState extends State<HomeView>
                                         }
                                         if (authVM.currentUser?.rooms.isEmpty ??
                                             true) {
-                                          return const SizedBox(
+                                          return SizedBox(
                                             height: 200,
                                             child: Center(
                                               child: Text(
-                                                'No room assigned',
+                                                AppLocalizations.of(context).get('noRoomAssigned'),
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                 ),
@@ -331,9 +332,9 @@ class _HomeViewState extends State<HomeView>
 
                               if (!snapshot.hasData ||
                                   snapshot.data!.docs.isEmpty) {
-                                return const Center(
+                                return Center(
                                   child: Text(
-                                    'No notifications',
+                                    AppLocalizations.of(context).get('noNotifications'),
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 );
@@ -450,20 +451,20 @@ class _HomeViewState extends State<HomeView>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        title: const Text(
-                          'Confirm Delete',
+                        title: Text(
+                          AppLocalizations.of(context).get('confirmDelete'),
                           style: TextStyle(color: Colors.black),
                         ),
-                        content: const Text(
-                          'Are you sure you want to delete this room?',
+                        content: Text(
+                          AppLocalizations.of(context).get('sureToConfirmDeleteRoom'),
                           style: TextStyle(color: Colors.black87),
                         ),
                         actions: [
                           // ­— CANCEL: text-only, brand-blue label ­—
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text(
-                              'Cancel',
+                            child: Text(
+                              AppLocalizations.of(context).get('cancel'),
                               style: TextStyle(color: Colors.black),
                             ),
                           ),
@@ -478,7 +479,7 @@ class _HomeViewState extends State<HomeView>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                            child: const Text('Delete'),
+                            child: Text(AppLocalizations.of(context).get('delete')),
                           ),
                         ],
                       ),
@@ -586,7 +587,7 @@ class _HomeViewState extends State<HomeView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          roomData['name'] ?? 'Unnamed Room',
+                          roomData['name'] ?? AppLocalizations.of(context).get('unnamedRoom'),
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 20,
@@ -604,7 +605,7 @@ class _HomeViewState extends State<HomeView>
                           ],
                         ),
                         Text(
-                          roomData['description'] ?? 'No description',
+                          roomData['description'] ?? AppLocalizations.of(context).get('noDescription'),
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,

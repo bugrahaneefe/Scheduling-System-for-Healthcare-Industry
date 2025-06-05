@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/utils/app_localizations.dart';
 
 class CreateRoomSheet extends StatefulWidget {
   final String hostId;
@@ -182,7 +183,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
           builder: (context, setStateDialog) {
             return AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text('Edit Daily Required Shifts'),
+              title: Text(AppLocalizations.of(context).get('editDailyShifts')),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400,
@@ -200,9 +201,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                       ),
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Set all days to:',
+                              AppLocalizations.of(context).get('setAllDaysTo'),
                               style: TextStyle(color: Colors.black),
                             ),
                           ),
@@ -251,8 +252,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                            child: const Text(
-                              'Apply',
+                            child: Text(
+                              AppLocalizations.of(context).get('apply'),
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -312,8 +313,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Done',
+                  child: Text(
+                    AppLocalizations.of(context).get('done'),
                     style: TextStyle(color: Colors.black),
                   ), // Changed Done button color
                 ),
@@ -450,8 +451,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            title: const Text(
-              'Invalid Shifts',
+            title: Text(
+              AppLocalizations.of(context).get('invalidShifts'),
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
@@ -467,7 +468,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -508,7 +509,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     // Title
                     Expanded(
                       child: Text(
-                        'Create New Room',
+                        AppLocalizations.of(context).get('createNewRoom'),
                         style: Theme.of(
                           context,
                         ).textTheme.headlineSmall?.copyWith(
@@ -730,8 +731,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                     Icons.edit,
                     color: Colors.black,
                   ), // changed to black
-                  label: const Text(
-                    'Edit Daily Required Shifts',
+                  label: Text(
+                    AppLocalizations.of(context).get('editDailyShifts'),
                     style: TextStyle(color: Colors.black), // changed to black
                   ),
                   style: ElevatedButton.styleFrom(
@@ -812,8 +813,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Participants:',
+                      Text(
+                        AppLocalizations.of(context).get('participants'),
                         style: TextStyle(
                           color: Colors.black87,
                           fontWeight: FontWeight.bold,
@@ -848,8 +849,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                             8,
                                           ),
                                         ),
-                                        child: const Text(
-                                          'Host',
+                                        child: Text(
+                                          AppLocalizations.of(context).get('host'),
                                           style: TextStyle(
                                             color: Colors.white,
                                           ), // Changed text color to white
@@ -891,8 +892,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               ),
                             ),
                           )
-                          : const Text(
-                            'Create Room',
+                          : Text(
+                            AppLocalizations.of(context).get('createRoom'),
                             style: TextStyle(
                               color: Colors.black,
                             ), // changed to black

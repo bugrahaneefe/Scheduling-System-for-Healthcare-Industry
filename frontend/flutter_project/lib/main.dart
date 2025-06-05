@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
@@ -9,6 +10,8 @@ import 'views/home_view.dart';
 import 'views/room_invitation_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '/firebase_options.dart';
+import 'utils/app_localizations.dart';
+import 'dart:ui' as ui;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +88,17 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         navigatorKey: navigatorKey,
         title: 'Nöbetim',
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'), // English
+          Locale('tr'), // Turkish
+        ],
+        locale: ui.window.locale,
         theme: ThemeData(
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: Colors.transparent,
