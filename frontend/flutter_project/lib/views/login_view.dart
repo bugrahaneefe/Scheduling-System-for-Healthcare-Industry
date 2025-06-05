@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:project491/components/custom_button.dart';
 import 'package:project491/managers/auth_services.dart';
+import 'package:project491/utils/app_localizations.dart';
 import 'package:project491/views/reset_password_view.dart';
 import 'package:project491/views/room_invitation_view.dart';
 import 'package:provider/provider.dart';
@@ -133,8 +134,8 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 20),
                       // "Sign in to your Account" text
-                      const Text(
-                        'Sign in to your Account',
+                      Text(
+                        AppLocalizations.of(context).get('signInToAccount'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
@@ -148,8 +149,8 @@ class _LoginViewState extends State<LoginView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            "Don't have an account?",
+                          Text(
+                            AppLocalizations.of(context).get('dontHaveAccount'),
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w500,
@@ -169,8 +170,8 @@ class _LoginViewState extends State<LoginView> {
                                 ),
                               );
                             },
-                            child: const Text(
-                              'Sign Up',
+                            child: Text(
+                              AppLocalizations.of(context).get('signUp'),
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
@@ -211,7 +212,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: 'Email', // Changed this line
+                                hintText: AppLocalizations.of(context).get('email'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -233,7 +234,7 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: 'Password', // Changed this line
+                                hintText: AppLocalizations.of(context).get('password'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -289,8 +290,8 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           );
                         },
-                        child: const Text(
-                          'Forgot Your Password?',
+                        child: Text(
+                          AppLocalizations.of(context).get('forgotPassword'),
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontWeight: FontWeight.w500,
@@ -303,12 +304,12 @@ class _LoginViewState extends State<LoginView> {
                       const SizedBox(height: 10),
                       // Log In button
                       CustomButton(
-                        text: 'Log In',
+                        text: AppLocalizations.of(context).get('login2'),
                         onPressed: () async {
                           if (authViewModel.email.isEmpty ||
                               authViewModel.password.isEmpty) {
                             _showError(
-                              'Please enter valid email and password.',
+                              AppLocalizations.of(context).get('enterValidEmailAndPassword'),
                             );
                           } else {
                             setState(() {
@@ -326,7 +327,7 @@ class _LoginViewState extends State<LoginView> {
                                 _isLoading = false; // Hide loading
                               });
 
-                              _showSuccess('Login successful!');
+                              _showSuccess(AppLocalizations.of(context).get('loginSuccessful'));
                               await Future.delayed(
                                 const Duration(seconds: 1),
                               ); // Reduced delay
@@ -339,7 +340,7 @@ class _LoginViewState extends State<LoginView> {
                                 _isLoading = false; // Hide loading
                               });
                               _showError(
-                                e.message ?? 'Login failed. Please try again.',
+                                e.message ?? AppLocalizations.of(context).get('loginFailed'),
                               );
                             }
                           }
