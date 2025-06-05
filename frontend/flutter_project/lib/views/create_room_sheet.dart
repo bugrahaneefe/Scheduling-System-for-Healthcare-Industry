@@ -534,7 +534,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         cursorColor: Colors.black,
                         style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'Room Name',
+                          labelText: AppLocalizations.of(context).get('roomName'),
                           labelStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -568,7 +568,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         cursorColor: Colors.black,
                         style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'Description',
+                          labelText: AppLocalizations.of(context).get('description'),
                           labelStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -605,7 +605,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: 'First Day',
+                                labelText: AppLocalizations.of(context).get('firstDay'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
@@ -645,7 +645,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: 'Last Day',
+                                labelText: AppLocalizations.of(context).get('lastDay'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
@@ -688,10 +688,10 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         style: const TextStyle(color: Colors.black),
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: 'Default Number of Shifts',
+                          labelText: AppLocalizations.of(context).get('defaultShiftsCount'),
                           labelStyle: const TextStyle(color: Colors.black),
                           hintText:
-                              'Enter default number of shifts for each participant',
+                              AppLocalizations.of(context).get('enterDefaultShifts'),
                           hintStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -754,7 +754,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: 'Add Participant',
+                                labelText: AppLocalizations.of(context).get('addParticipant'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),

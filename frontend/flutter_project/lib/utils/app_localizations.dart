@@ -49,6 +49,8 @@ class AppLocalizations {
       'delete': 'Delete',
       'unnamedRoom': 'Unnamed Room',
       'noDescription': 'No description',
+      'invalidShifts': 'Invalid Shifts',
+      'ok': 'OK',
       // ... add all other English strings
     },
     'tr': {
@@ -74,7 +76,7 @@ class AppLocalizations {
       'description': 'Açıklama',
       'firstDay': 'Başlangıç Tarihi',
       'lastDay': 'Bitiş Tarihi',
-      'defaultShiftsCount': 'Varsayılan Nöbet Sayısı',
+      'defaultShiftsCount': 'Varsayılan Kişi Başı Nöbet Sayısı',
       'enterDefaultShifts': 'Her katılımcı için varsayılan nöbet sayısını girin',
       'editDailyShifts': 'Günlük Gerekli Nöbet Sayılarını Düzenle',
       'setAllDaysTo': 'Tüm günleri ayarla:',
@@ -90,6 +92,8 @@ class AppLocalizations {
       'delete': 'Sil',
       'unnamedRoom': 'İsimsiz Oda',
       'noDescription': 'Açıklama yok',
+      'invalidShifts': 'Geçersiz Nöbet Sayıları',
+      'ok': 'Tamam',
       // ... add all other Turkish strings
     }
   };
