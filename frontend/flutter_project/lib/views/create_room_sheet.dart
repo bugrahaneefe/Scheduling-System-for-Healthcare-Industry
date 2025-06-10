@@ -371,7 +371,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
     // Validate dates
     if (firstDay.isBefore(todayNormalized)) {
-      await _showErrorDialog('First day cannot be before today');
+      await _showErrorDialog(AppLocalizations.of(context).get('firstDayBeforeToday'));
       return;
     }
 

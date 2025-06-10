@@ -59,6 +59,9 @@ class AppLocalizations {
       'forgotPassword': 'Forgot Your Password?',
       'enterValidEmailAndPassword': 'Please enter valid email and password.',
       'loginSuccessful': 'Login successful!',
+      'loginFailed': 'Login failed. Please try again.',
+      'firstDayBeforeToday': 'First day cannot be before today.',
+      'lastDayBeforeFirstDay': 'Last day cannot be after first day.',
       // ... add all other English strings
     },
     'tr': {
@@ -110,6 +113,9 @@ class AppLocalizations {
       'forgotPassword': 'Şifrenizi mi unuttunuz?',
       'enterValidEmailAndPassword': 'Lütfen geçerli bir email ve şifre girin.',
       'loginSuccessful': 'Giriş başarılı!',
+      'loginFailed': 'Giriş başarısız. Lütfen tekrar deneyin.',
+      'firstDayBeforeToday': 'Başlangıç tarihi bugünden önce olamaz.',
+      'lastDayBeforeFirstDay': 'Bitiş tarihi başlangıç tarihinden sonra olamaz.',
       // ... add all other Turkish strings
     }
   };
