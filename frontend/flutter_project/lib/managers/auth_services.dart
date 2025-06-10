@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 ValueNotifier<AuthServices> authService = ValueNotifier(AuthServices());
 
@@ -63,6 +64,45 @@ class AuthServices {
     } on FirebaseAuthException catch (e) {
       throw e;
     }
+  }
+
+  /// Google sign-in.
+  /// – Creates a Firestore user-document on first login
+  /// – Returns the same UserCredential object as e-mail/password sign-in
+  Future<UserCredential?> signInWithGoogle() async {
+    // 1. Interactive Google sign-in dialog
+    final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
+    if (gUser == null) return null; // user closed the dialog
+
+    // 2. Credentials
+    final gAuth = await gUser.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: gAuth.accessToken,
+      idToken: gAuth.idToken,
+    );
+
+    // 3. Firebase sign-in
+    final userCredential = await firebaseAuth.signInWithCredential(credential);
+
+    // 4. Create user-document on first login
+    final user = userCredential.user;
+    if (user != null) {
+      final doc = _firestore.collection('users').doc(user.uid);
+      final snap = await doc.get();
+      if (!snap.exists) {
+        await doc.set({
+          'name': user.displayName ?? '',
+          'email': user.email,
+          'title': '',
+          'birthday': null,
+          'phoneNumber': user.phoneNumber ?? '',
+          'rooms': [],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    return userCredential;
   }
 
   Future<void> updateUserProfile({

@@ -14,6 +14,7 @@ import 'signup_view.dart';
 import 'package:flutter/services.dart';
 import 'home_view.dart';
 import 'dart:async';
+import 'package:email_validator/email_validator.dart';
 
 class LoginView extends StatefulWidget {
   final String? pendingRoomId;
@@ -33,6 +34,10 @@ class _LoginViewState extends State<LoginView> {
   bool _isLoading = false; // Add this line after other state variables
   Timer? _errorTimer;
   Timer? _successTimer;
+
+  bool isValidEmail(String email) {
+    return EmailValidator.validate(email);
+  }
 
   void _showError(String message) {
     if (!mounted) return;
@@ -92,28 +97,6 @@ class _LoginViewState extends State<LoginView> {
           (route) => false, // Remove all previous routes
         );
       }
-    }
-  }
-
-  Future<UserCredential?> _signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      return await FirebaseAuth.instance.signInWithCredential(credential);
-    } catch (e) {
-      print('Google Sign-In error: $e');
-      _showError("Google Sign-In failed");
-      return null;
     }
   }
 
@@ -340,6 +323,8 @@ class _LoginViewState extends State<LoginView> {
                                 context,
                               ).get('enterValidEmailAndPassword'),
                             );
+                          } else if (!isValidEmail(authViewModel.email)) {
+                            _showError('Please enter a valid email address.');
                           } else {
                             setState(() {
                               _errorMessage = null;
@@ -383,45 +368,35 @@ class _LoginViewState extends State<LoginView> {
                         },
                         buttonType: 'main',
                       ),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10.0),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "Or continue with",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(height: 10),
-                            Card(
-                              elevation: 3,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: IconButton(
-                                iconSize: 10,
-                                icon: Image.asset(
-                                  'assets/images/google_icon.png',
-                                ),
-                                onPressed: () async {
-                                  setState(() => _isLoading = true);
-                                  final result = await _signInWithGoogle();
-                                  setState(() => _isLoading = false);
+                      const SizedBox(height: 12),
 
-                                  if (result != null) {
-                                    _showSuccess("Login successful");
-                                    await Future.delayed(
-                                      const Duration(seconds: 1),
-                                    );
-                                    if (mounted)
-                                      await _handleSuccessfulLogin(context);
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                      // NEW “Sign in with Google” button ---------
+                      CustomButton(
+                        text: 'signInWithGoogle',
+                        onPressed: () async {
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _errorMessage = null;
+                            _isLoading = true;
+                          });
+
+                          try {
+                            await authService.value.signInWithGoogle();
+
+                            setState(() => _isLoading = false);
+                            _showSuccess('loginSuccessful');
+
+                            await Future.delayed(const Duration(seconds: 1));
+                            if (mounted) await _handleSuccessfulLogin(context);
+                          } catch (e) {
+                            setState(() => _isLoading = false);
+                            _showError(e.toString());
+                          }
+                        },
+                        buttonType: 'secondary', // or create a special style
                       ),
+
+                      const SizedBox(height: 16),
                     ],
                   ),
                   // Popup error message

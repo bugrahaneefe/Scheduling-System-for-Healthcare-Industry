@@ -32,6 +32,10 @@ class _SignupViewState extends State<SignupView> {
 
   bool _isLoading = false;
 
+  bool isValidPassword(String password) {
+    return password.length >= 6;
+  }
+
   void _showError(String message) {
     setState(() {
       _errorMessage = message;
@@ -195,7 +199,9 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
-                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
+                              cursorColor: Color(
+                                0xFF1D61E7,
+                              ), // Updated cursor color
                               onChanged:
                                   authViewModel
                                       .updateName, // Add this method in AuthViewModel
@@ -223,7 +229,9 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
-                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
+                              cursorColor: Color(
+                                0xFF1D61E7,
+                              ), // Updated cursor color
                               onChanged: authViewModel.updateTitle,
                             ),
                             const SizedBox(height: 10),
@@ -255,43 +263,57 @@ class _SignupViewState extends State<SignupView> {
                                   ),
                                   firstDate: DateTime(1900),
                                   lastDate: DateTime.now(),
-                                  builder: (context, child) => Theme(
-                                    data: ThemeData.light().copyWith(
-                                      colorScheme: const ColorScheme.light(
-                                        primary: Color(0xFF1D61E7),
-                                        onPrimary: Colors.white,
-                                        onSurface: Colors.black,
-                                      ),
-                                      textButtonTheme: TextButtonThemeData(
-                                        style: TextButton.styleFrom(
-                                            foregroundColor: Colors.black),
-                                      ),
-                                      dialogBackgroundColor: Colors.white,
-                                      textSelectionTheme:
-                                          const TextSelectionThemeData(
-                                        cursorColor: Colors.black,
-                                        selectionColor: Colors.black12,
-                                        selectionHandleColor: Colors.black,
-                                      ),
-                                      inputDecorationTheme:
-                                          const InputDecorationTheme(
-                                        labelStyle: TextStyle(color: Colors.black),
-                                        border: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.black),
+                                  builder:
+                                      (context, child) => Theme(
+                                        data: ThemeData.light().copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: Color(0xFF1D61E7),
+                                            onPrimary: Colors.white,
+                                            onSurface: Colors.black,
+                                          ),
+                                          textButtonTheme: TextButtonThemeData(
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.black,
+                                            ),
+                                          ),
+                                          dialogBackgroundColor: Colors.white,
+                                          textSelectionTheme:
+                                              const TextSelectionThemeData(
+                                                cursorColor: Colors.black,
+                                                selectionColor: Colors.black12,
+                                                selectionHandleColor:
+                                                    Colors.black,
+                                              ),
+                                          inputDecorationTheme:
+                                              const InputDecorationTheme(
+                                                labelStyle: TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                                border: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                        width: 2,
+                                                      ),
+                                                    ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                hintStyle: TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                              ),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors.black, width: 2),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.black),
-                                        ),
-                                        hintStyle: TextStyle(color: Colors.black),
+                                        child: child!,
                                       ),
-                                    ),
-                                    child: child!,
-                                  ),
                                 );
                                 if (pickedDate != null) {
                                   setState(() {
@@ -314,20 +336,35 @@ class _SignupViewState extends State<SignupView> {
                                 dropdownTextStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
-                                cursorColor: const Color(0xFF1D61E7),  // Updated cursor color
-                                dropdownIcon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF1D61E7)),
+                                cursorColor: const Color(
+                                  0xFF1D61E7,
+                                ), // Updated cursor color
+                                dropdownIcon: const Icon(
+                                  Icons.arrow_drop_down,
+                                  color: const Color(0xFF1D61E7),
+                                ),
                                 decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context).get('phoneNumber'),
-                                  labelStyle: const TextStyle(color: Colors.black),
+                                  labelText: AppLocalizations.of(
+                                    context,
+                                  ).get('phoneNumber'),
+                                  labelStyle: const TextStyle(
+                                    color: Colors.black,
+                                  ),
                                   border: const OutlineInputBorder(
-                                    borderSide: BorderSide(color: const Color(0xFF1D61E7)),
+                                    borderSide: BorderSide(
+                                      color: const Color(0xFF1D61E7),
+                                    ),
                                   ),
                                   enabledBorder: const OutlineInputBorder(
-                                    borderSide: BorderSide(color: const Color(0xFF1D61E7)),
+                                    borderSide: BorderSide(
+                                      color: const Color(0xFF1D61E7),
+                                    ),
                                   ),
                                   focusedBorder: const OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Color(0xFF1D61E7),  // Updated border color when focused
+                                      color: Color(
+                                        0xFF1D61E7,
+                                      ), // Updated border color when focused
                                       width: 2,
                                     ),
                                   ),
@@ -378,7 +415,9 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
-                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
+                              cursorColor: Color(
+                                0xFF1D61E7,
+                              ), // Updated cursor color
                               onChanged: authViewModel.updateEmail,
                             ),
                             const SizedBox(height: 10),
@@ -419,6 +458,14 @@ class _SignupViewState extends State<SignupView> {
                                     authViewModel.title.isNotEmpty &&
                                     authViewModel.phoneNumber.isNotEmpty &&
                                     authViewModel.birthday != null) {
+                                  if (!isValidPassword(
+                                    authViewModel.password,
+                                  )) {
+                                    _showError(
+                                      'Password must be at least 6 characters long.',
+                                    );
+                                    return;
+                                  }
                                   setState(() {
                                     _errorMessage = null;
                                     _isLoading = true;
@@ -465,7 +512,9 @@ class _SignupViewState extends State<SignupView> {
                               },
                               style: const TextStyle(color: Colors.black),
                               obscureText: _obscurePassword,
-                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
+                              cursorColor: Color(
+                                0xFF1D61E7,
+                              ), // Updated cursor color
                               onChanged: authViewModel.updatePassword,
                             ),
                           ],
@@ -483,6 +532,12 @@ class _SignupViewState extends State<SignupView> {
                               authViewModel.title.isNotEmpty &&
                               authViewModel.phoneNumber.isNotEmpty &&
                               authViewModel.birthday != null) {
+                            if (!isValidPassword(authViewModel.password)) {
+                              _showError(
+                                'Password must be at least 8 characters long.',
+                              );
+                              return;
+                            }
                             setState(() {
                               _errorMessage = null;
                               _isLoading = true;

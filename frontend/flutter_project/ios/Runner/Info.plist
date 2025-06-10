@@ -2,6 +2,28 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GIDClientID</key>
+	<string>801988041686-67lcg0lh1r9goqhiokq03ue9n3l7l2im.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	<!-- Google Sign-In REVERSED_CLIENT_ID -->
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>com.googleusercontent.apps.801988041686-67lcg0lh1r9goqhiokq03ue9n3l7l2im</string>
+		</array>
+	</dict>
+
+	<!-- Your app’s own custom scheme (optional) -->
+	<dict>
+		<key>CFBundleURLName</key>
+		<string>com.example.project491</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>project491</string>
+		</array>
+	</dict>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -45,16 +67,5 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>project491</string>
-			</array>
-			<key>CFBundleURLName</key>
-			<string>com.example.project491</string>
-		</dict>
-	</array>
 </dict>
 </plist>
