@@ -568,9 +568,9 @@ class _HomeViewState extends State<HomeView>
                         pageBuilder:
                             (_, __, ___) => RoomView(
                               roomId: roomId,
-                              roomName: roomData['name'] ?? 'Unnamed Room',
+                              roomName: roomData['name'] ?? AppLocalizations.of(context).get('unnamedRoom'),
                               roomDescription:
-                                  roomData['description'] ?? 'No description',
+                                  roomData['description'] ?? AppLocalizations.of(context).get('noDescription'),
                               participants: List<Map<String, dynamic>>.from(
                                 roomData['participants'] ?? [],
                               ),
