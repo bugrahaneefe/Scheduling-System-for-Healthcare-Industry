@@ -2486,11 +2486,7 @@ class _RoomViewState extends State<RoomView> {
                             });
                       },
               child: Text(
-                isCurrentUser
-                    ? hasPreferences
-                        ? 'Edit Duties'
-                        : 'Set Duties'
-                    : 'View Duties',
+                isCurrentUser ? 'Set Duties' : 'View Duties',
                 style: TextStyle(
                   color:
                       isCurrentUser || hasPreferences
