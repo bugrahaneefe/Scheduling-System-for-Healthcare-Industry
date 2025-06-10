@@ -791,6 +791,97 @@ class _RoomViewState extends State<RoomView> {
     return '$firstDate - $lastDate';
   }
 
+  Future<void> _showTotalShiftsDialog() async {
+    // Calculate total shifts for each participant
+    Map<String, int> totalShifts = {};
+    
+    // Initialize all participants with 0 shifts
+    for (var participant in _participants) {
+      totalShifts[participant['name']] = 0;
+    }
+
+    // Count shifts from schedule
+    if (_appliedSchedule != null) {
+      _appliedSchedule!.forEach((date, assignments) {
+        for (var assignment in assignments) {
+          String doctorName = assignment['name'] ?? '';
+          totalShifts[doctorName] = (totalShifts[doctorName] ?? 0) + 1;
+        }
+      });
+    }
+
+    // Show dialog with results
+    if (mounted) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Total Shifts Per Doctor',
+            style: TextStyle(color: Colors.black),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: totalShifts.entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          entry.key,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1D61E7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          entry.value.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF1D61E7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Close',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   Widget _buildScheduleList(Map<String, List<Map<String, String>>>? schedule) {
     if (schedule == null) return const SizedBox.shrink();
 
@@ -835,15 +926,24 @@ class _RoomViewState extends State<RoomView> {
       children: [
         // 3a) Toggle row
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
+          children: [  // Changed from mainAxisAlignment: MainAxisAlignment.end
+            TextButton(
+              onPressed: _showTotalShiftsDialog,
+              child: const Text(
+                'Total Shifts',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Spacer(),  // Add spacer to push remaining buttons to the right
             TextButton(
               onPressed: () => setState(() => _showOnlyMySchedule = false),
               child: Text(
                 'All',
                 style: TextStyle(
-                  color:
-                      !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
+                  color: !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
