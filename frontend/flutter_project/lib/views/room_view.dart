@@ -800,13 +800,14 @@ class _RoomViewState extends State<RoomView> {
       orElse: () => {'name': 'Unknown'}, // Provide fallback
     );
     final myName = currentParticipant['name'] as String;
-    final filteredSchedule = _showOnlyMySchedule
-        ? Map.fromEntries(
-            schedule.entries.where(
-              (entry) => entry.value.any((a) => a['name'] == myName),
-            ),
-          )
-        : schedule;
+    final filteredSchedule =
+        _showOnlyMySchedule
+            ? Map.fromEntries(
+              schedule.entries.where(
+                (entry) => entry.value.any((a) => a['name'] == myName),
+              ),
+            )
+            : schedule;
 
     // — 2) Build week groups only if we have data to show —
     final displaySchedule = filteredSchedule;
@@ -1349,7 +1350,10 @@ class _RoomViewState extends State<RoomView> {
                                   borderSide: BorderSide(color: Colors.black),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black, width: 2),
+                                  borderSide: BorderSide(
+                                    color: Colors.black,
+                                    width: 2,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(color: Colors.black),
@@ -1414,13 +1418,20 @@ class _RoomViewState extends State<RoomView> {
                                     keyboardType: TextInputType.number,
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black, width: 2),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                          width: 2,
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.black),
+                                        borderSide: BorderSide(
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -1586,38 +1597,39 @@ class _RoomViewState extends State<RoomView> {
 
       final result = await showDialog<Map<String, DateTime>>(
         context: context,
-        builder: (context) => Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF1D61E7),
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: Colors.black),
-            ),
-            dialogBackgroundColor: Colors.white,
-            textSelectionTheme: const TextSelectionThemeData(
-              cursorColor: Colors.black,
-              selectionColor: Colors.black12,
-              selectionHandleColor: Colors.black,
-            ),
-            inputDecorationTheme: const InputDecorationTheme(
-              labelStyle: TextStyle(color: Colors.black),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
+        builder:
+            (context) => Theme(
+              data: ThemeData.light().copyWith(
+                colorScheme: const ColorScheme.light(
+                  primary: Color(0xFF1D61E7),
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(foregroundColor: Colors.black),
+                ),
+                dialogBackgroundColor: Colors.white,
+                textSelectionTheme: const TextSelectionThemeData(
+                  cursorColor: Colors.black,
+                  selectionColor: Colors.black12,
+                  selectionHandleColor: Colors.black,
+                ),
+                inputDecorationTheme: const InputDecorationTheme(
+                  labelStyle: TextStyle(color: Colors.black),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  hintStyle: TextStyle(color: Colors.black),
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black, width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
-              ),
-              hintStyle: TextStyle(color: Colors.black),
+              child: DateEditorDialog(firstDay: firstDay, lastDay: lastDay),
             ),
-          ),
-          child: DateEditorDialog(firstDay: firstDay, lastDay: lastDay),
-        ),
       );
 
       if (result != null) {
@@ -2067,7 +2079,9 @@ class _RoomViewState extends State<RoomView> {
                               } else {
                                 Navigator.pushAndRemoveUntil(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const HomeView()),
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeView(),
+                                  ),
                                   (route) => false,
                                 );
                               }
@@ -2393,7 +2407,6 @@ class _RoomViewState extends State<RoomView> {
     final index = _participants.indexWhere((p) => p['name'] == name);
     final hasPreferences = _doctorPreferences.containsKey(index);
     final isCurrentUser = participant['userId'] == widget.currentUserId;
-    final isUnassigned = participant['userId']?.isEmpty ?? true;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -2453,12 +2466,13 @@ class _RoomViewState extends State<RoomView> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ViewPreferencesView(
-                              doctorName: participant['name'],
-                              preferences: _doctorPreferences[index]!,
-                              isHost: _isHost,
-                              roomId: widget.roomId,
-                            ),
+                            builder:
+                                (context) => ViewPreferencesView(
+                                  doctorName: participant['name'],
+                                  preferences: _doctorPreferences[index]!,
+                                  isHost: _isHost,
+                                  roomId: widget.roomId,
+                                ),
                           ),
                         ).then((result) async {
                           if (result != null) {
@@ -2485,54 +2499,80 @@ class _RoomViewState extends State<RoomView> {
                 ),
               ),
             )
-          else if (_isHost && !participant['isHost']) // Add button for unassigned users
+          else if (_isHost && !participant['isHost'])
             TextButton(
-              onPressed: () {
-                // Get room document to get dates
-                FirebaseFirestore.instance
-                    .collection('rooms')
-                    .doc(widget.roomId)
-                    .get()
-                    .then((roomDoc) {
-                  if (!roomDoc.exists) return;
-                  
-                  final data = roomDoc.data()!;
-                  final defaultPrefs = {
-                    'shiftsCount': data['defaultShifts'] ?? 0,
-                    'availability': List<int>.filled(
-                      DateTime.parse(data['lastDay'])
-                          .difference(DateTime.parse(data['firstDay']))
-                          .inDays + 1,
-                      0
-                    ),
-                    'firstDay': data['firstDay'],
-                    'lastDay': data['lastDay'],
-                  };
+              onPressed: () async {
+                final roomDoc =
+                    await FirebaseFirestore.instance
+                        .collection('rooms')
+                        .doc(widget.roomId)
+                        .get();
+                if (!roomDoc.exists) return;
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ViewPreferencesView(
-                        doctorName: participant['name'],
-                        preferences: defaultPrefs,
-                        isHost: true,
-                        roomId: widget.roomId,
+                final data = roomDoc.data()!;
+                final defaultShiftsRoom = data['defaultShifts'] ?? 0;
+                final firstDayStr = data['firstDay'] as String;
+                final lastDayStr = data['lastDay'] as String;
+                final totalDays =
+                    DateTime.parse(
+                      lastDayStr,
+                    ).difference(DateTime.parse(firstDayStr)).inDays +
+                    1;
+
+                final prefDoc =
+                    await FirebaseFirestore.instance
+                        .collection('rooms')
+                        .doc(widget.roomId)
+                        .collection('preferences')
+                        .doc(participant['name'])
+                        .get();
+
+                final shiftsCount =
+                    prefDoc.exists
+                        ? (prefDoc.data()?['shiftsCount'] as int? ??
+                            defaultShiftsRoom)
+                        : defaultShiftsRoom;
+
+                final availability =
+                    prefDoc.exists
+                        ? List<int>.from(prefDoc.data()?['availability'] ?? [])
+                        : List<int>.filled(totalDays, 0);
+
+                final defaultPrefs = {
+                  'shiftsCount': shiftsCount,
+                  'availability': availability,
+                  'firstDay': firstDayStr,
+                  'lastDay': lastDayStr,
+                };
+
+                Navigator.of(context)
+                    .push(
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (_, __, ___) => ViewPreferencesView(
+                              doctorName: participant['name'],
+                              preferences: defaultPrefs,
+                              isHost: true,
+                              roomId: widget.roomId,
+                            ),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
                       ),
-                    ),
-                  ).then((result) async {
-                    if (result != null) {
-                      setState(() {
-                        // Update the local preferences map
-                        _doctorPreferences[index] = {
-                          'shiftsCount': result['shiftsCount'],
-                          'availability': result['availability'],
-                          'firstDay': defaultPrefs['firstDay'],
-                          'lastDay': defaultPrefs['lastDay'],
-                        };
-                      });
-                    }
-                  });
-                });
+                    )
+                    .then((result) async {
+                      if (result != null) {
+                        setState(() {
+                          _doctorPreferences[_participants.indexOf(
+                            participant,
+                          )] = {
+                            'shiftsCount': result['shiftsCount'],
+                            'availability': result['availability'],
+                            'firstDay': firstDayStr,
+                            'lastDay': lastDayStr,
+                          };
+                        });
+                      }
+                    });
               },
               child: const Text(
                 'Set Shifts',
