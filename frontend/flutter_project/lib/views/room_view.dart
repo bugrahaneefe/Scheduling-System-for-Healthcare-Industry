@@ -794,7 +794,7 @@ class _RoomViewState extends State<RoomView> {
   Future<void> _showTotalShiftsDialog() async {
     // Calculate total shifts for each participant
     Map<String, int> totalShifts = {};
-    
+
     // Initialize all participants with 0 shifts
     for (var participant in _participants) {
       totalShifts[participant['name']] = 0;
@@ -814,70 +814,72 @@ class _RoomViewState extends State<RoomView> {
     if (mounted) {
       await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text(
-            'Total Shifts Per Doctor',
-            style: TextStyle(color: Colors.black),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: totalShifts.entries.map((entry) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          entry.key,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 16,
+        builder:
+            (context) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text(
+                'Total Shifts Per Doctor',
+                style: TextStyle(color: Colors.black),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:
+                      totalShifts.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  entry.key,
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1D61E7),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  entry.value.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1D61E7),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          entry.value.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF1D61E7),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                        );
+                      }).toList(),
                 ),
               ),
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Close',
-                style: TextStyle(color: Colors.white),
-              ),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D61E7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     }
   }
@@ -926,24 +928,25 @@ class _RoomViewState extends State<RoomView> {
       children: [
         // 3a) Toggle row
         Row(
-          children: [  // Changed from mainAxisAlignment: MainAxisAlignment.end
-            TextButton(
+          children: [
+            // Changed from mainAxisAlignment: MainAxisAlignment.end
+            ElevatedButton(
               onPressed: _showTotalShiftsDialog,
-              child: const Text(
-                'Total Shifts',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                shape: StadiumBorder(),
+                backgroundColor: Color(0xFF1D61E7),
               ),
+              child: Text('Total Shifts'),
             ),
-            const Spacer(),  // Add spacer to push remaining buttons to the right
+            const Spacer(), // Add spacer to push remaining buttons to the right
             TextButton(
               onPressed: () => setState(() => _showOnlyMySchedule = false),
               child: Text(
                 'All',
                 style: TextStyle(
-                  color: !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
+                  color:
+                      !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -2559,85 +2562,89 @@ class _RoomViewState extends State<RoomView> {
           ),
           if (participant['userId']?.isNotEmpty == true)
             TextButton(
-              onPressed: isCurrentUser
-                  ? () => _openSetDutiesScreen(participant, index)
-                  : () async {  // Changed to async
-                      // Get room document to get dates and defaults
-                      final roomDoc = await FirebaseFirestore.instance
-                          .collection('rooms')
-                          .doc(widget.roomId)
-                          .get();
-                      
-                      if (!roomDoc.exists) return;
-                      
-                      final data = roomDoc.data()!;
-                      final defaultShiftsRoom = data['defaultShifts'] ?? 0;
-                      final firstDayStr = data['firstDay'] as String;
-                      final lastDayStr = data['lastDay'] as String;
-                      final totalDays = DateTime.parse(lastDayStr)
-                          .difference(DateTime.parse(firstDayStr))
-                          .inDays + 1;
+              onPressed:
+                  isCurrentUser
+                      ? () => _openSetDutiesScreen(participant, index)
+                      : () async {
+                        // Changed to async
+                        // Get room document to get dates and defaults
+                        final roomDoc =
+                            await FirebaseFirestore.instance
+                                .collection('rooms')
+                                .doc(widget.roomId)
+                                .get();
 
-                      // If no preferences exist, create default ones
-                      Map<String, dynamic> preferences;
-                      if (!hasPreferences) {
-                        preferences = {
-                          'shiftsCount': defaultShiftsRoom,
-                          'availability': List<int>.filled(totalDays, 0),
-                          'firstDay': firstDayStr,
-                          'lastDay': lastDayStr,
-                        };
+                        if (!roomDoc.exists) return;
 
-                        // Save these default preferences
-                        await FirebaseFirestore.instance
-                            .collection('rooms')
-                            .doc(widget.roomId)
-                            .collection('preferences')
-                            .doc(participant['name'])
-                            .set({
-                              'shiftsCount': defaultShiftsRoom,
-                              'availability': List<int>.filled(totalDays, 0),
-                            });
+                        final data = roomDoc.data()!;
+                        final defaultShiftsRoom = data['defaultShifts'] ?? 0;
+                        final firstDayStr = data['firstDay'] as String;
+                        final lastDayStr = data['lastDay'] as String;
+                        final totalDays =
+                            DateTime.parse(
+                              lastDayStr,
+                            ).difference(DateTime.parse(firstDayStr)).inDays +
+                            1;
 
-                        // Update local preferences
-                        setState(() {
-                          _doctorPreferences[index] = preferences;
-                        });
-                      } else {
-                        preferences = _doctorPreferences[index]!;
-                      }
+                        // If no preferences exist, create default ones
+                        Map<String, dynamic> preferences;
+                        if (!hasPreferences) {
+                          preferences = {
+                            'shiftsCount': defaultShiftsRoom,
+                            'availability': List<int>.filled(totalDays, 0),
+                            'firstDay': firstDayStr,
+                            'lastDay': lastDayStr,
+                          };
 
-                      // Navigate to view preferences
-                      if (mounted) {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (_, __, ___) => ViewPreferencesView(
-                              doctorName: participant['name'],
-                              preferences: preferences,
-                              isHost: _isHost,
-                              roomId: widget.roomId,
+                          // Save these default preferences
+                          await FirebaseFirestore.instance
+                              .collection('rooms')
+                              .doc(widget.roomId)
+                              .collection('preferences')
+                              .doc(participant['name'])
+                              .set({
+                                'shiftsCount': defaultShiftsRoom,
+                                'availability': List<int>.filled(totalDays, 0),
+                              });
+
+                          // Update local preferences
+                          setState(() {
+                            _doctorPreferences[index] = preferences;
+                          });
+                        } else {
+                          preferences = _doctorPreferences[index]!;
+                        }
+
+                        // Navigate to view preferences
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (_, __, ___) => ViewPreferencesView(
+                                    doctorName: participant['name'],
+                                    preferences: preferences,
+                                    isHost: _isHost,
+                                    roomId: widget.roomId,
+                                  ),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
                             ),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ),
-                        ).then((result) async {
-                          if (result != null) {
-                            await _loadAllDoctorPreferences();
-                            setState(() {});
-                          }
-                        });
-                      }
-                    },
+                          ).then((result) async {
+                            if (result != null) {
+                              await _loadAllDoctorPreferences();
+                              setState(() {});
+                            }
+                          });
+                        }
+                      },
               child: Text(
                 isCurrentUser
                     ? hasPreferences
                         ? 'Edit Duties'
                         : 'Set Duties'
                     : 'View Duties',
-                style: TextStyle(
-                  color: Color(0xFF1D61E7),
-                ),
+                style: TextStyle(color: Color(0xFF1D61E7)),
               ),
             )
           else if (_isHost && !participant['isHost'])
@@ -2654,9 +2661,10 @@ class _RoomViewState extends State<RoomView> {
                 final defaultShiftsRoom = data['defaultShifts'] ?? 0;
                 final firstDayStr = data['firstDay'] as String;
                 final lastDayStr = data['lastDay'] as String;
-                final totalDays = DateTime.parse(lastDayStr)
-                    .difference(DateTime.parse(firstDayStr))
-                    .inDays +
+                final totalDays =
+                    DateTime.parse(
+                      lastDayStr,
+                    ).difference(DateTime.parse(firstDayStr)).inDays +
                     1;
 
                 final prefDoc =
