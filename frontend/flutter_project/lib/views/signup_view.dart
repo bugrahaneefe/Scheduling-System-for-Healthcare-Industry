@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:project491/managers/auth_services.dart';
+import 'package:project491/utils/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'package:project491/components/custom_button.dart';
@@ -194,6 +195,7 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
+                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
                               onChanged:
                                   authViewModel
                                       .updateName, // Add this method in AuthViewModel
@@ -221,6 +223,7 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
+                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
                               onChanged: authViewModel.updateTitle,
                             ),
                             const SizedBox(height: 10),
@@ -252,22 +255,43 @@ class _SignupViewState extends State<SignupView> {
                                   ),
                                   firstDate: DateTime(1900),
                                   lastDate: DateTime.now(),
-                                  builder:
-                                      (context, child) => Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme: ColorScheme.light(
-                                            primary: const Color(
-                                              0xFF1D61E7,
-                                            ), // header & selected day
-                                            onSurface:
-                                                Colors.black, // day numbers
-                                          ),
-                                          dialogBackgroundColor: const Color(
-                                            0xFF1D61E7,
-                                          ), // whole sheet back
-                                        ),
-                                        child: child!,
+                                  builder: (context, child) => Theme(
+                                    data: ThemeData.light().copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF1D61E7),
+                                        onPrimary: Colors.white,
+                                        onSurface: Colors.black,
                                       ),
+                                      textButtonTheme: TextButtonThemeData(
+                                        style: TextButton.styleFrom(
+                                            foregroundColor: Colors.black),
+                                      ),
+                                      dialogBackgroundColor: Colors.white,
+                                      textSelectionTheme:
+                                          const TextSelectionThemeData(
+                                        cursorColor: Colors.black,
+                                        selectionColor: Colors.black12,
+                                        selectionHandleColor: Colors.black,
+                                      ),
+                                      inputDecorationTheme:
+                                          const InputDecorationTheme(
+                                        labelStyle: TextStyle(color: Colors.black),
+                                        border: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.black),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.black, width: 2),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: Colors.black),
+                                        ),
+                                        hintStyle: TextStyle(color: Colors.black),
+                                      ),
+                                    ),
+                                    child: child!,
+                                  ),
                                 );
                                 if (pickedDate != null) {
                                   setState(() {
@@ -290,24 +314,23 @@ class _SignupViewState extends State<SignupView> {
                                 dropdownTextStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
-                                dropdownIcon: const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Color(0xFF1D61E7),
-                                ),
+                                cursorColor: const Color(0xFF1D61E7),  // Updated cursor color
+                                dropdownIcon: const Icon(Icons.arrow_drop_down, color: const Color(0xFF1D61E7)),
                                 decoration: InputDecoration(
-                                  labelText: 'Phone Number',
-                                  labelStyle: const TextStyle(
-                                    color: Colors.black,
+                                  labelText: AppLocalizations.of(context).get('phoneNumber'),
+                                  labelStyle: const TextStyle(color: Colors.black),
+                                  border: const OutlineInputBorder(
+                                    borderSide: BorderSide(color: const Color(0xFF1D61E7)),
                                   ),
-                                  hintText:
-                                      authViewModel.phoneNumber.isEmpty
-                                          ? '+90 5xx xxx xxxx'
-                                          : authViewModel.phoneNumber,
-                                  prefixIcon: const Icon(
-                                    Icons.phone,
-                                    color: Color(0xFF1D61E7),
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide(color: const Color(0xFF1D61E7)),
                                   ),
-                                  border: const OutlineInputBorder(),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFF1D61E7),  // Updated border color when focused
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                                 pickerDialogStyle: PickerDialogStyle(
                                   backgroundColor: Colors.white,
@@ -355,6 +378,7 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
+                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
                               onChanged: authViewModel.updateEmail,
                             ),
                             const SizedBox(height: 10),
@@ -441,6 +465,7 @@ class _SignupViewState extends State<SignupView> {
                               },
                               style: const TextStyle(color: Colors.black),
                               obscureText: _obscurePassword,
+                              cursorColor: Color(0xFF1D61E7), // Updated cursor color
                               onChanged: authViewModel.updatePassword,
                             ),
                           ],
