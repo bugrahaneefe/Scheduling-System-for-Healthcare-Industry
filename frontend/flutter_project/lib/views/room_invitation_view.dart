@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/utils/app_localizations.dart';
 import 'package:project491/views/home_view.dart';
 import '../managers/auth_services.dart';
 import 'room_view.dart';
@@ -41,7 +42,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
 
       if (!roomDoc.exists) {
         setState(() {
-          _error = 'Room not found';
+          _error = AppLocalizations.of(context).get('roomNotFound');
           _isLoading = false;
         });
         return;
@@ -66,7 +67,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
       }
     } catch (e) {
       setState(() {
-        _error = 'Failed to load data';
+        _error = AppLocalizations.of(context).get('failedToLoadData');
         _isLoading = false;
       });
     }
@@ -144,8 +145,9 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
         _navigateToRoom(currentUserId);
       }
     } catch (e) {
+      final message = AppLocalizations.of(context).get('failedToJoinRoom');
       setState(() {
-        _error = 'Failed to join room: $e';
+        _error = '$message$e';
         _isLoading = false;
       });
     }
@@ -153,6 +155,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
 
   @override
   Widget build(BuildContext context) {
+    final message = AppLocalizations.of(context).get('joinRoom');
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D1B),
       body: SafeArea(
@@ -193,8 +196,8 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Joining as:',
+                                  Text(
+                                    AppLocalizations.of(context).get('joiningAs'),
                                     style: TextStyle(
                                       color: Colors.white, // Changed to white text
                                       fontSize: 14,
@@ -202,7 +205,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _userData?['name'] ?? 'Unknown User',
+                                    _userData?['name'] ?? AppLocalizations.of(context).get('unknownUser'),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -210,7 +213,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                     ),
                                   ),
                                   Text(
-                                    _userData?['title'] ?? 'No title',
+                                    _userData?['title'] ?? AppLocalizations.of(context).get('noTitle'),
                                     style: TextStyle(
                                       color: Colors.white70, // Changed to semi-transparent white
                                       fontSize: 14,
@@ -230,7 +233,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Join Room: ${_roomData?['name'] ?? 'Unknown'}',
+                                '$message${_roomData?['name'] ?? AppLocalizations.of(context).get('unknownRoom')}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
@@ -239,7 +242,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                _roomData?['description'] ?? 'No description',
+                                _roomData?['description'] ?? AppLocalizations.of(context).get('noDescription'),
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -260,8 +263,8 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                     ? const CircularProgressIndicator(
                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       )
-                                    : const Text(
-                                        'Join Room',
+                                    : Text(
+                                        AppLocalizations.of(context).get('joinRoom'),
                                         style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.white, // Changed to white text
@@ -276,8 +279,8 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                     (route) => false
                                   );
                                 },
-                                child: const Text(
-                                  'Cancel',
+                                child: Text(
+                                  AppLocalizations.of(context).get('cancel'),
                                   style: TextStyle(color: Colors.white70),
                                 ),
                               ),
@@ -293,6 +296,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
   }
 
   void _showParticipantAssignedDialog(String participantName) {
+    final message = AppLocalizations.of(context).get('participantAssignedTo');
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -300,12 +304,12 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        title: const Text(
-          'Participant Assigned',
+        title: Text(
+          AppLocalizations.of(context).get('participantAssigned'),
           style: TextStyle(color: Colors.black),
         ),
         content: Text(
-          'This participant is already assigned to $participantName.',
+          '$message$participantName.',
           style: const TextStyle(color: Colors.black87),
         ),
         actions: [
@@ -317,7 +321,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
               ),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -332,12 +336,12 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        title: const Text(
-          'Already Assigned',
+        title: Text(
+          AppLocalizations.of(context).get('alreadyAssigned'),
           style: TextStyle(color: Colors.black),
         ),
-        content: const Text(
-          'You are already assigned to another participant in this room.',
+        content: Text(
+          AppLocalizations.of(context).get('assignedAlready'),
           style: TextStyle(color: Colors.black87),
         ),
         actions: [
@@ -349,7 +353,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
               ),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

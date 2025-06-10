@@ -99,7 +99,19 @@ class AppLocalizations {
       'birthday': 'Birthday',
       'profileUpdated': 'Profile updated successfully!',
       'failedToUpdateProfile': 'Failed to update profile.',
-      'applyChanges': 'Apply Changes'
+      'applyChanges': 'Apply Changes',
+      'roomNotFound': 'Room not found.',
+      'failedToLoadData': 'Failed to load data.',
+      'failedToJoinRoom': 'Failed to join room: ',
+      'joiningAs': 'Joining as: ',
+      'unknownUser': 'Unknown User',
+      'noTitle': 'No Title',
+      'joinRoom': 'Join Room: ',
+      'unknownRoom': 'Unknown Room',
+      'participantAssigned': 'Participant Assigned',
+      'participantAssignedTo': 'This participant is already assigned to: ',
+      'alreadyAssigned': 'Already Assigned',
+      'assignedAlready': 'You are already assigned to another participant in this room.',
       // ... add all other English strings
     },
     'tr': {
@@ -192,6 +204,18 @@ class AppLocalizations {
       'profileUpdated': 'Profil başarıyla güncellendi!',
       'failedToUpdateProfile': 'Profil güncellenemedi.',
       'applyChanges': 'Değişiklikleri Uygula',
+      'roomNotFound': 'Oda bulunamadı.',
+      'failedToLoadData': 'Veriler yüklenemedi.',
+      'failedToJoinRoom': 'Odaya katılma başarısız: ',
+      'joiningAs': 'Şu kişi olarak katılınıyor: ',
+      'unknownUser': 'Bilinmeyen Kullanıcı',
+      'noTitle': 'Ünvan Yok',
+      'joinRoom': 'Odaya Katıl: ',
+      'unknownRoom': 'Bilinmeyen Oda',
+      'participantAssigned': 'Katılımcı Zaten Atandı',
+      'participantAssignedTo': 'Bu katılımcı zaten şu kişiye atanmış: ',
+      'alreadyAssigned': 'Zaten Atandınız',
+      'assignedAlready': 'Bu odada zaten başka bir katılımcıya atanmışsınız.',
       // ... add all other Turkish strings
     }
   };
