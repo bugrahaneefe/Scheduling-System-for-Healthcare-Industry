@@ -22,7 +22,10 @@ class UserModel {
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       title: map['title'] ?? '',
-      birthday: (map['birthday'] as Timestamp).toDate(),
+      birthday:
+          (map['birthday'] is Timestamp)
+              ? (map['birthday'] as Timestamp).toDate()
+              : DateTime(1900, 1, 1),
       phoneNumber: map['phoneNumber'] ?? '',
       rooms: List<String>.from(map['rooms'] ?? []),
     );

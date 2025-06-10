@@ -76,25 +76,27 @@ class _LoginViewState extends State<LoginView> {
     if (widget.pendingRoomId != null) {
       // Navigate to room invitation if there's a pending room
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => RoomInvitationView(
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder:
+                (_, __, ___) => RoomInvitationView(
                   roomId: widget.pendingRoomId!,
                   returnToHome: true, // Add this parameter
                 ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
-          (route) => false, // Remove all previous routes
         );
       }
     } else {
       // Navigate to home view as usual
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeView()),
-          (route) => false, // Remove all previous routes
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => HomeView(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
         );
       }
     }
@@ -368,11 +370,9 @@ class _LoginViewState extends State<LoginView> {
                         },
                         buttonType: 'main',
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      // NEW “Sign in with Google” button ---------
-                      CustomButton(
-                        text: 'signInWithGoogle',
+                      ElevatedButton(
                         onPressed: () async {
                           FocusScope.of(context).unfocus();
                           setState(() {
@@ -381,19 +381,42 @@ class _LoginViewState extends State<LoginView> {
                           });
 
                           try {
-                            await authService.value.signInWithGoogle();
+                            final result =
+                                await authService.value.signInWithGoogle();
 
+                            if (!mounted) return;
                             setState(() => _isLoading = false);
-                            _showSuccess('loginSuccessful');
 
+                            if (result == null) {
+                              _showError('Google sign-in was cancelled.');
+                              return;
+                            }
+
+                            _showSuccess('loginSuccessful');
                             await Future.delayed(const Duration(seconds: 1));
+
                             if (mounted) await _handleSuccessfulLogin(context);
                           } catch (e) {
+                            if (!mounted) return;
                             setState(() => _isLoading = false);
-                            _showError(e.toString());
+                            _showError('Sign-in failed: $e');
                           }
                         },
-                        buttonType: 'secondary', // or create a special style
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          padding: const EdgeInsets.all(
+                            12,
+                          ), // controls icon size and button space
+                          elevation: 2,
+                        ),
+                        child: Image.asset(
+                          'assets/images/google_icon.png',
+                          height: 24,
+                          width: 24,
+                        ),
                       ),
 
                       const SizedBox(height: 16),

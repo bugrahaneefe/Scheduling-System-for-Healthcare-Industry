@@ -94,7 +94,7 @@ class AuthServices {
           'name': user.displayName ?? '',
           'email': user.email,
           'title': '',
-          'birthday': null,
+          'birthday': DateTime(1900, 1, 1),
           'phoneNumber': user.phoneNumber ?? '',
           'rooms': [],
           'createdAt': FieldValue.serverTimestamp(),
