@@ -1,6 +1,7 @@
 // lib/views/login_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:project491/components/custom_button.dart';
 import 'package:project491/managers/auth_services.dart';
 import 'package:project491/utils/app_localizations.dart';
@@ -91,6 +92,28 @@ class _LoginViewState extends State<LoginView> {
           (route) => false, // Remove all previous routes
         );
       }
+    }
+  }
+
+  Future<UserCredential?> _signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      print('Google Sign-In error: $e');
+      _showError("Google Sign-In failed");
+      return null;
     }
   }
 
@@ -212,7 +235,9 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: AppLocalizations.of(context).get('email'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('email'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -234,7 +259,9 @@ class _LoginViewState extends State<LoginView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ), // Changed to blue
-                                hintText: AppLocalizations.of(context).get('password'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('password'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -309,7 +336,9 @@ class _LoginViewState extends State<LoginView> {
                           if (authViewModel.email.isEmpty ||
                               authViewModel.password.isEmpty) {
                             _showError(
-                              AppLocalizations.of(context).get('enterValidEmailAndPassword'),
+                              AppLocalizations.of(
+                                context,
+                              ).get('enterValidEmailAndPassword'),
                             );
                           } else {
                             setState(() {
@@ -327,7 +356,11 @@ class _LoginViewState extends State<LoginView> {
                                 _isLoading = false; // Hide loading
                               });
 
-                              _showSuccess(AppLocalizations.of(context).get('loginSuccessful'));
+                              _showSuccess(
+                                AppLocalizations.of(
+                                  context,
+                                ).get('loginSuccessful'),
+                              );
                               await Future.delayed(
                                 const Duration(seconds: 1),
                               ); // Reduced delay
@@ -340,7 +373,10 @@ class _LoginViewState extends State<LoginView> {
                                 _isLoading = false; // Hide loading
                               });
                               _showError(
-                                e.message ?? AppLocalizations.of(context).get('loginFailed'),
+                                e.message ??
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('loginFailed'),
                               );
                             }
                           }
@@ -348,6 +384,44 @@ class _LoginViewState extends State<LoginView> {
                         buttonType: 'main',
                       ),
                       const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              "Or continue with",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 10),
+                            Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: IconButton(
+                                iconSize: 10,
+                                icon: Image.asset(
+                                  'assets/images/google_icon.png',
+                                ),
+                                onPressed: () async {
+                                  setState(() => _isLoading = true);
+                                  final result = await _signInWithGoogle();
+                                  setState(() => _isLoading = false);
+
+                                  if (result != null) {
+                                    _showSuccess("Login successful");
+                                    await Future.delayed(
+                                      const Duration(seconds: 1),
+                                    );
+                                    if (mounted)
+                                      await _handleSuccessfulLogin(context);
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   // Popup error message
