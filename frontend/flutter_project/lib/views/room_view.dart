@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:project491/views/preview_schedule_view.dart';
 import 'package:project491/views/set_duties_view.dart';
+import 'package:project491/utils/app_localizations.dart';
 import 'package:project491/views/view_preferences_view.dart';
 import 'package:project491/views/home_view.dart';
 import 'package:http/http.dart' as http;
@@ -199,6 +200,7 @@ class _RoomViewState extends State<RoomView> {
     if (!_isHost) {
       if (participant['userId'] != null && participant['userId'].isNotEmpty) {
         // Show warning for assigned participant
+        final message = AppLocalizations.of(context).get('participantAssignedTo');
         showDialog(
           context: context,
           builder:
@@ -207,12 +209,12 @@ class _RoomViewState extends State<RoomView> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                title: const Text(
-                  'Participant Assigned',
+                title: Text(
+                  AppLocalizations.of(context).get('participantAssigned'),
                   style: TextStyle(color: Colors.black),
                 ),
                 content: Text(
-                  'This participant is already assigned to ${participant['name']}.',
+                  '$message${participant['name']}',
                   style: const TextStyle(color: Colors.black87),
                 ),
                 actions: [
@@ -224,8 +226,8 @@ class _RoomViewState extends State<RoomView> {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'OK',
+                    child: Text(
+                      AppLocalizations.of(context).get('ok'),
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -242,12 +244,12 @@ class _RoomViewState extends State<RoomView> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                title: const Text(
-                  'Already Assigned',
+                title: Text(
+                  AppLocalizations.of(context).get('alreadyAssigned'),
                   style: TextStyle(color: Colors.black),
                 ),
-                content: const Text(
-                  'You are already assigned to another participant in this room.',
+                content: Text(
+                  AppLocalizations.of(context).get('assignedAlready'),
                   style: TextStyle(color: Colors.black87),
                 ),
                 actions: [
@@ -259,8 +261,8 @@ class _RoomViewState extends State<RoomView> {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'OK',
+                    child: Text(
+                      AppLocalizations.of(context).get('ok'),
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -268,6 +270,8 @@ class _RoomViewState extends State<RoomView> {
               ),
         );
       } else {
+        final message1 = AppLocalizations.of(context).get('wantToAssign');
+        final message2 = AppLocalizations.of(context).get('willNotAbleToUnassign');
         // Show confirmation for unassigned participant
         final bool? confirm = await showDialog<bool>(
           context: context,
@@ -277,12 +281,12 @@ class _RoomViewState extends State<RoomView> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                title: const Text(
-                  'Assign Participant',
+                title: Text(
+                  AppLocalizations.of(context).get('assignParticipant'),
                   style: TextStyle(color: Colors.black),
                 ),
                 content: Text(
-                  'Do you want to assign yourself to ${participant['name']}? \n\nYou won\'t be able to unassign yourself later.',
+                  '$message1${participant['name']}? \n\n$message2',
                   style: const TextStyle(color: Colors.black87),
                 ),
                 actions: [
@@ -294,8 +298,8 @@ class _RoomViewState extends State<RoomView> {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context, false),
-                    child: const Text(
-                      'Cancel',
+                    child: Text(
+                      AppLocalizations.of(context).get('cancel'),
                       style: TextStyle(color: Color(0xFF1D61E7)),
                     ),
                   ),
@@ -307,8 +311,8 @@ class _RoomViewState extends State<RoomView> {
                       ),
                     ),
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text(
-                      'Yes',
+                    child: Text(
+                      AppLocalizations.of(context).get('yes'),
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -325,7 +329,7 @@ class _RoomViewState extends State<RoomView> {
                     .doc(widget.currentUserId)
                     .get();
 
-            final userName = userDoc.data()?['name'] ?? 'Unknown User';
+            final userName = userDoc.data()?['name'] ?? AppLocalizations.of(context).get('unknownUser');
 
             // Update the participant's userId and assignedUserName
             final int participantIndex = _participants.indexOf(participant);
@@ -353,16 +357,17 @@ class _RoomViewState extends State<RoomView> {
           } catch (e) {
             // Show error dialog
             if (mounted) {
+              final message = AppLocalizations.of(context).get('failedToAssign');
               showDialog(
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                      title: const Text('Error'),
-                      content: Text('Failed to assign participant: $e'),
+                      title: Text(AppLocalizations.of(context).get('error')),
+                      content: Text('$message$e'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('OK'),
+                          child: Text(AppLocalizations.of(context).get('ok')),
                         ),
                       ],
                     ),
@@ -380,23 +385,24 @@ class _RoomViewState extends State<RoomView> {
       if (participant['isHost'] == true &&
           participant['userId'] == widget.currentUserId) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Host cannot be unassigned'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).get('hostCannotBeUnassigned')),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
 
+      final message = AppLocalizations.of(context).get('removeAssignedUser');
       // Show options to remove assigned user
       final bool? confirm = await showDialog<bool>(
         context: context,
         builder:
             (context) => AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text('Remove Assignment'),
+              title: Text(AppLocalizations.of(context).get('removeAssignment')),
               content: Text(
-                'Do you want to remove the assigned user from ${participant['name']}?',
+                '$message${participant['name']}?',
               ),
               actions: [
                 TextButton(
@@ -404,7 +410,7 @@ class _RoomViewState extends State<RoomView> {
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.black, // black “Cancel” text
                   ),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context).get('cancel')),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
@@ -415,7 +421,7 @@ class _RoomViewState extends State<RoomView> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: const Text('Remove'),
+                  child: Text(AppLocalizations.of(context).get('remove')),
                 ),
               ],
             ),
@@ -425,6 +431,7 @@ class _RoomViewState extends State<RoomView> {
         await _removeUserFromParticipant(participant);
       }
     } else if (_isHost && !participant['isHost']) {
+      final message = AppLocalizations.of(context).get('removeParticipantFromRoom');
       // Show options to remove unassigned participant
       final confirm = await showDialog<bool>(
         context: context,
@@ -434,12 +441,12 @@ class _RoomViewState extends State<RoomView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              title: const Text(
-                'Remove Participant',
+              title: Text(
+                AppLocalizations.of(context).get('removeParticipant'),
                 style: TextStyle(color: Colors.black),
               ),
               content: Text(
-                'Do you want to remove ${participant['name']} from the room?',
+                '$message${participant['name']}?',
                 style: const TextStyle(color: Colors.black87),
               ),
               actions: [
@@ -451,8 +458,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    AppLocalizations.of(context).get('cancel'),
                     style: TextStyle(color: Color(0xFF1D61E7)),
                   ),
                 ),
@@ -464,8 +471,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text(
-                    'Remove',
+                  child: Text(
+                    AppLocalizations.of(context).get('remove'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -498,7 +505,8 @@ class _RoomViewState extends State<RoomView> {
         await _refreshRoom();
       }
     } catch (e) {
-      _showError('Failed to remove user: $e');
+      final message = AppLocalizations.of(context).get('failedToRemoveUser');
+      _showError('$message$e');
     }
   }
 
@@ -529,15 +537,14 @@ class _RoomViewState extends State<RoomView> {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: const Text('Cannot Remove Doctor'),
-                  content: const Text(
-                    'Removing this doctor would result in consecutive days having more '
-                    'shifts than available doctors. Please adjust the daily shifts first.',
+                  title: Text(AppLocalizations.of(context).get('cannotRemoveDoctor')),
+                  content: Text(
+                    AppLocalizations.of(context).get('removeDoctorError'),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
+                      child: Text(AppLocalizations.of(context).get('ok')),
                     ),
                   ],
                 ),
@@ -572,7 +579,8 @@ class _RoomViewState extends State<RoomView> {
       await _loadAllDoctorPreferences();
       await _loadSchedules();
     } catch (e) {
-      _showError('Failed to remove participant: $e');
+      final message = AppLocalizations.of(context).get('failedToRemoveParticipant');
+      _showError('$message$e');
     }
   }
 
@@ -584,8 +592,8 @@ class _RoomViewState extends State<RoomView> {
     final alreadyExists = _participants.any((p) => p['name'] == name);
     if (alreadyExists) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A participant with this name already exists.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).get('participantAlreadyExists')),
           backgroundColor: Colors.red,
         ),
       );
@@ -603,7 +611,8 @@ class _RoomViewState extends State<RoomView> {
       _newParticipantController.clear();
       await _refreshRoom();
     } catch (e) {
-      _showError('Failed to add participant: $e');
+      final message = AppLocalizations.of(context).get('failedToAddParticipant');
+      _showError('$message$e');
     }
   }
 
@@ -613,12 +622,12 @@ class _RoomViewState extends State<RoomView> {
       builder:
           (context) => AlertDialog(
             backgroundColor: Colors.white,
-            title: const Text('Delete Room'),
-            content: const Text('Are you sure you want to delete this room?'),
+            title: Text(AppLocalizations.of(context).get('deleteRoom')),
+            content: Text(AppLocalizations.of(context).get('sureToConfirmDeleteRoom')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).get('cancel')),
                 style: TextButton.styleFrom(foregroundColor: Colors.black),
               ),
               TextButton(
@@ -630,7 +639,7 @@ class _RoomViewState extends State<RoomView> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Text('Delete'),
+                child: Text(AppLocalizations.of(context).get('delete')),
               ),
             ],
           ),
@@ -675,7 +684,8 @@ class _RoomViewState extends State<RoomView> {
           Navigator.pop(context); // Return to home view
         }
       } catch (e) {
-        _showError('Failed to delete room: $e');
+        final message = AppLocalizations.of(context).get('failedToDeleteRoom');
+        _showError('$message$e');
       }
     }
   }
@@ -686,8 +696,8 @@ class _RoomViewState extends State<RoomView> {
         context: context,
         builder:
             (_) => AlertDialog(
-              title: const Text('Not allowed'),
-              content: const Text('Only the host can share room invitations.'),
+              title: Text(AppLocalizations.of(context).get('notAllowed')),
+              content: Text(AppLocalizations.of(context).get('onlyHostShareInvitation')),
               actions: [
                 TextButton(
                   style: TextButton.styleFrom(
@@ -697,8 +707,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'OK',
+                  child: Text(
+                    AppLocalizations.of(context).get('ok'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -721,8 +731,8 @@ class _RoomViewState extends State<RoomView> {
       builder:
           (_) => AlertDialog(
             backgroundColor: Colors.white, // set white background
-            title: const Text('Invitation link'),
-            content: const Text('The link has been copied to your clipboard.'),
+            title: Text(AppLocalizations.of(context).get('invitationLink')),
+            content: Text(AppLocalizations.of(context).get('linkCopied')),
             actions: [
               TextButton(
                 style: TextButton.styleFrom(
@@ -732,7 +742,7 @@ class _RoomViewState extends State<RoomView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -817,8 +827,8 @@ class _RoomViewState extends State<RoomView> {
         builder:
             (context) => AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text(
-                'Total Shifts Per Doctor',
+              title: Text(
+                AppLocalizations.of(context).get('totalShiftsPerDoctor'),
                 style: TextStyle(color: Colors.black),
               ),
               content: SingleChildScrollView(
@@ -873,8 +883,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Close',
+                  child: Text(
+                    AppLocalizations.of(context).get('close'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -937,13 +947,13 @@ class _RoomViewState extends State<RoomView> {
                 shape: StadiumBorder(),
                 backgroundColor: Color(0xFF1D61E7),
               ),
-              child: Text('Total Shifts'),
+              child: Text(AppLocalizations.of(context).get('totalShifts')),
             ),
             const Spacer(), // Add spacer to push remaining buttons to the right
             TextButton(
               onPressed: () => setState(() => _showOnlyMySchedule = false),
               child: Text(
-                'All',
+                AppLocalizations.of(context).get('all'),
                 style: TextStyle(
                   color:
                       !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
@@ -954,7 +964,7 @@ class _RoomViewState extends State<RoomView> {
             TextButton(
               onPressed: () => setState(() => _showOnlyMySchedule = true),
               child: Text(
-                'Me',
+                AppLocalizations.of(context).get('me'),
                 style: TextStyle(
                   color: _showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
                   fontWeight: FontWeight.bold,
@@ -977,7 +987,7 @@ class _RoomViewState extends State<RoomView> {
                   // 3b-i) “Me” but nothing to show:
                   ? Center(
                     child: Text(
-                      "You don't have any duties in the schedule.",
+                      AppLocalizations.of(context).get('doNotHaveDuty'),
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 16,
@@ -1048,14 +1058,14 @@ class _RoomViewState extends State<RoomView> {
                                   int.parse(parts[1]),
                                   int.parse(parts[0]),
                                 );
-                                const weekdayNames = [
-                                  'Monday',
-                                  'Tuesday',
-                                  'Wednesday',
-                                  'Thursday',
-                                  'Friday',
-                                  'Saturday',
-                                  'Sunday',
+                                final weekdayNames = [
+                                  AppLocalizations.of(context).get('monday'),
+                                  AppLocalizations.of(context).get('tuesday'),
+                                  AppLocalizations.of(context).get('wednesday'),
+                                  AppLocalizations.of(context).get('thursday'),
+                                  AppLocalizations.of(context).get('friday'),
+                                  AppLocalizations.of(context).get('saturday'),
+                                  AppLocalizations.of(context).get('sunday'),
                                 ];
 
                                 return Column(
@@ -1149,6 +1159,7 @@ class _RoomViewState extends State<RoomView> {
     String date,
     Map<String, String> assignment,
   ) async {
+    final message = AppLocalizations.of(context).get('removeAssignmentFor');
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -1157,12 +1168,12 @@ class _RoomViewState extends State<RoomView> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            title: const Text(
-              'Remove Assignment',
+            title: Text(
+              AppLocalizations.of(context).get('removeAssignment'),
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
-              'Do you want to remove ${assignment['name']} from $date?',
+              '$message\n${assignment['name']} -> $date?',
               style: const TextStyle(color: Colors.black87),
             ),
             actions: [
@@ -1175,7 +1186,7 @@ class _RoomViewState extends State<RoomView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).get('cancel')),
               ),
               TextButton(
                 style: TextButton.styleFrom(
@@ -1185,8 +1196,8 @@ class _RoomViewState extends State<RoomView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Remove',
+                child: Text(
+                  AppLocalizations.of(context).get('remove'),
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -1212,7 +1223,8 @@ class _RoomViewState extends State<RoomView> {
 
         await _loadSchedules();
       } catch (e) {
-        _showError('Failed to remove assignment: $e');
+        final message = AppLocalizations.of(context).get('failedToRemoveAssignment');
+        _showError('$message$e');
       }
     }
   }
@@ -1229,14 +1241,15 @@ class _RoomViewState extends State<RoomView> {
 
     if (availableParticipants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All participants are already assigned for this day'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).get('allParticipantsAssigned')),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    final message = AppLocalizations.of(context).get('addAssignmentFor');
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
       builder:
@@ -1246,7 +1259,7 @@ class _RoomViewState extends State<RoomView> {
               borderRadius: BorderRadius.circular(8),
             ),
             title: Text(
-              'Add Assignment for $date',
+              '$message$date',
               style: const TextStyle(color: Colors.black),
             ),
             content: SizedBox(
@@ -1280,7 +1293,7 @@ class _RoomViewState extends State<RoomView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).get('cancel')),
               ),
             ],
           ),
@@ -1304,7 +1317,8 @@ class _RoomViewState extends State<RoomView> {
 
         await _loadSchedules();
       } catch (e) {
-        _showError('Failed to add assignment: $e');
+        final message = AppLocalizations.of(context).get('failedToAddAssignment');
+        _showError('$message$e');
       }
     }
   }
@@ -1321,7 +1335,7 @@ class _RoomViewState extends State<RoomView> {
               .get();
 
       if (!roomDoc.exists) {
-        _showError('Room data not found');
+        _showError(AppLocalizations.of(context).get('roomDataNotFound'));
         return;
       }
 
@@ -1329,7 +1343,7 @@ class _RoomViewState extends State<RoomView> {
       if (data == null ||
           !data.containsKey('firstDay') ||
           !data.containsKey('lastDay')) {
-        _showError('Room scheduling data is incomplete');
+        _showError(AppLocalizations.of(context).get('roomDataIncomplete'));
         return;
       }
 
@@ -1383,7 +1397,8 @@ class _RoomViewState extends State<RoomView> {
         }
       }
     } catch (e) {
-      _showError('Failed to open duties screen: $e');
+      final message = AppLocalizations.of(context).get('failedToOpenDutiesScreen');
+      _showError('$message$e');
     }
   }
 
@@ -1396,7 +1411,7 @@ class _RoomViewState extends State<RoomView> {
             .get();
 
     if (!roomDoc.exists) {
-      _showError('Room data not found');
+      _showError(AppLocalizations.of(context).get('roomDataNotFound'));
       return;
     }
 
@@ -1419,7 +1434,7 @@ class _RoomViewState extends State<RoomView> {
           builder: (context, setStateDialog) {
             return AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text('Edit Daily Required Shifts'),
+              title: Text(AppLocalizations.of(context).get('editDailyShifts')),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400,
@@ -1435,9 +1450,9 @@ class _RoomViewState extends State<RoomView> {
                       ),
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Set all days to:',
+                              AppLocalizations.of(context).get('setAllDaysTo'),
                               style: TextStyle(color: Colors.black),
                             ),
                           ),
@@ -1486,8 +1501,8 @@ class _RoomViewState extends State<RoomView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(
-                              'Apply',
+                            child: Text(
+                              AppLocalizations.of(context).get('apply'),
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
@@ -1554,8 +1569,8 @@ class _RoomViewState extends State<RoomView> {
                 // cancel – do nothing ----------------------------------------------------
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    AppLocalizations.of(context).get('cancel'),
                     style: TextStyle(color: Colors.black),
                   ),
                 ),
@@ -1568,8 +1583,8 @@ class _RoomViewState extends State<RoomView> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Change',
+                  child: Text(
+                    AppLocalizations.of(context).get('change'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -1595,10 +1610,9 @@ class _RoomViewState extends State<RoomView> {
         builder:
             (_) => AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text('Invalid Shifts'),
-              content: const Text(
-                'The sum of shifts for any two consecutive days '
-                'cannot exceed the total number of doctors.',
+              title: Text(AppLocalizations.of(context).get('invalidShifts')),
+              content: Text(
+                AppLocalizations.of(context).get('consecutiveDaysError'),
               ),
               actions: [
                 TextButton(
@@ -1606,8 +1620,8 @@ class _RoomViewState extends State<RoomView> {
                     backgroundColor: const Color(0xFF1D61E7),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'OK',
+                  child: Text(
+                    AppLocalizations.of(context).get('ok'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
