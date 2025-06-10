@@ -964,6 +964,7 @@ class _RoomViewState extends State<RoomView> {
           ],
         ),
 
+        SizedBox(height: 8),
         // 3b) The blue schedule box
         Container(
           height: 300,
