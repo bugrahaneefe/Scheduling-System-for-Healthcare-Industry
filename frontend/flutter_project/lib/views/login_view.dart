@@ -73,32 +73,34 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _handleSuccessfulLogin(BuildContext context) async {
+    if (!mounted) return;
+
     if (widget.pendingRoomId != null) {
       // Navigate to room invitation if there's a pending room
-      if (mounted) {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder:
-                (_, __, ___) => RoomInvitationView(
-                  roomId: widget.pendingRoomId!,
-                  returnToHome: true, // Add this parameter
-                ),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-      }
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder:
+              (_, __, ___) => RoomInvitationView(
+                roomId: widget.pendingRoomId!,
+                returnToHome: true,
+              ),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+        (route) => false, // Remove all previous routes
+      );
     } else {
       // Navigate to home view as usual
-      if (mounted) {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => HomeView(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-      }
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => HomeView(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+        (route) => false, // Remove all previous routes
+      );
     }
   }
 

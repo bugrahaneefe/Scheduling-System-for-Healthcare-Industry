@@ -80,14 +80,16 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
               const SizedBox(height: 24),
               TextField(
                 controller: _emailController,
-                cursorColor: const Color(0xFF1D61E7), // Update cursor color to match LoginView
+                cursorColor: const Color(
+                  0xFF1D61E7,
+                ), // Update cursor color to match LoginView
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   labelStyle: TextStyle(color: Colors.black),
                   hintText: 'Enter your email address',
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.5)),
+                  hintStyle: TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.email, color: Color(0xFF1D61E7)),
                   enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.white),
