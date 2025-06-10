@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/utils/app_localizations.dart';
 
 class PreviewScheduleView extends StatefulWidget {
   final List<Map<String, dynamic>> participants;
@@ -67,6 +68,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     String date,
     Map<String, String> assignment,
   ) async {
+    final message = AppLocalizations.of(context).get('removeAssignmentFor');
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -75,12 +77,12 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            title: const Text(
-              'Remove Assignment',
+            title: Text(
+              AppLocalizations.of(context).get('removeAssignment'),
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
-              'Do you want to remove ${assignment['name']} from $date?',
+              '$message\n\n${assignment['name']} -> $date',
               style: const TextStyle(color: Colors.black87),
             ),
             actions: [
@@ -93,7 +95,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).get('cancel')),
               ),
               TextButton(
                 style: TextButton.styleFrom(
@@ -103,8 +105,8 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Remove',
+                child: Text(
+                  AppLocalizations.of(context).get('remove'),
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -137,14 +139,15 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
     if (availableParticipants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All participants are already assigned for this day'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).get('allParticipantsAssigned')),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    final message = AppLocalizations.of(context).get('addAssignmentFor');
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
       builder:
@@ -154,7 +157,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               borderRadius: BorderRadius.circular(8),
             ),
             title: Text(
-              'Add Assignment for $date',
+              '$message\n$date',
               style: const TextStyle(color: Colors.black),
             ),
             content: SizedBox(
@@ -188,7 +191,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).get('cancel')),
               ),
             ],
           ),
@@ -209,9 +212,10 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           _schedule = updatedSchedule;
         });
       } catch (e) {
+        final message = AppLocalizations.of(context).get('failedToAddAssignment');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to add assignment: $e'),
+            content: Text('$message$e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -281,10 +285,11 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
       }
     } catch (e) {
       if (context.mounted) {
+        final message = AppLocalizations.of(context).get('failedToApplySchedule');
         Navigator.pop(context); // Remove loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to apply schedule: $e'),
+            content: Text('$message$e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -295,18 +300,18 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
   // Helper method to convert month name to number
   int _getMonthNumber(String monthName) {
     final months = {
-      'January': 1,
-      'February': 2,
-      'March': 3,
-      'April': 4,
-      'May': 5,
-      'June': 6,
-      'July': 7,
-      'August': 8,
-      'September': 9,
-      'October': 10,
-      'November': 11,
-      'December': 12,
+      AppLocalizations.of(context).get('January'): 1,
+      AppLocalizations.of(context).get('February'): 2,
+      AppLocalizations.of(context).get('March'): 3,
+      AppLocalizations.of(context).get('April'): 4,
+      AppLocalizations.of(context).get('May'): 5,
+      AppLocalizations.of(context).get('June'): 6,
+      AppLocalizations.of(context).get('July'): 7,
+      AppLocalizations.of(context).get('August'): 8,
+      AppLocalizations.of(context).get('September'): 9,
+      AppLocalizations.of(context).get('October'): 10,
+      AppLocalizations.of(context).get('November'): 11,
+      AppLocalizations.of(context).get('December'): 12,
     };
     return months[monthName] ?? 1;
   }
@@ -410,8 +415,8 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             backgroundColor: const Color(0xFF1D61E7),
             minimumSize: const Size.fromHeight(50),
           ),
-          child: const Text(
-            'Apply Schedule',
+          child: Text(
+            AppLocalizations.of(context).get('applySchedule'),
             style: TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
@@ -437,8 +442,8 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                   ),
                   Expanded(
                     child: Center(
-                      child: const Text(
-                        'Preview Schedule',
+                      child: Text(
+                        AppLocalizations.of(context).get('previewSchedule'),
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.bold,
