@@ -61,7 +61,15 @@ class AppLocalizations {
       'loginSuccessful': 'Login successful!',
       'loginFailed': 'Login failed. Please try again.',
       'firstDayBeforeToday': 'First day cannot be before today.',
-      'lastDayBeforeFirstDay': 'Last day cannot be after first day.',
+      'lastDayBeforeFirstDay': 'Last day cannot be before first day.',
+      'consecutiveDaysError': 'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
+      'failedToCreateRoom': 'Failed to create room: ', 
+      'roomNameRequired': 'Room name is required.',
+      'descriptionRequired': 'Description is required.',
+      'firstDayRequired': 'First day is required.',
+      'lastDayRequired': 'Last day is required.',
+      'enterDefaultShiftsNumber': 'Please enter default number of shifts.',
+      'enterValidNumber': 'Please enter a valid number.',
       // ... add all other English strings
     },
     'tr': {
@@ -115,7 +123,16 @@ class AppLocalizations {
       'loginSuccessful': 'Giriş başarılı!',
       'loginFailed': 'Giriş başarısız. Lütfen tekrar deneyin.',
       'firstDayBeforeToday': 'Başlangıç tarihi bugünden önce olamaz.',
-      'lastDayBeforeFirstDay': 'Bitiş tarihi başlangıç tarihinden sonra olamaz.',
+      'lastDayBeforeFirstDay': 'Bitiş tarihi başlangıç tarihinden önce olamaz.',
+      'consecutiveDaysError': 'İki ardışık gün için nöbet sayılarının toplamı, doktor sayısını aşamaz.',
+      'failedToCreateRoom': 'Oda oluşturulamadı: ',
+      'roomNameRequired': 'Oda adı gereklidir.',
+      'descriptionRequired': 'Açıklama gereklidir.',
+      'firstDayRequired': 'Başlangıç tarihi gereklidir.',
+      'lastDayRequired': 'Bitiş tarihi gereklidir.',
+      'enterDefaultShiftsNumber': 'Lütfen varsayılan nöbet sayısını girin.',
+      'enterValidNumber': 'Lütfen geçerli bir sayı girin.',
+      
       // ... add all other Turkish strings
     }
   };

@@ -376,7 +376,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     }
 
     if (!lastDay.isAfter(firstDay)) {
-      await _showErrorDialog('Last day must be after first day');
+      await _showErrorDialog(AppLocalizations.of(context).get('lastDayBeforeFirstDay'));
       return;
     }
 
@@ -384,7 +384,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
     final doctorCount = _selectedParticipants.length;
     if (!_validateConsecutiveDaysShifts(_dailyShifts, doctorCount)) {
       await _showErrorDialog(
-        'The sum of shifts for any two consecutive days cannot exceed the total number of doctors.',
+        AppLocalizations.of(context).get('consecutiveDaysError'),
       );
       return;
     }
@@ -431,7 +431,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        await _showErrorDialog('Failed to create room: $e');
+        final failMessage = AppLocalizations.of(context).get('failedToCreateRoom');
+        await _showErrorDialog('$failMessage$e');
       }
     } finally {
       if (mounted) {
@@ -552,7 +553,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         validator:
                             (value) =>
                                 value?.isEmpty == true
-                                    ? 'Room name is required'
+                                    ? AppLocalizations.of(context).get('roomNameRequired')
                                     : null,
                       );
                     },
@@ -587,7 +588,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         validator:
                             (value) =>
                                 value?.isEmpty == true
-                                    ? 'Description is required'
+                                    ? AppLocalizations.of(context).get('descriptionRequired')
                                     : null,
                       );
                     },
@@ -628,7 +629,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               validator:
                                   (value) =>
                                       value?.isEmpty == true
-                                          ? 'First day is required'
+                                          ? AppLocalizations.of(context).get('firstDayRequired')
                                           : null,
                             );
                           },
@@ -668,7 +669,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               validator:
                                   (value) =>
                                       value?.isEmpty == true
-                                          ? 'Last day is required'
+                                          ? AppLocalizations.of(context).get('lastDayRequired')
                                           : null,
                             );
                           },
@@ -707,11 +708,11 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter default number of shifts';
+                            return AppLocalizations.of(context).get('enterDefaultShiftsNumber');
                           }
                           final shifts = int.tryParse(value);
                           if (shifts == null || shifts < 0) {
-                            return 'Please enter a valid number';
+                            return AppLocalizations.of(context).get('enterValidNumber');
                           }
                           return null;
                         },
