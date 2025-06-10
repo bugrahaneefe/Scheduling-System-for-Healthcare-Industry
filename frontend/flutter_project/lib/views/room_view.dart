@@ -2459,39 +2459,84 @@ class _RoomViewState extends State<RoomView> {
           ),
           if (participant['userId']?.isNotEmpty == true)
             TextButton(
-              onPressed:
-                  isCurrentUser
-                      ? () => _openSetDutiesScreen(participant, index)
-                      : () {
-                        Navigator.of(context)
-                            .push(
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (_, __, ___) => ViewPreferencesView(
-                                      doctorName: participant['name'],
-                                      preferences: _doctorPreferences[index]!,
-                                      isHost: _isHost,
-                                      roomId: widget.roomId,
-                                    ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ),
-                            )
-                            .then((result) async {
-                              if (result != null) {
-                                // Refresh doctor preferences after update
-                                await _loadAllDoctorPreferences();
-                                setState(() {}); // Trigger rebuild
-                              }
+              onPressed: isCurrentUser
+                  ? () => _openSetDutiesScreen(participant, index)
+                  : () async {  // Changed to async
+                      // Get room document to get dates and defaults
+                      final roomDoc = await FirebaseFirestore.instance
+                          .collection('rooms')
+                          .doc(widget.roomId)
+                          .get();
+                      
+                      if (!roomDoc.exists) return;
+                      
+                      final data = roomDoc.data()!;
+                      final defaultShiftsRoom = data['defaultShifts'] ?? 0;
+                      final firstDayStr = data['firstDay'] as String;
+                      final lastDayStr = data['lastDay'] as String;
+                      final totalDays = DateTime.parse(lastDayStr)
+                          .difference(DateTime.parse(firstDayStr))
+                          .inDays + 1;
+
+                      // If no preferences exist, create default ones
+                      Map<String, dynamic> preferences;
+                      if (!hasPreferences) {
+                        preferences = {
+                          'shiftsCount': defaultShiftsRoom,
+                          'availability': List<int>.filled(totalDays, 0),
+                          'firstDay': firstDayStr,
+                          'lastDay': lastDayStr,
+                        };
+
+                        // Save these default preferences
+                        await FirebaseFirestore.instance
+                            .collection('rooms')
+                            .doc(widget.roomId)
+                            .collection('preferences')
+                            .doc(participant['name'])
+                            .set({
+                              'shiftsCount': defaultShiftsRoom,
+                              'availability': List<int>.filled(totalDays, 0),
                             });
-                      },
+
+                        // Update local preferences
+                        setState(() {
+                          _doctorPreferences[index] = preferences;
+                        });
+                      } else {
+                        preferences = _doctorPreferences[index]!;
+                      }
+
+                      // Navigate to view preferences
+                      if (mounted) {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => ViewPreferencesView(
+                              doctorName: participant['name'],
+                              preferences: preferences,
+                              isHost: _isHost,
+                              roomId: widget.roomId,
+                            ),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        ).then((result) async {
+                          if (result != null) {
+                            await _loadAllDoctorPreferences();
+                            setState(() {});
+                          }
+                        });
+                      }
+                    },
               child: Text(
-                isCurrentUser ? 'Set Duties' : 'View Duties',
+                isCurrentUser
+                    ? hasPreferences
+                        ? 'Edit Duties'
+                        : 'Set Duties'
+                    : 'View Duties',
                 style: TextStyle(
-                  color:
-                      isCurrentUser || hasPreferences
-                          ? Color(0xFF1D61E7)
-                          : Color(0xFF1D61E7),
+                  color: Color(0xFF1D61E7),
                 ),
               ),
             )
@@ -2509,10 +2554,9 @@ class _RoomViewState extends State<RoomView> {
                 final defaultShiftsRoom = data['defaultShifts'] ?? 0;
                 final firstDayStr = data['firstDay'] as String;
                 final lastDayStr = data['lastDay'] as String;
-                final totalDays =
-                    DateTime.parse(
-                      lastDayStr,
-                    ).difference(DateTime.parse(firstDayStr)).inDays +
+                final totalDays = DateTime.parse(lastDayStr)
+                    .difference(DateTime.parse(firstDayStr))
+                    .inDays +
                     1;
 
                 final prefDoc =
