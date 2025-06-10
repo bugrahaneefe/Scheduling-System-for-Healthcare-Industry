@@ -1252,11 +1252,10 @@ class _RoomViewState extends State<RoomView> {
       if (mounted) {
         print('Opening duties screen for ${participant['name']}');
 
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => SetDutiesView(
+        final result = await Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder:
+                (_, __, ___) => SetDutiesView(
                   roomId: widget.roomId,
                   userId: widget.currentUserId,
                   doctorName: participant['name'],
@@ -1264,6 +1263,8 @@ class _RoomViewState extends State<RoomView> {
                   firstDay: normalizedFirstDay,
                   lastDay: normalizedLastDay,
                 ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
           ),
         );
 
@@ -2461,41 +2462,40 @@ class _RoomViewState extends State<RoomView> {
               onPressed:
                   isCurrentUser
                       ? () => _openSetDutiesScreen(participant, index)
-                      : hasPreferences
-                      ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ViewPreferencesView(
-                                  doctorName: participant['name'],
-                                  preferences: _doctorPreferences[index]!,
-                                  isHost: _isHost,
-                                  roomId: widget.roomId,
-                                ),
-                          ),
-                        ).then((result) async {
-                          if (result != null) {
-                            // Refresh doctor preferences after update
-                            await _loadAllDoctorPreferences();
-                            setState(() {}); // Trigger rebuild
-                          }
-                        });
-                      }
-                      : null,
+                      : () {
+                        Navigator.of(context)
+                            .push(
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (_, __, ___) => ViewPreferencesView(
+                                      doctorName: participant['name'],
+                                      preferences: _doctorPreferences[index]!,
+                                      isHost: _isHost,
+                                      roomId: widget.roomId,
+                                    ),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            )
+                            .then((result) async {
+                              if (result != null) {
+                                // Refresh doctor preferences after update
+                                await _loadAllDoctorPreferences();
+                                setState(() {}); // Trigger rebuild
+                              }
+                            });
+                      },
               child: Text(
                 isCurrentUser
                     ? hasPreferences
                         ? 'Edit Duties'
                         : 'Set Duties'
-                    : hasPreferences
-                    ? 'View Duties'
-                    : 'No Duties Set',
+                    : 'View Duties',
                 style: TextStyle(
                   color:
                       isCurrentUser || hasPreferences
                           ? Color(0xFF1D61E7)
-                          : Colors.grey,
+                          : Color(0xFF1D61E7),
                 ),
               ),
             )
