@@ -91,6 +91,15 @@ class AppLocalizations {
       'failedToApplySchedule': 'Failed to apply schedule: ',
       'addAssignmentFor': 'Add assignment for: ',
       'removeAssignmentFor': 'Do you want to remove this assignment?',
+      'success': 'Success',
+      'error': 'Error',
+      'name': 'Name',
+      'title': 'Title',
+      'searchCountry': 'Search Country',
+      'birthday': 'Birthday',
+      'profileUpdated': 'Profile updated successfully!',
+      'failedToUpdateProfile': 'Failed to update profile.',
+      'applyChanges': 'Apply Changes'
       // ... add all other English strings
     },
     'tr': {
@@ -174,6 +183,15 @@ class AppLocalizations {
       'failedToApplySchedule': 'Program uygulanamadı: ',
       'addAssignmentFor': 'Şu tarih için atama ekle: ',
       'removeAssignmentFor': 'Bu atamayı kaldırmak istiyor musunuz?',
+      'success': 'Başarılı',
+      'error': 'Hata',
+      'name': 'Ad',
+      'title': 'Ünvan',
+      'searchCountry': 'Ülke Ara',
+      'birthday': 'Doğum Günü',
+      'profileUpdated': 'Profil başarıyla güncellendi!',
+      'failedToUpdateProfile': 'Profil güncellenemedi.',
+      'applyChanges': 'Değişiklikleri Uygula',
       // ... add all other Turkish strings
     }
   };

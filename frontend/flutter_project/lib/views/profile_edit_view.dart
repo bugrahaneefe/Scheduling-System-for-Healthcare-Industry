@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:project491/utils/app_localizations.dart';
 import '../models/user_model.dart';
 import '../managers/auth_services.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -53,7 +54,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
           (_) => AlertDialog(
             backgroundColor: Colors.white,
             title: Text(
-              success ? 'Success' : 'Error',
+              success ? AppLocalizations.of(context).get('success') : AppLocalizations.of(context).get('error'),
               style: const TextStyle(color: Colors.black),
             ),
             content: Text(message, style: const TextStyle(color: Colors.black)),
@@ -67,7 +68,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                   Navigator.of(context).pop(); // close dialog
                   if (success) Navigator.of(context).pop(); // close sheet
                 },
-                child: const Text('OK', style: TextStyle(color: Colors.black)),
+                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.black)),
               ),
             ],
           ),
@@ -107,8 +108,8 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                       controller: _nameController,
                       cursorColor: Colors.black,
                       style: const TextStyle(color: Colors.black),
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context).get('name'),
                         labelStyle: TextStyle(color: Colors.black),
                         prefixIcon: Icon(Icons.person, color: Colors.black),
                         border: OutlineInputBorder(
@@ -127,8 +128,8 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                       controller: _titleController,
                       cursorColor: Colors.black,
                       style: const TextStyle(color: Colors.black),
-                      decoration: const InputDecoration(
-                        labelText: 'Title',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context).get('title'),
                         labelStyle: TextStyle(color: Colors.black),
                         prefixIcon: Icon(Icons.work, color: Colors.black),
                         border: OutlineInputBorder(
@@ -162,7 +163,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           color: Colors.black,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Phone Number',
+                          labelText: AppLocalizations.of(context).get('phoneNumber'),
                           labelStyle: const TextStyle(color: Colors.black),
                           hintText: widget.user.phoneNumber,
                           prefixIcon: const Icon(
@@ -192,7 +193,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           ),
                           listTileDivider: const Divider(color: Colors.grey),
                           searchFieldInputDecoration: InputDecoration(
-                            labelText: 'Search country',
+                            labelText: AppLocalizations.of(context).get('searchCountry'),
                             labelStyle: const TextStyle(color: Colors.black),
                             suffixIcon: const Icon(
                               Icons.search,
@@ -281,8 +282,8 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           setState(() => _selectedBirthday = picked);
                       },
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Birthday',
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context).get('birthday'),
                           labelStyle: TextStyle(color: Colors.black),
                           prefixIcon: Icon(
                             Icons.calendar_today,
@@ -293,7 +294,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                         child: Text(
                           _selectedBirthday != null
                               ? "${_selectedBirthday!.day}/${_selectedBirthday!.month}/${_selectedBirthday!.year}"
-                              : 'Select Birthday',
+                              : AppLocalizations.of(context).get('selectBirthday'),
                           style: const TextStyle(color: Colors.black),
                         ),
                       ),
@@ -330,11 +331,11 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                             ).loadCurrentUser();
                             // 3) Show popup & close
                             await _showPopup(
-                              'Profile updated successfully!',
+                              AppLocalizations.of(context).get('profileUpdated'),
                               true,
                             );
                           } catch (e) {
-                            await _showPopup('Failed to update profile', false);
+                            await _showPopup(AppLocalizations.of(context).get('failedToUpdateProfile'), false);
                           } finally {
                             setState(() => _isLoading = false);
                           }
@@ -350,8 +351,8 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                             ),
                           ),
                         )
-                        : const Text(
-                          'Apply Changes',
+                        : Text(
+                          AppLocalizations.of(context).get('applyChanges'),
                           style: TextStyle(color: Colors.black),
                         ),
               ),
