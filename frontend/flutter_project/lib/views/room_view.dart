@@ -1173,7 +1173,7 @@ class _RoomViewState extends State<RoomView> {
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
-              '$message\n${assignment['name']} -> $date?',
+              '$message\n\n${assignment['name']} -> $date',
               style: const TextStyle(color: Colors.black87),
             ),
             actions: [
@@ -1641,9 +1641,9 @@ class _RoomViewState extends State<RoomView> {
       builder:
           (_) => AlertDialog(
             backgroundColor: Colors.white,
-            title: const Text('Shifts Updated'),
-            content: const Text(
-              'Daily required shifts have been updated successfully.',
+            title: Text(AppLocalizations.of(context).get('shiftsUpdated')),
+            content: Text(
+              AppLocalizations.of(context).get('shiftsUpdatedSuccessfully'),
             ),
             actions: [
               TextButton(
@@ -1651,7 +1651,7 @@ class _RoomViewState extends State<RoomView> {
                   backgroundColor: const Color(0xFF1D61E7),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -1667,28 +1667,23 @@ class _RoomViewState extends State<RoomView> {
               .get();
 
       if (!roomDoc.exists) {
-        _showError('Room data not found');
+        _showError(AppLocalizations.of(context).get('roomDataNotFound'));
         return;
       }
-
+      final message = AppLocalizations.of(context).get('changingRoomDatesWarning');
       final bool? shouldProceed = await showDialog<bool>(
         context: context,
         builder:
             (context) => AlertDialog(
               backgroundColor: Colors.white,
-              title: const Text('Warning'),
-              content: const Text(
-                'Changing room dates will reset:\n\n'
-                '• All doctors\' duty preferences\n'
-                '• Number of shifts for each doctor\n'
-                '• Daily required shifts (will be set to 1)\n'
-                '• Any existing schedule\n\n'
-                'Do you want to continue?',
+              title: Text(AppLocalizations.of(context).get('warning')),
+              content: Text(
+                AppLocalizations.of(context).get('message'),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context).get('cancel')),
                   style: TextButton.styleFrom(foregroundColor: Colors.black),
                 ),
                 TextButton(
@@ -1699,8 +1694,8 @@ class _RoomViewState extends State<RoomView> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: const Text(
-                    'Continue',
+                  child: Text(
+                    AppLocalizations.of(context).get('continue'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -1822,13 +1817,14 @@ class _RoomViewState extends State<RoomView> {
         for (final user in assignedUsers) {
           final userId = user['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
+            final message = AppLocalizations.of(context).get('yourHostUpdatedStartEndDates');
             await FirebaseFirestore.instance
                 .collection('users')
                 .doc(userId)
                 .collection('notifications')
                 .add({
                   'message':
-                      'Your host in "$roomName" updated start and end date. Please confirm your preferences.',
+                      '"$roomName" -> $message',
                   'roomId': widget.roomId,
                   'roomName': roomName,
                   'timestamp': now,
@@ -1838,12 +1834,13 @@ class _RoomViewState extends State<RoomView> {
         }
 
         if (hostUserId != null && hostUserId.toString().isNotEmpty) {
+          final message = AppLocalizations.of(context).get('youUpdatedStartEndDates');
           await FirebaseFirestore.instance
               .collection('users')
               .doc(hostUserId)
               .collection('notifications')
               .add({
-                'message': 'You updated start and end date in "$roomName".',
+                'message': '"$roomName" -> $message',
                 'roomId': widget.roomId,
                 'roomName': roomName,
                 'timestamp': now,
@@ -1862,9 +1859,9 @@ class _RoomViewState extends State<RoomView> {
             builder:
                 (_) => AlertDialog(
                   backgroundColor: Colors.white,
-                  title: const Text('Room Updated'),
-                  content: const Text(
-                    'Room dates updated.\n\nAll preferences and schedules have been reset.\n\nPlease inform doctors to set their preferences again.',
+                  title: Text(AppLocalizations.of(context).get('roomUpdated')),
+                  content: Text(
+                    AppLocalizations.of(context).get('roomDatesUpdated'),
                   ),
                   actions: [
                     TextButton(
@@ -1875,8 +1872,8 @@ class _RoomViewState extends State<RoomView> {
                         ),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'OK',
+                      child: Text(
+                        AppLocalizations.of(context).get('ok'),
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -1893,7 +1890,9 @@ class _RoomViewState extends State<RoomView> {
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      _showError('Failed to update room dates: $e');
+      final message =
+          AppLocalizations.of(context).get('failedToUpdateRoomDates');
+      _showError('$message$e');
     }
   }
 
@@ -1905,7 +1904,7 @@ class _RoomViewState extends State<RoomView> {
             .get();
 
     if (!roomDoc.exists) {
-      _showError('Room data not found');
+      _showError(AppLocalizations.of(context).get('roomDataNotFound'));
       return;
     }
 
@@ -1933,6 +1932,9 @@ class _RoomViewState extends State<RoomView> {
     final maxShiftsDoctorName = maxShiftsEntry['name'];
 
     if (numDays < maxShifts * 2) {
+      final message = AppLocalizations.of(context).get('invalidScheduleError');
+      final numOfDays = AppLocalizations.of(context).get('numberOfDays');
+      final doctorWithMostShifts = AppLocalizations.of(context).get('doctorWithMostShifts');
       showDialog(
         context: context,
         builder:
@@ -1941,14 +1943,14 @@ class _RoomViewState extends State<RoomView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              title: const Text(
-                'Invalid Schedule',
+              title: Text(
+                AppLocalizations.of(context).get('invalidSchedule'),
                 style: TextStyle(color: Colors.black),
               ),
               content: Text(
-                'The number of days in the schedule should be at least twice the number of shifts of the doctor with the most shifts.\n\n'
-                'Number of days: $numDays\n\n'
-                'Doctor with the most shifts: $maxShiftsDoctorName ($maxShifts shifts)',
+                '$message\n\n'
+                '$numOfDays$numDays\n\n'
+                '$doctorWithMostShifts$maxShiftsDoctorName ($maxShifts)',
                 style: const TextStyle(color: Colors.black87),
               ),
               actions: [
@@ -1960,8 +1962,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'OK',
+                  child: Text(
+                    AppLocalizations.of(context).get('ok'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -1988,6 +1990,9 @@ class _RoomViewState extends State<RoomView> {
     );
 
     if (totalDoctorShifts < totalDailyShifts) {
+      final message = AppLocalizations.of(context).get('invalidScheduleError2');
+      final totalShifts = AppLocalizations.of(context).get('totalDoctorShifts');
+      final totalRequiredShifts = AppLocalizations.of(context).get('totalDailyShifts');
       showDialog(
         context: context,
         builder:
@@ -1996,14 +2001,14 @@ class _RoomViewState extends State<RoomView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              title: const Text(
-                'Invalid Schedule',
+              title: Text(
+                AppLocalizations.of(context).get('invalidSchedule'),
                 style: TextStyle(color: Colors.black),
               ),
               content: Text(
-                'The total number of shifts of the doctors should not be less than the total of the daily required shifts.\n\n'
-                'Total number of shifts of the doctors: $totalDoctorShifts\n\n'
-                'Total of the daily required shifts: $totalDailyShifts',
+                '$message\n\n'
+                '$totalShifts$totalDoctorShifts\n\n'
+                '$totalRequiredShifts$totalDailyShifts',
                 style: const TextStyle(color: Colors.black87),
               ),
               actions: [
@@ -2015,8 +2020,8 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'OK',
+                  child: Text(
+                    AppLocalizations.of(context).get('ok'),
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -2050,7 +2055,7 @@ class _RoomViewState extends State<RoomView> {
       if (doctors.isEmpty) {
         Navigator.pop(context);
         _showError(
-          'No doctors found in the room. Please add participants first.',
+          AppLocalizations.of(context).get('noDoctorsFound'),
         );
         return;
       }
@@ -2146,12 +2151,14 @@ class _RoomViewState extends State<RoomView> {
           await _refreshRoom();
         }
       } else {
+        final message = AppLocalizations.of(context).get('failedToFetchSchedule');
         Navigator.pop(context); // Remove loading dialog
-        _showError('Failed to fetch schedule: ${response.body}');
+        _showError('$message${response.body}');
       }
     } catch (e) {
+      final message = AppLocalizations.of(context).get('errorOccurredWithError');
       Navigator.pop(context); // Remove loading dialog
-      _showError('Error occurred: $e');
+      _showError('$message$e');
     }
   }
 
@@ -2249,48 +2256,48 @@ class _RoomViewState extends State<RoomView> {
                             itemBuilder:
                                 (context) => [
                                   if (_isScheduleApplied)
-                                    const PopupMenuItem(
+                                    PopupMenuItem(
                                       value: 'preview',
                                       child: ListTile(
                                         leading: Icon(
                                           Icons.preview,
                                           color: Colors.black,
                                         ),
-                                        title: Text('Preview New Schedule'),
+                                        title: Text(AppLocalizations.of(context).get('previewNewSchedule')),
                                       ),
                                     ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'editShifts',
                                     child: ListTile(
                                       leading: Icon(
                                         Icons.work_history,
                                         color: Colors.black,
                                       ),
-                                      title: Text('Edit daily required shifts'),
+                                      title: Text(AppLocalizations.of(context).get('editDailyShifts')),
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'editDates',
                                     child: ListTile(
                                       leading: Icon(
                                         Icons.calendar_month,
                                         color: Colors.black,
                                       ),
-                                      title: Text('Edit room dates'),
+                                      title: Text(AppLocalizations.of(context).get('editRoomDates')),
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'share',
                                     child: ListTile(
                                       leading: Icon(
                                         Icons.share,
                                         color: Colors.black,
                                       ),
-                                      title: Text('Share invitation'),
+                                      title: Text(AppLocalizations.of(context).get('shareInvitation')),
                                     ),
                                   ),
                                   const PopupMenuDivider(),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'delete',
                                     child: ListTile(
                                       leading: Icon(
@@ -2298,7 +2305,7 @@ class _RoomViewState extends State<RoomView> {
                                         color: Colors.red,
                                       ),
                                       title: Text(
-                                        'Delete room',
+                                        AppLocalizations.of(context).get('deleteRoom'),
                                         style: TextStyle(color: Colors.red),
                                       ),
                                     ),
@@ -2341,14 +2348,14 @@ class _RoomViewState extends State<RoomView> {
                             snapshot.data!.data() as Map<String, dynamic>;
                         final firstDayStr = data['firstDay'] ?? '';
                         final lastDayStr = data['lastDay'] ?? '';
-                        const _weekdayNames = [
-                          'Mon',
-                          'Tue',
-                          'Wed',
-                          'Thu',
-                          'Fri',
-                          'Sat',
-                          'Sun',
+                        final _weekdayNames = [
+                          AppLocalizations.of(context).get('mon'),
+                          AppLocalizations.of(context).get('tue'),
+                          AppLocalizations.of(context).get('wed'),
+                          AppLocalizations.of(context).get('thu'),
+                          AppLocalizations.of(context).get('fri'),
+                          AppLocalizations.of(context).get('sat'),
+                          AppLocalizations.of(context).get('sun'),
                         ];
 
                         DateTime? fd, ld;
@@ -2423,15 +2430,15 @@ class _RoomViewState extends State<RoomView> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        child: const Text(
-                          'Preview New Schedule',
+                        child: Text(
+                          AppLocalizations.of(context).get('previewNewSchedule'),
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
                     const SizedBox(height: 20),
-                    const Center(
+                    Center(
                       child: Text(
-                        'Participants',
+                        AppLocalizations.of(context).get('participantsTitle'),
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w500,
@@ -2455,8 +2462,8 @@ class _RoomViewState extends State<RoomView> {
                                     controller: _newParticipantController,
                                     style: const TextStyle(color: Colors.white),
                                     cursorColor: const Color(0xFF1D61E7),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Add new participant',
+                                    decoration: InputDecoration(
+                                      hintText: AppLocalizations.of(context).get('addParticipant'),
                                       hintStyle: TextStyle(
                                         color: Colors.white60,
                                       ),
@@ -2527,6 +2534,8 @@ class _RoomViewState extends State<RoomView> {
     final hasPreferences = _doctorPreferences.containsKey(index);
     final isCurrentUser = participant['userId'] == widget.currentUserId;
 
+    final hostText = AppLocalizations.of(context).get('host');
+    final assignedToText = AppLocalizations.of(context).get('assignedTo');
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -2561,7 +2570,7 @@ class _RoomViewState extends State<RoomView> {
                 ),
                 if (isHost || assignedUserName != null)
                   Text(
-                    '${isHost ? "Host" : ""}${isHost && assignedUserName != null ? " • " : ""}${assignedUserName != null ? "Assigned to: $assignedUserName" : ""}',
+                    '${isHost ? hostText : ""}${isHost && assignedUserName != null ? " • " : ""}${assignedUserName != null ? "$assignedToText$assignedUserName" : ""}',
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
               ],
@@ -2656,9 +2665,9 @@ class _RoomViewState extends State<RoomView> {
               child: Text(
                 isCurrentUser
                     ? hasPreferences
-                        ? 'Edit Duties'
-                        : 'Set Duties'
-                    : 'View Duties',
+                        ? AppLocalizations.of(context).get('editDuties')
+                        : AppLocalizations.of(context).get('setDuties')
+                    : AppLocalizations.of(context).get('viewDuties'),
                 style: TextStyle(color: Color(0xFF1D61E7)),
               ),
             )
@@ -2737,8 +2746,8 @@ class _RoomViewState extends State<RoomView> {
                       }
                     });
               },
-              child: const Text(
-                'Set Shifts',
+              child: Text(
+                AppLocalizations.of(context).get('setShifts'),
                 style: TextStyle(color: Color(0xFF1D61E7)),
               ),
             ),
