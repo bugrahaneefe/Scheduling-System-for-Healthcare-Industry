@@ -193,6 +193,11 @@ class AppLocalizations {
       'viewDuties': 'View Duties',
       'setDuties': 'Set Duties',
       'setShifts': 'Set Shift Numbers',
+      'numberOfShifts': 'Number of Shifts',
+      'available': 'Available',
+      'unavailable': 'Unavailable',
+      'noPreferences': 'No Preference',
+      'savePreferences': 'Save Preferences',
       // ... add all other English strings
     },
     'tr': {
@@ -378,6 +383,11 @@ class AppLocalizations {
       'viewDuties': 'Görevleri Görüntüle',
       'setDuties': 'Görevleri Ayarla',
       'setShifts': 'Nöbet Sayılarını Ayarla',
+      'numberOfShifts': 'Nöbet Sayısı',
+      'available': 'Müsait',
+      'unavailable': 'Müsait Değil',
+      'noPreferences': 'Tercih Yok',
+      'savePreferences': 'Tercihleri Kaydet',
       // ... add all other Turkish strings
     }
   };

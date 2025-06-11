@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/utils/app_localizations.dart';
 
 class SetDutiesView extends StatefulWidget {
   final String roomId;
@@ -248,12 +249,13 @@ class _SetDutiesViewState extends State<SetDutiesView> {
 
   @override
   Widget build(BuildContext context) {
+    final message = AppLocalizations.of(context).get('setDuties');
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(
-          'Set Duties - ${widget.doctorName}',
+          '$message - ${widget.doctorName}',
           style: const TextStyle(color: Colors.white), // Title text white
         ),
         backgroundColor: Colors.transparent,
@@ -292,8 +294,8 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                 onSubmitted: (_) => _shiftsFocus.unfocus(), // closes on Android
                 style: const TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
-                decoration: const InputDecoration(
-                  labelText: 'Number of Shifts',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).get('numberOfShifts'),
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.white60),
@@ -309,9 +311,9 @@ class _SetDutiesViewState extends State<SetDutiesView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildLegendItem(const Color(0xFF5C9D5C), 'Available'),
-                  _buildLegendItem(const Color(0xFFCE5A57), 'Unavailable'),
-                  _buildLegendItem(Colors.transparent, 'No Preference'),
+                  _buildLegendItem(const Color(0xFF5C9D5C), AppLocalizations.of(context).get('available')),
+                  _buildLegendItem(const Color(0xFFCE5A57), AppLocalizations.of(context).get('unavailable')),
+                  _buildLegendItem(Colors.transparent, AppLocalizations.of(context).get('noPreferences')),
                 ],
               ),
             ),
@@ -423,7 +425,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                         ),
                       ),
                       onPressed: _handleSave,
-                      child: const Text('Save Preferences'),
+                      child: Text(AppLocalizations.of(context).get('savePreferences')),
                     ),
                   ),
                 ],
