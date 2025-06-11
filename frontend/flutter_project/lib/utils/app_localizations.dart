@@ -127,9 +127,8 @@ class AppLocalizations {
           'Do you want to remove this participant from the room: ',
       'failedToRemoveUser': 'Failed to remove user: ',
       'cannotRemoveDoctor': 'Cannot Remove Doctor',
-      'removeDoctorError':
-          'Removing this doctor would result in consecutive days having more '
-          'shifts than available doctors. Please adjust the daily shifts first.',
+      'removeDoctorError': 
+          'Removing this doctor would result in consecutive days having more shifts than available doctors. Please adjust the daily shifts first.',
       'failedToRemoveParticipant': 'Failed to remove participant: ',
       'participantAlreadyExists':
           'A participant with this name already exists.',
@@ -162,13 +161,8 @@ class AppLocalizations {
       'shiftsUpdatedSuccessfully':
           'Daily required shifts have been updated successfully.',
       'warning': 'Warning',
-      'changingRoomDatesWarning':
-          'Changing room dates will reset:\n\n'
-          '• All doctors\' duty preferences\n'
-          '• Number of shifts for each doctor\n'
-          '• Daily required shifts (will be set to 1)\n'
-          '• Any existing schedule\n\n'
-          'Do you want to continue?',
+      'changingRoomDatesWarning': 
+          'Changing room dates will reset:\n\n• All doctors\' duty preferences\n• Number of shifts for each doctor\n• Daily required shifts (will be set to 1)\n• Any existing schedule\n\nDo you want to continue?',
       'continue': 'Continue',
       'yourHostUpdatedStartEndDates':
           'Your host updated start and end date. Please confirm your preferences.',
@@ -227,7 +221,7 @@ class AppLocalizations {
       'login': 'Giriş Yap',
       'login2': 'Giriş Yap',
       'nameSurname': 'Ad & Soyad',
-      'jobDescription': 'İş Tanımı',
+      'jobDescription': 'Ünvan',
       'selectBirthday': 'Doğum Tarihi Seç',
       'phoneNumber': 'Telefon Numarası',
       'email': 'Email',
@@ -338,9 +332,8 @@ class AppLocalizations {
           'Bu katılımcıyı odadan kaldırmak istiyor musunuz: ',
       'failedToRemoveUser': 'Kullanıcı kaldırılamadı: ',
       'cannotRemoveDoctor': 'Doktor Kaldırılamaz',
-      'removeDoctorError':
-          'Bu doktoru kaldırmak, ardışık günlerde nöbet sayısının toplam doktor sayısını aşmasına neden olur. '
-          'Lütfen önce günlük nöbet sayılarını ayarlayın.',
+      'removeDoctorError': 
+          'Bu doktoru kaldırmak, ardışık günlerde nöbet sayısının toplam doktor sayısını aşmasına neden olur. Lütfen önce günlük nöbet sayılarını ayarlayın.',
       'failedToRemoveParticipant': 'Katılımcı kaldırılamadı: ',
       'participantAlreadyExists': 'Bu isimde bir katılımcı zaten var.',
       'failedToAddParticipant': 'Katılımcı eklenemedi: ',
@@ -372,13 +365,8 @@ class AppLocalizations {
       'shiftsUpdatedSuccessfully':
           'Günlük gerekli nöbet sayıları başarıyla güncellendi.',
       'warning': 'Uyarı',
-      'changingRoomDatesWarning':
-          'Oda tarihlerini değiştirmeniz durumunda:\n\n'
-          '• Tüm doktorların nöbet tercihleri sıfırlanacak,\n'
-          '• Her doktor için nöbet sayısı sıfırlanacak,\n'
-          '• Günlük gerekli nöbet sayıları 1 olarak ayarlanacak,\n'
-          '• Mevcut program silinecek.\n\n'
-          'Devam etmek istiyor musunuz?',
+      'changingRoomDatesWarning': 
+          'Oda tarihlerini değiştirmeniz, aşağıdakileri sıfırlayacaktır:\n\n• Tüm doktorların nöbet tercihleri\n• Her doktor için nöbet sayıları\n• Günlük gerekli nöbet sayıları (1 olarak ayarlanacak)\n• Mevcut programlar\n\nDevam etmek istiyor musunuz?',
       'continue': 'Devam',
       'yourHostUpdatedStartEndDates':
           'Yönetici başlangıç ve bitiş tarihlerini değiştirdi. Lütfen tercihlerinizi güncelleyin.',
