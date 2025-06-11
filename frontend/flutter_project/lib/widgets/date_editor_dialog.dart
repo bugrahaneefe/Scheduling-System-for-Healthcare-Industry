@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project491/utils/app_localizations.dart';
 
 class DateEditorDialog extends StatefulWidget {
   final DateTime firstDay;
@@ -41,16 +42,16 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      title: const Text(
-        'Edit Room Dates',
+      title: Text(
+        AppLocalizations.of(context).get('editRoomDates'),
         style: TextStyle(color: Colors.black),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            title: const Text(
-              'First Day',
+            title: Text(
+              AppLocalizations.of(context).get('firstDay'),
               style: TextStyle(color: Colors.black),
             ),
             subtitle: Text(
@@ -86,8 +87,8 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
             },
           ),
           ListTile(
-            title: const Text(
-              'Last Day',
+            title: Text(
+              AppLocalizations.of(context).get('lastDay'),
               style: TextStyle(color: Colors.black),
             ),
             subtitle: Text(
@@ -122,7 +123,10 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.black)),
+          child: Text(
+            AppLocalizations.of(context).get('cancel'),
+            style: TextStyle(color: Colors.black),
+          ),
         ),
         TextButton(
           style: TextButton.styleFrom(
@@ -137,7 +141,10 @@ class _DateEditorDialogState extends State<DateEditorDialog> {
               'lastDay': _lastDay,
             });
           },
-          child: const Text('Save', style: TextStyle(color: Colors.white)),
+          child: Text(
+            AppLocalizations.of(context).get('save'),
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ],
     );

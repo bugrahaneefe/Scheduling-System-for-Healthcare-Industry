@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project491/utils/app_localizations.dart';
 import '../managers/auth_services.dart';
 
 class ResetPasswordView extends StatefulWidget {
@@ -29,13 +30,13 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     try {
       await authService.value.resetPassword(_emailController.text.trim());
       setState(() {
-        _message = 'Password reset email sent! Check your inbox.';
+        _message = AppLocalizations.of(context).get('resetPasswordEmailSent');
         _isSuccess = true;
       });
       Future.delayed(const Duration(seconds: 2), () => Navigator.pop(context));
     } catch (e) {
       setState(() {
-        _message = 'Failed to send reset email. Please try again.';
+        _message = AppLocalizations.of(context).get('resetPasswordEmailFail');
         _isSuccess = false;
       });
     } finally {
@@ -50,8 +51,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Reset Password',
+          title: Text(
+            AppLocalizations.of(context).get('resetPassword'),
             style: TextStyle(color: Colors.white),
           ),
           leading: Container(
@@ -73,8 +74,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Enter your mail to receive password reset mail',
+              Text(
+                AppLocalizations.of(context).get('enterEmailToReceive'),
                 style: TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 24),
@@ -88,7 +89,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   filled: true,
                   fillColor: Colors.white,
                   labelStyle: TextStyle(color: Colors.black),
-                  hintText: 'Enter your email address',
+                  hintText: AppLocalizations.of(context).get('enterYourEmail'),
                   hintStyle: TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.email, color: Color(0xFF1D61E7)),
                   enabledBorder: const OutlineInputBorder(
@@ -119,7 +120,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                             ),
                           ),
                         )
-                        : const Text('Send Reset Link'),
+                        : Text(
+                          AppLocalizations.of(context).get('sendResetLink'),
+                        ),
               ),
 
               if (_message != null)

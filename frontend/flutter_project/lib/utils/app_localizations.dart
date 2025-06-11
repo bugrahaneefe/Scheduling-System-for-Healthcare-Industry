@@ -11,6 +11,13 @@ class AppLocalizations {
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
+      'titleNöbetim': "Nobetim",
+      'resetPassword': 'Reset Password',
+      'resetPasswordEmailSent': 'Password reset email sent! Check your inbox.',
+      'resetPasswordEmailFail': 'Failed to send reset email. Please try again.',
+      'enterEmailToReceive': 'Enter your mail to receive password reset mail',
+      'enterYourEmail': 'Enter your email address',
+      'sendResetLink': 'Send Reset Link',
       'createAccount': 'Create Account',
       'alreadyHaveAccount': 'Already have an account?',
       'login': 'Log in',
@@ -205,6 +212,7 @@ class AppLocalizations {
       'unavailable': 'Unavailable',
       'noPreferences': 'No Preference',
       'savePreferences': 'Save Preferences',
+      'save': 'Save',
       'passwordAtLeast6Chars': 'Password must be at least 6 characters long.',
       'shiftCountUpdate': 'Shift Count Update',
       'shiftCountUpdatedSuccessfully': 'Shift count updated successfully.',
@@ -218,6 +226,16 @@ class AppLocalizations {
       // ... add all other English strings
     },
     'tr': {
+      'save': 'Kaydet',
+      'titleNöbetim': 'Nöbetim',
+      'resetPassword': 'Parola Sıfırla',
+      'resetPasswordEmailSent':
+          'Parola sıfırlama e-postası gönderildi. E-postanı kontrol et!',
+      'resetPasswordEmailFail':
+          'Parola sıfırlama e-postası gönderilemedi. Tekrar dene.',
+      'enterEmailToReceive': 'Sıfırlama linki için e-postanı gir',
+      'enterYourEmail': 'E-postanı gir.',
+      'sendResetLink': 'Sıfırlama e-postası gönder.',
       'pleaseEnterValidEmail': 'Lütfen geçerli bir e-posta girin.',
       'failGoogleSignIn': 'Google girişi iptal edildi.',
       'createAccount': 'Hesap Oluştur',

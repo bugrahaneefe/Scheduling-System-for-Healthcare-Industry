@@ -87,7 +87,7 @@ class _MyAppState extends State<MyApp> {
       providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Nöbetim',
+        title: AppLocalizations.of(context).get('titleNöbetim'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

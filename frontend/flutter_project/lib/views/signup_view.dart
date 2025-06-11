@@ -74,7 +74,10 @@ class _SignupViewState extends State<SignupView> {
         backgroundColor: const Color(0x1E1E1E),
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context).get('signUp'), style: TextStyle(color: Colors.white)),
+          title: Text(
+            AppLocalizations.of(context).get('signUp'),
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: const Color(0x1E1E1E),
           elevation: 0,
           leading: Container(
@@ -130,7 +133,9 @@ class _SignupViewState extends State<SignupView> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            AppLocalizations.of(context).get('alreadyHaveAccount'),
+                            AppLocalizations.of(
+                              context,
+                            ).get('alreadyHaveAccount'),
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w500,
@@ -190,7 +195,9 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.person,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: AppLocalizations.of(context).get('nameSurname'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('nameSurname'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -220,7 +227,9 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.work,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: AppLocalizations.of(context).get('jobDescription'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('jobDescription'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -244,7 +253,10 @@ class _SignupViewState extends State<SignupView> {
                                   color: Color(0xFF1D61E7),
                                 ),
                                 hintText:
-                                    _selectedBirthday ?? AppLocalizations.of(context).get('selectBirthday'),
+                                    _selectedBirthday ??
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('selectBirthday'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -406,7 +418,9 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: AppLocalizations.of(context).get('email'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('email'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -428,7 +442,9 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: AppLocalizations.of(context).get('password'),
+                                hintText: AppLocalizations.of(
+                                  context,
+                                ).get('password'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -462,7 +478,9 @@ class _SignupViewState extends State<SignupView> {
                                     authViewModel.password,
                                   )) {
                                     _showError(
-                                      AppLocalizations.of(context).get('passwordAtLeast6Chars'),
+                                      AppLocalizations.of(
+                                        context,
+                                      ).get('passwordAtLeast6Chars'),
                                     );
                                     return;
                                   }
@@ -485,7 +503,11 @@ class _SignupViewState extends State<SignupView> {
                                       _isLoading = false;
                                     });
 
-                                    _showSuccess(AppLocalizations.of(context).get('registrationSuccessful'));
+                                    _showSuccess(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).get('registrationSuccessful'),
+                                    );
                                     authViewModel.clearUserData();
 
                                     await Future.delayed(
@@ -501,12 +523,16 @@ class _SignupViewState extends State<SignupView> {
                                     });
                                     _showError(
                                       e.message ??
-                                          AppLocalizations.of(context).get('errorOccurred'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('errorOccurred'),
                                     );
                                   }
                                 } else {
                                   _showError(
-                                    AppLocalizations.of(context).get('fillRequiredFields'),
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('fillRequiredFields'),
                                   );
                                 }
                               },
@@ -534,7 +560,9 @@ class _SignupViewState extends State<SignupView> {
                               authViewModel.birthday != null) {
                             if (!isValidPassword(authViewModel.password)) {
                               _showError(
-                                AppLocalizations.of(context).get('passwordAtLeast6Chars'),
+                                AppLocalizations.of(
+                                  context,
+                                ).get('passwordAtLeast6Chars'),
                               );
                               return;
                             }
@@ -557,7 +585,11 @@ class _SignupViewState extends State<SignupView> {
                                 _isLoading = false;
                               });
 
-                              _showSuccess(AppLocalizations.of(context).get('registrationSuccessful'));
+                              _showSuccess(
+                                AppLocalizations.of(
+                                  context,
+                                ).get('registrationSuccessful'),
+                              );
                               authViewModel.clearUserData();
 
                               await Future.delayed(const Duration(seconds: 1));
@@ -571,11 +603,17 @@ class _SignupViewState extends State<SignupView> {
                               });
                               _showError(
                                 e.message ??
-                                    AppLocalizations.of(context).get('errorOccurred'),
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('errorOccurred'),
                               );
                             }
                           } else {
-                            _showError(AppLocalizations.of(context).get('fillRequiredFields'));
+                            _showError(
+                              AppLocalizations.of(
+                                context,
+                              ).get('fillRequiredFields'),
+                            );
                           }
                         },
                         buttonType: 'main',
