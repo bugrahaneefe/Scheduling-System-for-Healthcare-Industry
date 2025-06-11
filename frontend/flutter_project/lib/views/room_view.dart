@@ -200,7 +200,9 @@ class _RoomViewState extends State<RoomView> {
     if (!_isHost) {
       if (participant['userId'] != null && participant['userId'].isNotEmpty) {
         // Show warning for assigned participant
-        final message = AppLocalizations.of(context).get('participantAssignedTo');
+        final message = AppLocalizations.of(
+          context,
+        ).get('participantAssignedTo');
         showDialog(
           context: context,
           builder:
@@ -271,7 +273,9 @@ class _RoomViewState extends State<RoomView> {
         );
       } else {
         final message1 = AppLocalizations.of(context).get('wantToAssign');
-        final message2 = AppLocalizations.of(context).get('willNotAbleToUnassign');
+        final message2 = AppLocalizations.of(
+          context,
+        ).get('willNotAbleToUnassign');
         // Show confirmation for unassigned participant
         final bool? confirm = await showDialog<bool>(
           context: context,
@@ -329,7 +333,9 @@ class _RoomViewState extends State<RoomView> {
                     .doc(widget.currentUserId)
                     .get();
 
-            final userName = userDoc.data()?['name'] ?? AppLocalizations.of(context).get('unknownUser');
+            final userName =
+                userDoc.data()?['name'] ??
+                AppLocalizations.of(context).get('unknownUser');
 
             // Update the participant's userId and assignedUserName
             final int participantIndex = _participants.indexOf(participant);
@@ -381,7 +387,9 @@ class _RoomViewState extends State<RoomView> {
           } catch (e) {
             // Show error dialog
             if (mounted) {
-              final message = AppLocalizations.of(context).get('failedToAssign');
+              final message = AppLocalizations.of(
+                context,
+              ).get('failedToAssign');
               showDialog(
                 context: context,
                 builder:
@@ -410,7 +418,9 @@ class _RoomViewState extends State<RoomView> {
           participant['userId'] == widget.currentUserId) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).get('hostCannotBeUnassigned')),
+            content: Text(
+              AppLocalizations.of(context).get('hostCannotBeUnassigned'),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -425,9 +435,7 @@ class _RoomViewState extends State<RoomView> {
             (context) => AlertDialog(
               backgroundColor: Colors.white,
               title: Text(AppLocalizations.of(context).get('removeAssignment')),
-              content: Text(
-                '$message${participant['name']}?',
-              ),
+              content: Text('$message${participant['name']}?'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
@@ -455,7 +463,9 @@ class _RoomViewState extends State<RoomView> {
         await _removeUserFromParticipant(participant);
       }
     } else if (_isHost && !participant['isHost']) {
-      final message = AppLocalizations.of(context).get('removeParticipantFromRoom');
+      final message = AppLocalizations.of(
+        context,
+      ).get('removeParticipantFromRoom');
       // Show options to remove unassigned participant
       final confirm = await showDialog<bool>(
         context: context,
@@ -561,7 +571,9 @@ class _RoomViewState extends State<RoomView> {
             context: context,
             builder:
                 (context) => AlertDialog(
-                  title: Text(AppLocalizations.of(context).get('cannotRemoveDoctor')),
+                  title: Text(
+                    AppLocalizations.of(context).get('cannotRemoveDoctor'),
+                  ),
                   content: Text(
                     AppLocalizations.of(context).get('removeDoctorError'),
                   ),
@@ -603,7 +615,9 @@ class _RoomViewState extends State<RoomView> {
       await _loadAllDoctorPreferences();
       await _loadSchedules();
     } catch (e) {
-      final message = AppLocalizations.of(context).get('failedToRemoveParticipant');
+      final message = AppLocalizations.of(
+        context,
+      ).get('failedToRemoveParticipant');
       _showError('$message$e');
     }
   }
@@ -617,7 +631,9 @@ class _RoomViewState extends State<RoomView> {
     if (alreadyExists) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).get('participantAlreadyExists')),
+          content: Text(
+            AppLocalizations.of(context).get('participantAlreadyExists'),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -635,7 +651,9 @@ class _RoomViewState extends State<RoomView> {
       _newParticipantController.clear();
       await _refreshRoom();
     } catch (e) {
-      final message = AppLocalizations.of(context).get('failedToAddParticipant');
+      final message = AppLocalizations.of(
+        context,
+      ).get('failedToAddParticipant');
       _showError('$message$e');
     }
   }
@@ -647,7 +665,9 @@ class _RoomViewState extends State<RoomView> {
           (context) => AlertDialog(
             backgroundColor: Colors.white,
             title: Text(AppLocalizations.of(context).get('deleteRoom')),
-            content: Text(AppLocalizations.of(context).get('sureToConfirmDeleteRoom')),
+            content: Text(
+              AppLocalizations.of(context).get('sureToConfirmDeleteRoom'),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -721,7 +741,9 @@ class _RoomViewState extends State<RoomView> {
         builder:
             (_) => AlertDialog(
               title: Text(AppLocalizations.of(context).get('notAllowed')),
-              content: Text(AppLocalizations.of(context).get('onlyHostShareInvitation')),
+              content: Text(
+                AppLocalizations.of(context).get('onlyHostShareInvitation'),
+              ),
               actions: [
                 TextButton(
                   style: TextButton.styleFrom(
@@ -743,7 +765,8 @@ class _RoomViewState extends State<RoomView> {
     }
 
     // build the deep-link
-    final inviteLink = 'project491://room/${widget.roomId}';
+    final inviteLink =
+        'https://infoappwide.github.io/nobetimInvitation/room.html?id=${widget.roomId}';
 
     // copy to clipboard
     await Clipboard.setData(ClipboardData(text: inviteLink));
@@ -766,7 +789,10 @@ class _RoomViewState extends State<RoomView> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -1247,7 +1273,9 @@ class _RoomViewState extends State<RoomView> {
 
         await _loadSchedules();
       } catch (e) {
-        final message = AppLocalizations.of(context).get('failedToRemoveAssignment');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToRemoveAssignment');
         _showError('$message$e');
       }
     }
@@ -1266,7 +1294,9 @@ class _RoomViewState extends State<RoomView> {
     if (availableParticipants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).get('allParticipantsAssigned')),
+          content: Text(
+            AppLocalizations.of(context).get('allParticipantsAssigned'),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -1341,7 +1371,9 @@ class _RoomViewState extends State<RoomView> {
 
         await _loadSchedules();
       } catch (e) {
-        final message = AppLocalizations.of(context).get('failedToAddAssignment');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToAddAssignment');
         _showError('$message$e');
       }
     }
@@ -1421,7 +1453,9 @@ class _RoomViewState extends State<RoomView> {
         }
       }
     } catch (e) {
-      final message = AppLocalizations.of(context).get('failedToOpenDutiesScreen');
+      final message = AppLocalizations.of(
+        context,
+      ).get('failedToOpenDutiesScreen');
       _showError('$message$e');
     }
   }
@@ -1675,7 +1709,10 @@ class _RoomViewState extends State<RoomView> {
                   backgroundColor: const Color(0xFF1D61E7),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -1840,14 +1877,15 @@ class _RoomViewState extends State<RoomView> {
         for (final user in assignedUsers) {
           final userId = user['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
-            final message = AppLocalizations.of(context).get('yourHostUpdatedStartEndDates');
+            final message = AppLocalizations.of(
+              context,
+            ).get('yourHostUpdatedStartEndDates');
             await FirebaseFirestore.instance
                 .collection('users')
                 .doc(userId)
                 .collection('notifications')
                 .add({
-                  'message':
-                      '"$roomName" -> $message',
+                  'message': '"$roomName" -> $message',
                   'roomId': widget.roomId,
                   'roomName': roomName,
                   'timestamp': now,
@@ -1857,7 +1895,9 @@ class _RoomViewState extends State<RoomView> {
         }
 
         if (hostUserId != null && hostUserId.toString().isNotEmpty) {
-          final message = AppLocalizations.of(context).get('youUpdatedStartEndDates');
+          final message = AppLocalizations.of(
+            context,
+          ).get('youUpdatedStartEndDates');
           await FirebaseFirestore.instance
               .collection('users')
               .doc(hostUserId)
@@ -1913,8 +1953,9 @@ class _RoomViewState extends State<RoomView> {
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      final message =
-          AppLocalizations.of(context).get('failedToUpdateRoomDates');
+      final message = AppLocalizations.of(
+        context,
+      ).get('failedToUpdateRoomDates');
       _showError('$message$e');
     }
   }
@@ -1957,7 +1998,9 @@ class _RoomViewState extends State<RoomView> {
     if (numDays < maxShifts * 2) {
       final message = AppLocalizations.of(context).get('invalidScheduleError');
       final numOfDays = AppLocalizations.of(context).get('numberOfDays');
-      final doctorWithMostShifts = AppLocalizations.of(context).get('doctorWithMostShifts');
+      final doctorWithMostShifts = AppLocalizations.of(
+        context,
+      ).get('doctorWithMostShifts');
       showDialog(
         context: context,
         builder:
@@ -2015,7 +2058,9 @@ class _RoomViewState extends State<RoomView> {
     if (totalDoctorShifts < totalDailyShifts) {
       final message = AppLocalizations.of(context).get('invalidScheduleError2');
       final totalShifts = AppLocalizations.of(context).get('totalDoctorShifts');
-      final totalRequiredShifts = AppLocalizations.of(context).get('totalDailyShifts');
+      final totalRequiredShifts = AppLocalizations.of(
+        context,
+      ).get('totalDailyShifts');
       showDialog(
         context: context,
         builder:
@@ -2077,9 +2122,7 @@ class _RoomViewState extends State<RoomView> {
 
       if (doctors.isEmpty) {
         Navigator.pop(context);
-        _showError(
-          AppLocalizations.of(context).get('noDoctorsFound'),
-        );
+        _showError(AppLocalizations.of(context).get('noDoctorsFound'));
         return;
       }
 
@@ -2174,12 +2217,16 @@ class _RoomViewState extends State<RoomView> {
           await _refreshRoom();
         }
       } else {
-        final message = AppLocalizations.of(context).get('failedToFetchSchedule');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToFetchSchedule');
         Navigator.pop(context); // Remove loading dialog
         _showError('$message${response.body}');
       }
     } catch (e) {
-      final message = AppLocalizations.of(context).get('errorOccurredWithError');
+      final message = AppLocalizations.of(
+        context,
+      ).get('errorOccurredWithError');
       Navigator.pop(context); // Remove loading dialog
       _showError('$message$e');
     }
@@ -2288,7 +2335,11 @@ class _RoomViewState extends State<RoomView> {
                                           Icons.preview,
                                           color: Colors.black,
                                         ),
-                                        title: Text(AppLocalizations.of(context).get('previewNewSchedule')),
+                                        title: Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('previewNewSchedule'),
+                                        ),
                                       ),
                                     ),
                                   PopupMenuItem(
@@ -2298,7 +2349,11 @@ class _RoomViewState extends State<RoomView> {
                                         Icons.work_history,
                                         color: Colors.black,
                                       ),
-                                      title: Text(AppLocalizations.of(context).get('editDailyShifts')),
+                                      title: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('editDailyShifts'),
+                                      ),
                                     ),
                                   ),
                                   PopupMenuItem(
@@ -2308,7 +2363,11 @@ class _RoomViewState extends State<RoomView> {
                                         Icons.calendar_month,
                                         color: Colors.black,
                                       ),
-                                      title: Text(AppLocalizations.of(context).get('editRoomDates')),
+                                      title: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('editRoomDates'),
+                                      ),
                                     ),
                                   ),
                                   PopupMenuItem(
@@ -2318,7 +2377,11 @@ class _RoomViewState extends State<RoomView> {
                                         Icons.share,
                                         color: Colors.black,
                                       ),
-                                      title: Text(AppLocalizations.of(context).get('shareInvitation')),
+                                      title: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('shareInvitation'),
+                                      ),
                                     ),
                                   ),
                                   const PopupMenuDivider(),
@@ -2330,7 +2393,9 @@ class _RoomViewState extends State<RoomView> {
                                         color: Colors.red,
                                       ),
                                       title: Text(
-                                        AppLocalizations.of(context).get('deleteRoom'),
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('deleteRoom'),
                                         style: TextStyle(color: Colors.red),
                                       ),
                                     ),
@@ -2456,7 +2521,9 @@ class _RoomViewState extends State<RoomView> {
                           ),
                         ),
                         child: Text(
-                          AppLocalizations.of(context).get('previewNewSchedule'),
+                          AppLocalizations.of(
+                            context,
+                          ).get('previewNewSchedule'),
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -2488,7 +2555,9 @@ class _RoomViewState extends State<RoomView> {
                                     style: const TextStyle(color: Colors.white),
                                     cursorColor: const Color(0xFF1D61E7),
                                     decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context).get('addParticipant'),
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      ).get('addParticipant'),
                                       hintStyle: TextStyle(
                                         color: Colors.white60,
                                       ),
