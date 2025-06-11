@@ -127,7 +127,7 @@ class AppLocalizations {
           'Do you want to remove this participant from the room: ',
       'failedToRemoveUser': 'Failed to remove user: ',
       'cannotRemoveDoctor': 'Cannot Remove Doctor',
-      'removeDoctorError': 
+      'removeDoctorError':
           'Removing this doctor would result in consecutive days having more shifts than available doctors. Please adjust the daily shifts first.',
       'failedToRemoveParticipant': 'Failed to remove participant: ',
       'participantAlreadyExists':
@@ -161,7 +161,7 @@ class AppLocalizations {
       'shiftsUpdatedSuccessfully':
           'Daily required shifts have been updated successfully.',
       'warning': 'Warning',
-      'changingRoomDatesWarning': 
+      'changingRoomDatesWarning':
           'Changing room dates will reset:\n\n• All doctors\' duty preferences\n• Number of shifts for each doctor\n• Daily required shifts (will be set to 1)\n• Any existing schedule\n\nDo you want to continue?',
       'continue': 'Continue',
       'yourHostUpdatedStartEndDates':
@@ -213,9 +213,13 @@ class AppLocalizations {
       'requestedNumberOfShifts': 'Requested Number of Shifts: ',
       'update': 'Update',
       'availabilityCalendar': 'Availability Calendar: ',
+      'pleaseEnterValidEmail': 'Please enter a valid email address.',
+      'failGoogleSignIn': 'Google sign-in was cancelled.',
       // ... add all other English strings
     },
     'tr': {
+      'pleaseEnterValidEmail': 'Lütfen geçerli bir e-posta girin.',
+      'failGoogleSignIn': 'Google girişi iptal edildi.',
       'createAccount': 'Hesap Oluştur',
       'alreadyHaveAccount': 'Hesabınız var mı?',
       'login': 'Giriş Yap',
@@ -332,7 +336,7 @@ class AppLocalizations {
           'Bu katılımcıyı odadan kaldırmak istiyor musunuz: ',
       'failedToRemoveUser': 'Kullanıcı kaldırılamadı: ',
       'cannotRemoveDoctor': 'Doktor Kaldırılamaz',
-      'removeDoctorError': 
+      'removeDoctorError':
           'Bu doktoru kaldırmak, ardışık günlerde nöbet sayısının toplam doktor sayısını aşmasına neden olur. Lütfen önce günlük nöbet sayılarını ayarlayın.',
       'failedToRemoveParticipant': 'Katılımcı kaldırılamadı: ',
       'participantAlreadyExists': 'Bu isimde bir katılımcı zaten var.',
@@ -365,7 +369,7 @@ class AppLocalizations {
       'shiftsUpdatedSuccessfully':
           'Günlük gerekli nöbet sayıları başarıyla güncellendi.',
       'warning': 'Uyarı',
-      'changingRoomDatesWarning': 
+      'changingRoomDatesWarning':
           'Oda tarihlerini değiştirmeniz, aşağıdakileri sıfırlayacaktır:\n\n• Tüm doktorların nöbet tercihleri\n• Her doktor için nöbet sayıları\n• Günlük gerekli nöbet sayıları (1 olarak ayarlanacak)\n• Mevcut programlar\n\nDevam etmek istiyor musunuz?',
       'continue': 'Devam',
       'yourHostUpdatedStartEndDates':

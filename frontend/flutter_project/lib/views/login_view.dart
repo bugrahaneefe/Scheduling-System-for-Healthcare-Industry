@@ -328,11 +328,15 @@ class _LoginViewState extends State<LoginView> {
                               ).get('enterValidEmailAndPassword'),
                             );
                           } else if (!isValidEmail(authViewModel.email)) {
-                            _showError('Please enter a valid email address.');
+                            _showError(
+                              AppLocalizations.of(
+                                context,
+                              ).get('pleaseEnterValidEmail'),
+                            );
                           } else {
                             setState(() {
                               _errorMessage = null;
-                              _isLoading = true; // Show loading
+                              _isLoading = true;
                             });
 
                             try {
@@ -362,10 +366,7 @@ class _LoginViewState extends State<LoginView> {
                                 _isLoading = false; // Hide loading
                               });
                               _showError(
-                                e.message ??
-                                    AppLocalizations.of(
-                                      context,
-                                    ).get('loginFailed'),
+                                AppLocalizations.of(context).get('loginFailed'),
                               );
                             }
                           }
@@ -390,18 +391,29 @@ class _LoginViewState extends State<LoginView> {
                             setState(() => _isLoading = false);
 
                             if (result == null) {
-                              _showError('Google sign-in was cancelled.');
+                              _showError(
+                                AppLocalizations.of(
+                                  context,
+                                ).get('failGoogleSignIn'),
+                              );
                               return;
                             }
-
-                            _showSuccess('loginSuccessful');
+                            _showSuccess(
+                              AppLocalizations.of(
+                                context,
+                              ).get('loginSuccessful'),
+                            );
                             await Future.delayed(const Duration(seconds: 1));
 
                             if (mounted) await _handleSuccessfulLogin(context);
                           } catch (e) {
                             if (!mounted) return;
                             setState(() => _isLoading = false);
-                            _showError('Sign-in failed: $e');
+                            _showError(
+                              AppLocalizations.of(
+                                context,
+                              ).get('failGoogleSignIn'),
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
