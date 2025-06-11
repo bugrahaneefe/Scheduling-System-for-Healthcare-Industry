@@ -96,7 +96,9 @@ class _HomeViewState extends State<HomeView>
                         value: 'edit',
                         child: ListTile(
                           leading: const Icon(Icons.edit, color: Colors.black),
-                          title: Text(AppLocalizations.of(context).get('editProfile')),
+                          title: Text(
+                            AppLocalizations.of(context).get('editProfile'),
+                          ),
                         ),
                       ),
                       PopupMenuItem(
@@ -106,7 +108,9 @@ class _HomeViewState extends State<HomeView>
                             Icons.logout,
                             color: Colors.black,
                           ),
-                          title: Text(AppLocalizations.of(context).get('logout')),
+                          title: Text(
+                            AppLocalizations.of(context).get('logout'),
+                          ),
                         ),
                       ),
                     ],
@@ -234,7 +238,9 @@ class _HomeViewState extends State<HomeView>
                                       children: [
                                         Center(
                                           child: Text(
-                                            AppLocalizations.of(context).get('myRooms'),
+                                            AppLocalizations.of(
+                                              context,
+                                            ).get('myRooms'),
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.white,
@@ -283,7 +289,9 @@ class _HomeViewState extends State<HomeView>
                                             height: 200,
                                             child: Center(
                                               child: Text(
-                                                AppLocalizations.of(context).get('noRoomAssigned'),
+                                                AppLocalizations.of(
+                                                  context,
+                                                ).get('noRoomAssigned'),
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                 ),
@@ -334,7 +342,9 @@ class _HomeViewState extends State<HomeView>
                                   snapshot.data!.docs.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    AppLocalizations.of(context).get('noNotifications'),
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('noNotifications'),
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 );
@@ -456,7 +466,9 @@ class _HomeViewState extends State<HomeView>
                           style: TextStyle(color: Colors.black),
                         ),
                         content: Text(
-                          AppLocalizations.of(context).get('sureToConfirmDeleteRoom'),
+                          AppLocalizations.of(
+                            context,
+                          ).get('sureToConfirmDeleteRoom'),
                           style: TextStyle(color: Colors.black87),
                         ),
                         actions: [
@@ -479,7 +491,9 @@ class _HomeViewState extends State<HomeView>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                            child: Text(AppLocalizations.of(context).get('delete')),
+                            child: Text(
+                              AppLocalizations.of(context).get('delete'),
+                            ),
                           ),
                         ],
                       ),
@@ -523,6 +537,36 @@ class _HomeViewState extends State<HomeView>
                       .collection('rooms')
                       .doc(roomId)
                       .update({'participants': participants});
+
+                  // Notify the host that this user left the room
+                  final host = participants.firstWhere(
+                    (p) => p['isHost'] == true,
+                    orElse: () => <String, dynamic>{},
+                  );
+
+                  if (host.isNotEmpty &&
+                      host['userId'] != null &&
+                      host['userId'].toString().isNotEmpty) {
+                    final userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(authService.value.currentUser!.uid)
+                            .get();
+                    final userName = userDoc.data()?['name'] ?? 'A participant';
+
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(host['userId'])
+                        .collection('notifications')
+                        .add({
+                          'message':
+                              '$userName has left your room "${roomData['name']}".',
+                          'roomId': roomId,
+                          'roomName': roomData['name'] ?? '',
+                          'timestamp': DateTime.now(),
+                          'type': 'left_room',
+                        });
+                  }
 
                   // Preferences'ları sil
                   await FirebaseFirestore.instance
@@ -568,9 +612,16 @@ class _HomeViewState extends State<HomeView>
                         pageBuilder:
                             (_, __, ___) => RoomView(
                               roomId: roomId,
-                              roomName: roomData['name'] ?? AppLocalizations.of(context).get('unnamedRoom'),
+                              roomName:
+                                  roomData['name'] ??
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('unnamedRoom'),
                               roomDescription:
-                                  roomData['description'] ?? AppLocalizations.of(context).get('noDescription'),
+                                  roomData['description'] ??
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('noDescription'),
                               participants: List<Map<String, dynamic>>.from(
                                 roomData['participants'] ?? [],
                               ),
@@ -587,7 +638,8 @@ class _HomeViewState extends State<HomeView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          roomData['name'] ?? AppLocalizations.of(context).get('unnamedRoom'),
+                          roomData['name'] ??
+                              AppLocalizations.of(context).get('unnamedRoom'),
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 20,
@@ -605,7 +657,8 @@ class _HomeViewState extends State<HomeView>
                           ],
                         ),
                         Text(
-                          roomData['description'] ?? AppLocalizations.of(context).get('noDescription'),
+                          roomData['description'] ??
+                              AppLocalizations.of(context).get('noDescription'),
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
