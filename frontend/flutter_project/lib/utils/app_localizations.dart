@@ -198,6 +198,7 @@ class AppLocalizations {
       'unavailable': 'Unavailable',
       'noPreferences': 'No Preference',
       'savePreferences': 'Save Preferences',
+      'passwordAtLeast6Chars': 'Password must be at least 6 characters long.',
       // ... add all other English strings
     },
     'tr': {
@@ -388,6 +389,7 @@ class AppLocalizations {
       'unavailable': 'Müsait Değil',
       'noPreferences': 'Tercih Yok',
       'savePreferences': 'Tercihleri Kaydet',
+      'passwordAtLeast6Chars': 'Şifre en az 6 karakter uzunluğunda olmalıdır.',
       // ... add all other Turkish strings
     }
   };

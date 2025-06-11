@@ -74,7 +74,7 @@ class _SignupViewState extends State<SignupView> {
         backgroundColor: const Color(0x1E1E1E),
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: const Text('Sign up', style: TextStyle(color: Colors.white)),
+          title: Text(AppLocalizations.of(context).get('signUp'), style: TextStyle(color: Colors.white)),
           backgroundColor: const Color(0x1E1E1E),
           elevation: 0,
           leading: Container(
@@ -114,8 +114,8 @@ class _SignupViewState extends State<SignupView> {
                       ),
                       const SizedBox(height: 20),
                       // "Create Account" text
-                      const Text(
-                        'Create Account',
+                      Text(
+                        AppLocalizations.of(context).get('createAccount'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
@@ -129,8 +129,8 @@ class _SignupViewState extends State<SignupView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            "Already have an account?",
+                          Text(
+                            AppLocalizations.of(context).get('alreadyHaveAccount'),
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w500,
@@ -143,8 +143,8 @@ class _SignupViewState extends State<SignupView> {
                               // Navigate back to the previous page
                               Navigator.pop(context);
                             },
-                            child: const Text(
-                              'Log in',
+                            child: Text(
+                              AppLocalizations.of(context).get('login2'),
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
@@ -185,12 +185,12 @@ class _SignupViewState extends State<SignupView> {
                                   RegExp(r'[a-zA-Z\s]'),
                                 ), // Allow only alphabetic letters and spaces
                               ],
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.person,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'Name & Surname',
+                                hintText: AppLocalizations.of(context).get('nameSurname'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -215,12 +215,12 @@ class _SignupViewState extends State<SignupView> {
                                   RegExp(r'[a-zA-Z\s]'),
                                 ),
                               ],
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.work,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'Job Description',
+                                hintText: AppLocalizations.of(context).get('jobDescription'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -244,7 +244,7 @@ class _SignupViewState extends State<SignupView> {
                                   color: Color(0xFF1D61E7),
                                 ),
                                 hintText:
-                                    _selectedBirthday ?? 'Select Birthday',
+                                    _selectedBirthday ?? AppLocalizations.of(context).get('selectBirthday'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -401,12 +401,12 @@ class _SignupViewState extends State<SignupView> {
                             const Divider(color: Colors.black),
                             // Email field
                             TextFormField(
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 prefixIcon: Icon(
                                   Icons.mail,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'Email',
+                                hintText: AppLocalizations.of(context).get('email'),
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -428,7 +428,7 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.lock,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: 'Password',
+                                hintText: AppLocalizations.of(context).get('password'),
                                 hintStyle: const TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
@@ -462,7 +462,7 @@ class _SignupViewState extends State<SignupView> {
                                     authViewModel.password,
                                   )) {
                                     _showError(
-                                      'Password must be at least 6 characters long.',
+                                      AppLocalizations.of(context).get('passwordAtLeast6Chars'),
                                     );
                                     return;
                                   }
@@ -485,7 +485,7 @@ class _SignupViewState extends State<SignupView> {
                                       _isLoading = false;
                                     });
 
-                                    _showSuccess('Registration successful!');
+                                    _showSuccess(AppLocalizations.of(context).get('registrationSuccessful'));
                                     authViewModel.clearUserData();
 
                                     await Future.delayed(
@@ -501,12 +501,12 @@ class _SignupViewState extends State<SignupView> {
                                     });
                                     _showError(
                                       e.message ??
-                                          'An error occurred. Please try again.',
+                                          AppLocalizations.of(context).get('errorOccurred'),
                                     );
                                   }
                                 } else {
                                   _showError(
-                                    'Please fill in all required fields.',
+                                    AppLocalizations.of(context).get('fillRequiredFields'),
                                   );
                                 }
                               },
@@ -523,7 +523,7 @@ class _SignupViewState extends State<SignupView> {
                       const SizedBox(height: 20),
                       // Sign Up button
                       CustomButton(
-                        text: 'Register',
+                        text: AppLocalizations.of(context).get('register'),
                         onPressed: () async {
                           if (_formKey.currentState!.validate() &&
                               authViewModel.email.isNotEmpty &&
@@ -534,7 +534,7 @@ class _SignupViewState extends State<SignupView> {
                               authViewModel.birthday != null) {
                             if (!isValidPassword(authViewModel.password)) {
                               _showError(
-                                'Password must be at least 8 characters long.',
+                                AppLocalizations.of(context).get('passwordAtLeast6Chars'),
                               );
                               return;
                             }
@@ -557,7 +557,7 @@ class _SignupViewState extends State<SignupView> {
                                 _isLoading = false;
                               });
 
-                              _showSuccess('Registration successful!');
+                              _showSuccess(AppLocalizations.of(context).get('registrationSuccessful'));
                               authViewModel.clearUserData();
 
                               await Future.delayed(const Duration(seconds: 1));
@@ -571,11 +571,11 @@ class _SignupViewState extends State<SignupView> {
                               });
                               _showError(
                                 e.message ??
-                                    'An error occurred. Please try again.',
+                                    AppLocalizations.of(context).get('errorOccurred'),
                               );
                             }
                           } else {
-                            _showError('Please fill in all required fields.');
+                            _showError(AppLocalizations.of(context).get('fillRequiredFields'));
                           }
                         },
                         buttonType: 'main',
