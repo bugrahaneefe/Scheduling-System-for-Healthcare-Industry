@@ -199,6 +199,13 @@ class AppLocalizations {
       'noPreferences': 'No Preference',
       'savePreferences': 'Save Preferences',
       'passwordAtLeast6Chars': 'Password must be at least 6 characters long.',
+      'shiftCountUpdate': 'Shift Count Update',
+      'shiftCountUpdatedSuccessfully': 'Shift count updated successfully.',
+      'failedToUpdateShiftCount': 'Failed to update shift count: ',
+      'preferences': '\'s Preferences',
+      'requestedNumberOfShifts': 'Requested Number of Shifts: ',
+      'update': 'Update',
+      'availabilityCalendar': 'Availability Calendar: ',
       // ... add all other English strings
     },
     'tr': {
@@ -390,6 +397,13 @@ class AppLocalizations {
       'noPreferences': 'Tercih Yok',
       'savePreferences': 'Tercihleri Kaydet',
       'passwordAtLeast6Chars': 'Şifre en az 6 karakter uzunluğunda olmalıdır.',
+      'shiftCountUpdate': 'Nöbet Sayısı Güncellemesi',
+      'shiftCountUpdatedSuccessfully': 'Nöbet sayısı başarıyla güncellendi.',
+      'failedToUpdateShiftCount': 'Nöbet sayısı güncellenemedi: ',
+      'preferences': '\'in Tercihleri',
+      'requestedNumberOfShifts': 'Talep Edilen Nöbet Sayısı: ',
+      'update': 'Güncelle',
+      'availabilityCalendar': 'Müsaitlik Takvimi: ',
       // ... add all other Turkish strings
     }
   };

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/utils/app_localizations.dart';
 
 class ViewPreferencesView extends StatefulWidget {
   final String doctorName;
@@ -41,7 +42,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
           borderRadius: BorderRadius.circular(8),
         ),
         title: Text(
-          isError ? 'Error' : 'Shift Count Update',
+          isError ? AppLocalizations.of(context).get('error') : AppLocalizations.of(context).get('shiftCountUpdate'),
           style: const TextStyle(color: Colors.black),
         ),
         content: Text(
@@ -57,7 +58,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
               ),
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -99,7 +100,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
       });
 
       if (mounted) {
-        await _showMessage('Shift count updated successfully.', false);
+        await _showMessage(AppLocalizations.of(context).get('shiftCountUpdatedSuccessfully'), false);
         // Return with updated data
         Navigator.pop(context, {
           'shiftsCount': newCount,
@@ -109,7 +110,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
       }
     } catch (e) {
       if (mounted) {
-        await _showMessage('Failed to update shift count: $e', true);
+        final message = AppLocalizations.of(context).get('failedToUpdateShiftCount');
+        await _showMessage('$message$e', true);
       }
     } finally {
       setState(() => _isLoading = false);
@@ -130,7 +132,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
         widget.preferences['lastDay'] != null
             ? DateTime.parse(widget.preferences['lastDay'] as String)
             : firstDay.add(Duration(days: availability.length - 1));
-
+    final message = AppLocalizations.of(context).get('preferences');
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
       appBar: AppBar(
@@ -152,7 +154,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
         title: FittedBox(
           fit: BoxFit.scaleDown, //    down only (never up)
           child: Text(
-            "${widget.doctorName}'s Preferences",
+            "${widget.doctorName}$message",
             maxLines: 2, // ② keep a single line
             style: const TextStyle(color: Colors.white),
             overflow: TextOverflow.ellipsis, // ③ still add “…” if necessary
@@ -187,8 +189,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Requested Number of Shifts:',
+                              Text(
+                                AppLocalizations.of(context).get('requestedNumberOfShifts'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -230,8 +232,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                               ),
                                             )
-                                          : const Text(
-                                              'Update',
+                                          : Text(
+                                              AppLocalizations.of(context).get('update'),
                                               style: TextStyle(color: Colors.white),
                                             ),
                                     ),
@@ -259,8 +261,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                           size: 24,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Availability Calendar:',
+                        Text(
+                          AppLocalizations.of(context).get('availabilityCalendar'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -335,12 +337,12 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildLegendItem(const Color(0xFF5C9D5C), 'Available'),
+                        _buildLegendItem(const Color(0xFF5C9D5C), AppLocalizations.of(context).get('available')),
                         _buildLegendItem(
                           const Color(0xFFCE5A57),
-                          'Unavailable',
+                          AppLocalizations.of(context).get('unavailable'),
                         ),
-                        _buildLegendItem(Colors.grey, 'No Preference'),
+                        _buildLegendItem(Colors.grey, AppLocalizations.of(context).get('noPreferences')),
                       ],
                     ),
                   ],
