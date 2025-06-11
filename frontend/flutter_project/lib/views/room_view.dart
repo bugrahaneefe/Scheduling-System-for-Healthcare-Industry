@@ -1283,7 +1283,7 @@ class _RoomViewState extends State<RoomView> {
               borderRadius: BorderRadius.circular(8),
             ),
             title: Text(
-              '$message$date',
+              '$message\n\n$date',
               style: const TextStyle(color: Colors.black),
             ),
             content: SizedBox(
@@ -1694,7 +1694,6 @@ class _RoomViewState extends State<RoomView> {
         _showError(AppLocalizations.of(context).get('roomDataNotFound'));
         return;
       }
-      final message = AppLocalizations.of(context).get('changingRoomDatesWarning');
       final bool? shouldProceed = await showDialog<bool>(
         context: context,
         builder:
@@ -1702,7 +1701,7 @@ class _RoomViewState extends State<RoomView> {
               backgroundColor: Colors.white,
               title: Text(AppLocalizations.of(context).get('warning')),
               content: Text(
-                AppLocalizations.of(context).get('message'),
+                AppLocalizations.of(context).get('changingRoomDatesWarning'),
               ),
               actions: [
                 TextButton(
