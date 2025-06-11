@@ -343,6 +343,30 @@ class _RoomViewState extends State<RoomView> {
                   .doc(widget.roomId)
                   .update({'participants': _participants});
 
+              // Notify host
+              final hostParticipant = _participants.firstWhere(
+                (p) => p['isHost'] == true,
+                orElse: () => {},
+              );
+
+              final hostUserId = hostParticipant['userId'];
+              final participantName = participant['name'];
+
+              if (hostUserId != null && hostUserId.toString().isNotEmpty) {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(hostUserId)
+                    .collection('notifications')
+                    .add({
+                      'message':
+                          '$userName assigned themselves to $participantName in room "${widget.roomName}".',
+                      'roomId': widget.roomId,
+                      'roomName': widget.roomName,
+                      'timestamp': DateTime.now(),
+                      'type': 'self_assignment',
+                    });
+              }
+
               // Add room to user's rooms array if not already there
               await FirebaseFirestore.instance
                   .collection('users')
@@ -2205,8 +2229,10 @@ class _RoomViewState extends State<RoomView> {
                               } else {
                                 Navigator.pushAndRemoveUntil(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const HomeView(),
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, __, ___) => HomeView(),
+                                    transitionDuration: Duration.zero,
+                                    reverseTransitionDuration: Duration.zero,
                                   ),
                                   (route) => false,
                                 );

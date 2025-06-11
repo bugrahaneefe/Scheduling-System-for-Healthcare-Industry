@@ -140,7 +140,9 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     if (availableParticipants.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).get('allParticipantsAssigned')),
+          content: Text(
+            AppLocalizations.of(context).get('allParticipantsAssigned'),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -212,12 +214,11 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           _schedule = updatedSchedule;
         });
       } catch (e) {
-        final message = AppLocalizations.of(context).get('failedToAddAssignment');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToAddAssignment');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$message$e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('$message$e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -242,15 +243,11 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
       // Convert schedule to format expected by Firestore
       final Map<String, List<Map<String, dynamic>>> convertedSchedule = {};
       schedule.forEach((date, assignments) {
-        // Extract the date parts from the formatted date (e.g., "1 February 2025 Saturday")
-        final dateParts = date.split(
-          ' ',
-        ); // ["1", "February", "2025", "Saturday"]
+        final dateParts = date.split(' ');
         final day = int.parse(dateParts[0]);
         final month = _getMonthNumber(dateParts[1]);
         final year = int.parse(dateParts[2]);
 
-        // Format the date as DD.MM.YYYY
         final formattedDate =
             '${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year';
 
@@ -274,24 +271,51 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
         convertedSchedule[formattedDate] = convertedAssignments;
       });
 
+      // Update Firestore with new schedule
       await FirebaseFirestore.instance
           .collection('rooms')
           .doc(widget.roomId)
           .update({'appliedSchedule': convertedSchedule});
 
+      // 🔔 Notify all assigned users in the room
+      final now = DateTime.now();
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+      final roomName = roomDoc.data()?['name'] ?? 'Unnamed Room';
+
+      for (final participant in widget.participants) {
+        final userId = participant['userId'];
+        if (userId != null && userId.toString().isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('notifications')
+              .add({
+                'message':
+                    'A new schedule has been applied in "$roomName". Please check your new schedule.',
+                'roomId': widget.roomId,
+                'roomName': roomName,
+                'timestamp': now,
+                'type': 'schedule_applied',
+              });
+        }
+      }
+
       if (context.mounted) {
         Navigator.pop(context); // Remove loading dialog
-        Navigator.pop(context, true); // Return to room view with refresh flag
+        Navigator.pop(context, true); // Return to RoomView with refresh flag
       }
     } catch (e) {
       if (context.mounted) {
-        final message = AppLocalizations.of(context).get('failedToApplySchedule');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToApplySchedule');
         Navigator.pop(context); // Remove loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$message$e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('$message$e'), backgroundColor: Colors.red),
         );
       }
     }

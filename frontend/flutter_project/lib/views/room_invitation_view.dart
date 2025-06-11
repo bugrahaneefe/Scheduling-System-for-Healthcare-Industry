@@ -76,14 +76,19 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
   void _navigateToRoom(String currentUserId) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => RoomView(
-          roomId: widget.roomId,
-          roomName: _roomData?['name'] ?? '',
-          roomDescription: _roomData?['description'] ?? '',
-          participants: List<Map<String, dynamic>>.from(_roomData?['participants'] ?? []),
-          currentUserId: currentUserId,
-        ),
+      PageRouteBuilder(
+        pageBuilder:
+            (_, __, ___) => RoomView(
+              roomId: widget.roomId,
+              roomName: _roomData?['name'] ?? '',
+              roomDescription: _roomData?['description'] ?? '',
+              participants: List<Map<String, dynamic>>.from(
+                _roomData?['participants'] ?? [],
+              ),
+              currentUserId: currentUserId,
+            ),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
       ),
       (route) => false, // Remove all previous routes
     );
@@ -98,7 +103,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
         throw Exception('User not authenticated');
       }
 
-      // Check if user is already in the room
+      // Check if user already joined this room
       final userDoc =
           await FirebaseFirestore.instance
               .collection('users')
@@ -107,19 +112,31 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
 
       if (userDoc.data()?['rooms']?.contains(widget.roomId) ?? false) {
         if (mounted) {
-          _showAlreadyAssignedDialog(); // Use the dialog here
+          _showAlreadyAssignedDialog();
           setState(() => _isLoading = false);
           return;
         }
       }
 
-      // Check if participant is already assigned
-      final roomDoc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(widget.roomId)
-          .get();
-      
-      final participants = List<Map<String, dynamic>>.from(roomDoc.data()?['participants'] ?? []);
+      // Load room data
+      final roomDoc =
+          await FirebaseFirestore.instance
+              .collection('rooms')
+              .doc(widget.roomId)
+              .get();
+
+      if (!roomDoc.exists) {
+        setState(() {
+          _error = AppLocalizations.of(context).get('roomNotFound');
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final roomData = roomDoc.data()!;
+      final participants = List<Map<String, dynamic>>.from(
+        roomData['participants'] ?? [],
+      );
       final assignedParticipant = participants.firstWhere(
         (p) => p['userId'] == currentUserId,
         orElse: () => <String, dynamic>{},
@@ -127,13 +144,13 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
 
       if (assignedParticipant.isNotEmpty) {
         if (mounted) {
-          _showParticipantAssignedDialog(assignedParticipant['name']); // Use the dialog here
+          _showParticipantAssignedDialog(assignedParticipant['name']);
           setState(() => _isLoading = false);
           return;
         }
       }
 
-      // Add room to user's rooms array
+      // Add room to user's room list
       await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUserId)
@@ -141,13 +158,50 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
             'rooms': FieldValue.arrayUnion([widget.roomId]),
           });
 
+      final userName = _userData?['name'] ?? 'A user';
+      final roomName = roomData['name'] ?? 'Unnamed Room';
+      final now = DateTime.now();
+
+      // Notify the user themselves
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('notifications')
+          .add({
+            'message': 'You joined "$roomName"',
+            'roomId': widget.roomId,
+            'roomName': roomName,
+            'timestamp': now,
+            'type': 'room_joined_self',
+          });
+
+      // Notify all other assigned users in the room
+      for (final participant in participants) {
+        final userId = participant['userId'];
+        if (userId != null &&
+            userId != currentUserId &&
+            userId.toString().isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('notifications')
+              .add({
+                'message': '$userName joined the room "$roomName" you are in.',
+                'roomId': widget.roomId,
+                'roomName': roomName,
+                'timestamp': now,
+                'type': 'room_joined_other',
+              });
+        }
+      }
+
       if (mounted) {
         _navigateToRoom(currentUserId);
       }
     } catch (e) {
       final message = AppLocalizations.of(context).get('failedToJoinRoom');
       setState(() {
-        _error = '$message$e';
+        _error = '$message $e';
         _isLoading = false;
       });
     }
@@ -181,7 +235,9 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1D61E7), // Changed to blue background
+                          color: const Color(
+                            0xFF1D61E7,
+                          ), // Changed to blue background
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -197,15 +253,21 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    AppLocalizations.of(context).get('joiningAs'),
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('joiningAs'),
                                     style: TextStyle(
-                                      color: Colors.white, // Changed to white text
+                                      color:
+                                          Colors.white, // Changed to white text
                                       fontSize: 14,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _userData?['name'] ?? AppLocalizations.of(context).get('unknownUser'),
+                                    _userData?['name'] ??
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('unknownUser'),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -213,9 +275,14 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                                     ),
                                   ),
                                   Text(
-                                    _userData?['title'] ?? AppLocalizations.of(context).get('noTitle'),
+                                    _userData?['title'] ??
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('noTitle'),
                                     style: TextStyle(
-                                      color: Colors.white70, // Changed to semi-transparent white
+                                      color:
+                                          Colors
+                                              .white70, // Changed to semi-transparent white
                                       fontSize: 14,
                                     ),
                                   ),
@@ -242,7 +309,10 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                _roomData?['description'] ?? AppLocalizations.of(context).get('noDescription'),
+                                _roomData?['description'] ??
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('noDescription'),
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -253,30 +323,46 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                               ElevatedButton(
                                 onPressed: _joinRoom,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1D61E7), // Changed to blue background
+                                  backgroundColor: const Color(
+                                    0xFF1D61E7,
+                                  ), // Changed to blue background
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 32,
                                     vertical: 16,
                                   ),
                                 ),
-                                child: _isLoading
-                                    ? const CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      )
-                                    : Text(
-                                        AppLocalizations.of(context).get('joinRoom'),
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white, // Changed to white text
+                                child:
+                                    _isLoading
+                                        ? const CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        )
+                                        : Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('joinRoom'),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color:
+                                                Colors
+                                                    .white, // Changed to white text
+                                          ),
                                         ),
-                                      ),
                               ),
                               const SizedBox(height: 16),
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(builder: (context) => const HomeView()),
-                                    (route) => false
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) => HomeView(),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
+                                    ),
+                                    (route) =>
+                                        false, // Remove all previous routes
                                   );
                                 },
                                 child: Text(
@@ -299,64 +385,72 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
     final message = AppLocalizations.of(context).get('participantAssignedTo');
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: Text(
-          AppLocalizations.of(context).get('participantAssigned'),
-          style: TextStyle(color: Colors.black),
-        ),
-        content: Text(
-          '$message$participantName.',
-          style: const TextStyle(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF1D61E7),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+            title: Text(
+              AppLocalizations.of(context).get('participantAssigned'),
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              '$message$participantName.',
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _showAlreadyAssignedDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: Text(
-          AppLocalizations.of(context).get('alreadyAssigned'),
-          style: TextStyle(color: Colors.black),
-        ),
-        content: Text(
-          AppLocalizations.of(context).get('assignedAlready'),
-          style: TextStyle(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF1D61E7),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+            title: Text(
+              AppLocalizations.of(context).get('alreadyAssigned'),
+              style: TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              AppLocalizations.of(context).get('assignedAlready'),
+              style: TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
