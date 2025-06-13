@@ -237,9 +237,28 @@ class AppLocalizations {
       'homeTitle': 'Nobetim',
       'aParticipant': 'A participant',
       'leftRoomMessage': '{userName} has left your room "{roomName}".',
+      'scheduleAppliedMessage':
+          'A new schedule has been applied in "{roomName}". Please check your new schedule.',
+      'aUser': 'A user',
+      'unNamedRoom': 'Unnamed Room',
+      'roomJoinedOther': '{userName} joined the room "{roomName}" you are in.',
+      'roomJoinedSelf': 'You joined "{roomName}"',
+      'selfAssignmentMessage':
+          '{userName} assigned themselves to {participantName} in room "{roomName}".',
+      'unknown': 'Unknown',
       // ... add all other English strings
     },
     'tr': {
+      'unknown': 'Bilinmiyor',
+      'selfAssignmentMessage':
+          '{userName}, "{roomName}" odasında kendisini {participantName} olarak atadı.',
+      'roomJoinedSelf': '"{roomName}" odasına katıldınız.',
+      'roomJoinedOther':
+          '{userName}, sizin de içinde bulunduğunuz "{roomName}" odasına katıldı.',
+      'unNamedRoom': 'İsimsiz Oda',
+      'aUser': 'Kullanıcı',
+      'scheduleAppliedMessage':
+          '"{roomName}" odasında yeni bir nöbet çizelgesi uygulanmıştır. Lütfen kontrol ediniz.',
       'leftRoomMessage': '{userName} odanızdan ayrıldı: "{roomName}".',
       'aParticipant': 'Katılımcı',
       'homeTitle': 'Nöbetim',

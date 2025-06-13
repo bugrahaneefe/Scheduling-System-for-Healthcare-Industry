@@ -145,7 +145,6 @@ class _RoomViewState extends State<RoomView> {
               .get();
 
       if (!roomDoc.exists) {
-        print('Room document not found');
         return;
       }
 
@@ -185,9 +184,7 @@ class _RoomViewState extends State<RoomView> {
           }
         }
       });
-    } catch (e) {
-      print('Error loading doctor preferences: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _handleParticipantTap(Map<String, dynamic> participant) async {
@@ -357,6 +354,14 @@ class _RoomViewState extends State<RoomView> {
 
               final hostUserId = hostParticipant['userId'];
               final participantName = participant['name'];
+              final message = AppLocalizations.of(context).translate(
+                'selfAssignmentMessage',
+                params: {
+                  'userName': userName,
+                  'participantName': participantName,
+                  'roomName': widget.roomName,
+                },
+              );
 
               if (hostUserId != null && hostUserId.toString().isNotEmpty) {
                 await FirebaseFirestore.instance
@@ -364,8 +369,7 @@ class _RoomViewState extends State<RoomView> {
                     .doc(hostUserId)
                     .collection('notifications')
                     .add({
-                      'message':
-                          '$userName assigned themselves to $participantName in room "${widget.roomName}".',
+                      'message': message,
                       'roomId': widget.roomId,
                       'roomName': widget.roomName,
                       'timestamp': DateTime.now(),
@@ -948,9 +952,11 @@ class _RoomViewState extends State<RoomView> {
     if (schedule == null) return const SizedBox.shrink();
 
     // — 1) Figure out "All" vs "Me" data —
+    final fallbackName = AppLocalizations.of(context).translate('unknown');
+
     final currentParticipant = _participants.firstWhere(
       (p) => p['userId'] == widget.currentUserId,
-      orElse: () => {'name': 'Unknown'}, // Provide fallback
+      orElse: () => {'name': fallbackName}, // Provide fallback
     );
     final myName = currentParticipant['name'] as String;
     final filteredSchedule =
@@ -1424,8 +1430,6 @@ class _RoomViewState extends State<RoomView> {
       );
 
       if (mounted) {
-        print('Opening duties screen for ${participant['name']}');
-
         final result = await Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder:
@@ -1443,7 +1447,6 @@ class _RoomViewState extends State<RoomView> {
         );
 
         if (result != null && mounted) {
-          print('Received preferences for ${participant['name']}');
           setState(() {
             _doctorPreferences[index] = {
               'shiftsCount': result['shiftsCount'],
@@ -1461,7 +1464,6 @@ class _RoomViewState extends State<RoomView> {
   }
 
   Future<void> _editDailyShifts() async {
-    // --- build the editable controllers -------------------------------------------------
     final roomDoc =
         await FirebaseFirestore.instance
             .collection('rooms')

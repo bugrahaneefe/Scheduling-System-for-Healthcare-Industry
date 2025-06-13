@@ -54,7 +54,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
           (_) => AlertDialog(
             backgroundColor: Colors.white,
             title: Text(
-              success ? AppLocalizations.of(context).get('success') : AppLocalizations.of(context).get('error'),
+              success
+                  ? AppLocalizations.of(context).get('success')
+                  : AppLocalizations.of(context).get('error'),
               style: const TextStyle(color: Colors.black),
             ),
             content: Text(message, style: const TextStyle(color: Colors.black)),
@@ -68,7 +70,10 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                   Navigator.of(context).pop(); // close dialog
                   if (success) Navigator.of(context).pop(); // close sheet
                 },
-                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.black)),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ],
           ),
@@ -163,7 +168,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           color: Colors.black,
                         ),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).get('phoneNumber'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).get('phoneNumber'),
                           labelStyle: const TextStyle(color: Colors.black),
                           hintText: widget.user.phoneNumber,
                           prefixIcon: const Icon(
@@ -193,7 +200,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                           ),
                           listTileDivider: const Divider(color: Colors.grey),
                           searchFieldInputDecoration: InputDecoration(
-                            labelText: AppLocalizations.of(context).get('searchCountry'),
+                            labelText: AppLocalizations.of(
+                              context,
+                            ).get('searchCountry'),
                             labelStyle: const TextStyle(color: Colors.black),
                             suffixIcon: const Icon(
                               Icons.search,
@@ -283,7 +292,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                       },
                       child: InputDecorator(
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).get('birthday'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).get('birthday'),
                           labelStyle: TextStyle(color: Colors.black),
                           prefixIcon: Icon(
                             Icons.calendar_today,
@@ -294,7 +305,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                         child: Text(
                           _selectedBirthday != null
                               ? "${_selectedBirthday!.day}/${_selectedBirthday!.month}/${_selectedBirthday!.year}"
-                              : AppLocalizations.of(context).get('selectBirthday'),
+                              : AppLocalizations.of(
+                                context,
+                              ).get('selectBirthday'),
                           style: const TextStyle(color: Colors.black),
                         ),
                       ),
@@ -331,11 +344,18 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                             ).loadCurrentUser();
                             // 3) Show popup & close
                             await _showPopup(
-                              AppLocalizations.of(context).get('profileUpdated'),
+                              AppLocalizations.of(
+                                context,
+                              ).get('profileUpdated'),
                               true,
                             );
                           } catch (e) {
-                            await _showPopup(AppLocalizations.of(context).get('failedToUpdateProfile'), false);
+                            await _showPopup(
+                              AppLocalizations.of(
+                                context,
+                              ).get('failedToUpdateProfile'),
+                              false,
+                            );
                           } finally {
                             setState(() => _isLoading = false);
                           }

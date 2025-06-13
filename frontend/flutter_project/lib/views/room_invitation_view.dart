@@ -7,12 +7,12 @@ import 'room_view.dart';
 
 class RoomInvitationView extends StatefulWidget {
   final String roomId;
-  final bool returnToHome; // Add this parameter
+  final bool returnToHome;
 
   const RoomInvitationView({
     Key? key,
     required this.roomId,
-    this.returnToHome = false, // Default to false for backward compatibility
+    this.returnToHome = false,
   }) : super(key: key);
 
   @override
@@ -158,9 +158,15 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
             'rooms': FieldValue.arrayUnion([widget.roomId]),
           });
 
-      final userName = _userData?['name'] ?? 'A user';
-      final roomName = roomData['name'] ?? 'Unnamed Room';
+      final userName =
+          _userData?['name'] ?? AppLocalizations.of(context).get('aUser');
+      final roomName =
+          roomData['name'] ?? AppLocalizations.of(context).get('unNamedRoom');
       final now = DateTime.now();
+
+      final selfJoinMessage = AppLocalizations.of(
+        context,
+      ).translate('roomJoinedSelf', params: {'roomName': roomName});
 
       // Notify the user themselves
       await FirebaseFirestore.instance
@@ -168,12 +174,17 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
           .doc(currentUserId)
           .collection('notifications')
           .add({
-            'message': 'You joined "$roomName"',
+            'message': selfJoinMessage,
             'roomId': widget.roomId,
             'roomName': roomName,
             'timestamp': now,
             'type': 'room_joined_self',
           });
+
+      final joinMessageForOthers = AppLocalizations.of(context).translate(
+        'roomJoinedOther',
+        params: {'userName': userName, 'roomName': roomName},
+      );
 
       // Notify all other assigned users in the room
       for (final participant in participants) {
@@ -186,7 +197,7 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
               .doc(userId)
               .collection('notifications')
               .add({
-                'message': '$userName joined the room "$roomName" you are in.',
+                'message': joinMessageForOthers,
                 'roomId': widget.roomId,
                 'roomName': roomName,
                 'timestamp': now,

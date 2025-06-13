@@ -101,7 +101,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
