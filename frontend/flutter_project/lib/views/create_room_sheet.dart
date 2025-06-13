@@ -90,7 +90,7 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
               ? minDate
               : (currentLastDay ?? minDate.add(const Duration(days: 1))),
       firstDate: minDate,
-      lastDate: DateTime(2030),
+      lastDate: DateTime(2040),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -371,12 +371,16 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
 
     // Validate dates
     if (firstDay.isBefore(todayNormalized)) {
-      await _showErrorDialog(AppLocalizations.of(context).get('firstDayBeforeToday'));
+      await _showErrorDialog(
+        AppLocalizations.of(context).get('firstDayBeforeToday'),
+      );
       return;
     }
 
     if (!lastDay.isAfter(firstDay)) {
-      await _showErrorDialog(AppLocalizations.of(context).get('lastDayBeforeFirstDay'));
+      await _showErrorDialog(
+        AppLocalizations.of(context).get('lastDayBeforeFirstDay'),
+      );
       return;
     }
 
@@ -431,7 +435,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        final failMessage = AppLocalizations.of(context).get('failedToCreateRoom');
+        final failMessage = AppLocalizations.of(
+          context,
+        ).get('failedToCreateRoom');
         await _showErrorDialog('$failMessage$e');
       }
     } finally {
@@ -469,7 +475,10 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -535,7 +544,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         cursorColor: Colors.black,
                         style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).get('roomName'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).get('roomName'),
                           labelStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -553,7 +564,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         validator:
                             (value) =>
                                 value?.isEmpty == true
-                                    ? AppLocalizations.of(context).get('roomNameRequired')
+                                    ? AppLocalizations.of(
+                                      context,
+                                    ).get('roomNameRequired')
                                     : null,
                       );
                     },
@@ -569,7 +582,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         cursorColor: Colors.black,
                         style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).get('description'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).get('description'),
                           labelStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -588,7 +603,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         validator:
                             (value) =>
                                 value?.isEmpty == true
-                                    ? AppLocalizations.of(context).get('descriptionRequired')
+                                    ? AppLocalizations.of(
+                                      context,
+                                    ).get('descriptionRequired')
                                     : null,
                       );
                     },
@@ -606,7 +623,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context).get('firstDay'),
+                                labelText: AppLocalizations.of(
+                                  context,
+                                ).get('firstDay'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
@@ -629,7 +648,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               validator:
                                   (value) =>
                                       value?.isEmpty == true
-                                          ? AppLocalizations.of(context).get('firstDayRequired')
+                                          ? AppLocalizations.of(
+                                            context,
+                                          ).get('firstDayRequired')
                                           : null,
                             );
                           },
@@ -646,7 +667,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context).get('lastDay'),
+                                labelText: AppLocalizations.of(
+                                  context,
+                                ).get('lastDay'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
@@ -669,7 +692,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               validator:
                                   (value) =>
                                       value?.isEmpty == true
-                                          ? AppLocalizations.of(context).get('lastDayRequired')
+                                          ? AppLocalizations.of(
+                                            context,
+                                          ).get('lastDayRequired')
                                           : null,
                             );
                           },
@@ -689,10 +714,13 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         style: const TextStyle(color: Colors.black),
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).get('defaultShiftsCount'),
+                          labelText: AppLocalizations.of(
+                            context,
+                          ).get('defaultShiftsCount'),
                           labelStyle: const TextStyle(color: Colors.black),
-                          hintText:
-                              AppLocalizations.of(context).get('enterDefaultShifts'),
+                          hintText: AppLocalizations.of(
+                            context,
+                          ).get('enterDefaultShifts'),
                           hintStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.black),
@@ -708,11 +736,15 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return AppLocalizations.of(context).get('enterDefaultShiftsNumber');
+                            return AppLocalizations.of(
+                              context,
+                            ).get('enterDefaultShiftsNumber');
                           }
                           final shifts = int.tryParse(value);
                           if (shifts == null || shifts < 0) {
-                            return AppLocalizations.of(context).get('enterValidNumber');
+                            return AppLocalizations.of(
+                              context,
+                            ).get('enterValidNumber');
                           }
                           return null;
                         },
@@ -755,7 +787,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                               cursorColor: Colors.black,
                               style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context).get('addParticipant'),
+                                labelText: AppLocalizations.of(
+                                  context,
+                                ).get('addParticipant'),
                                 labelStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
@@ -851,7 +885,9 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
                                           ),
                                         ),
                                         child: Text(
-                                          AppLocalizations.of(context).get('host'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('host'),
                                           style: TextStyle(
                                             color: Colors.white,
                                           ), // Changed text color to white

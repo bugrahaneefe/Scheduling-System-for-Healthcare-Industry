@@ -232,11 +232,17 @@ class AppLocalizations {
       'requestedNumberOfShifts': 'Requested Number of Shifts: ',
       'update': 'Update',
       'availabilityCalendar': 'Availability Calendar: ',
-      'pleaseEnterValidEmail': 'Please enter a valid email address.',
-      'failGoogleSignIn': 'Google sign-in was cancelled.',
+      'pleaseEnterValidEmail': 'Please enter a valid email address',
+      'failGoogleSignIn': 'Google sign-in was cancelled',
+      'homeTitle': 'Nobetim',
+      'aParticipant': 'A participant',
+      'leftRoomMessage': '{userName} has left your room "{roomName}".',
       // ... add all other English strings
     },
     'tr': {
+      'leftRoomMessage': '{userName} odanızdan ayrıldı: "{roomName}".',
+      'aParticipant': 'Katılımcı',
+      'homeTitle': 'Nöbetim',
       'save': 'Kaydet',
       'appTitle': 'Nöbetim',
       'resetPassword': 'Parola Sıfırla',
@@ -245,10 +251,10 @@ class AppLocalizations {
       'resetPasswordEmailFail':
           'Parola sıfırlama e-postası gönderilemedi. Tekrar dene.',
       'enterEmailToReceive': 'Sıfırlama linki için e-postanı gir',
-      'enterYourEmail': 'E-postanı gir.',
-      'sendResetLink': 'Sıfırlama e-postası gönder.',
-      'pleaseEnterValidEmail': 'Lütfen geçerli bir e-posta girin.',
-      'failGoogleSignIn': 'Google girişi iptal edildi.',
+      'enterYourEmail': 'E-postanı gir',
+      'sendResetLink': 'Sıfırlama e-postası gönder',
+      'pleaseEnterValidEmail': 'Lütfen geçerli bir e-posta girin',
+      'failGoogleSignIn': 'Google girişi iptal edildi',
       'createAccount': 'Hesap Oluştur',
       'alreadyHaveAccount': 'Hesabınız var mı?',
       'login': 'Giriş Yap',
@@ -458,6 +464,20 @@ class AppLocalizations {
   String get(String key) {
     return _localizedValues[locale.languageCode]?[key] ??
         _localizedValues['en']![key]!;
+  }
+
+  String translate(String key, {Map<String, String>? params}) {
+    String? template = _localizedValues[locale.languageCode]?[key];
+
+    if (template == null) return key;
+
+    if (params != null) {
+      params.forEach((placeholder, value) {
+        template = template!.replaceAll('{$placeholder}', value);
+      });
+    }
+
+    return template!;
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =

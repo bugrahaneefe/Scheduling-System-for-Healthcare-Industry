@@ -24,26 +24,19 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
   @override
   void initState() {
     super.initState();
-    print('Schedule Data received: ${widget.scheduleData}'); // Debug print
     _schedule = _convertScheduleData(widget.scheduleData);
-    print('Converted Schedule: $_schedule'); // Debug print
   }
 
   Map<String, List<Map<String, String>>> _convertScheduleData(
     Map<String, List<String>> data,
   ) {
-    print('Converting data: $data'); // Debug print
     final Map<String, List<Map<String, String>>> result = {};
 
     if (data.isEmpty) {
-      print('Warning: Input data is empty!');
       return result;
     }
 
     data.forEach((dateStr, doctorNames) {
-      print(
-        'Processing date: $dateStr with doctors: $doctorNames',
-      ); // Debug print
       result[dateStr] =
           doctorNames.map((name) {
             // Find the participant info for this doctor
@@ -51,7 +44,6 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               (p) => p['name'] == name,
               orElse: () => {'name': name, 'assignedUserName': 'Unassigned'},
             );
-            print('Found doctor info: $doctor'); // Debug print
 
             return {
               'name': name,
@@ -60,7 +52,6 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
             };
           }).toList();
     });
-    print('Conversion result: $result'); // Debug print
     return result;
   }
 
@@ -286,6 +277,10 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               .get();
       final roomName = roomDoc.data()?['name'] ?? 'Unnamed Room';
 
+      final message = AppLocalizations.of(
+        context,
+      ).translate('scheduleAppliedMessage', params: {'roomName': roomName});
+
       for (final participant in widget.participants) {
         final userId = participant['userId'];
         if (userId != null && userId.toString().isNotEmpty) {
@@ -294,8 +289,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               .doc(userId)
               .collection('notifications')
               .add({
-                'message':
-                    'A new schedule has been applied in "$roomName". Please check your new schedule.',
+                'message': message,
                 'roomId': widget.roomId,
                 'roomName': roomName,
                 'timestamp': now,

@@ -48,8 +48,8 @@ class _HomeViewState extends State<HomeView>
             backgroundColor: Colors.transparent,
             elevation: 0,
             iconTheme: const IconThemeData(color: Colors.white),
-            title: const Text(
-              'Nöbetim',
+            title: Text(
+              AppLocalizations.of(context).get('homeTitle'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 28,
@@ -552,15 +552,24 @@ class _HomeViewState extends State<HomeView>
                             .collection('users')
                             .doc(authService.value.currentUser!.uid)
                             .get();
-                    final userName = userDoc.data()?['name'] ?? 'A participant';
+                    final userName =
+                        userDoc.data()?['name'] ??
+                        AppLocalizations.of(context).get('aParticipant');
+
+                    final message = AppLocalizations.of(context).translate(
+                      'leftRoomMessage',
+                      params: {
+                        'userName': userName,
+                        'roomName': roomData['name'] ?? '',
+                      },
+                    );
 
                     await FirebaseFirestore.instance
                         .collection('users')
                         .doc(host['userId'])
                         .collection('notifications')
                         .add({
-                          'message':
-                              '$userName has left your room "${roomData['name']}".',
+                          'message': message,
                           'roomId': roomId,
                           'roomName': roomData['name'] ?? '',
                           'timestamp': DateTime.now(),
