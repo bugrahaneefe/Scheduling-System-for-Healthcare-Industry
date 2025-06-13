@@ -6,12 +6,23 @@ class AppLocalizations {
   AppLocalizations(this.locale);
 
   static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+    final localization = Localizations.of<AppLocalizations>(
+      context,
+      AppLocalizations,
+    );
+    if (localization == null) {
+      throw FlutterError(
+        'AppLocalizations.of() called with a context that does not contain AppLocalizations.\n'
+        'Make sure AppLocalizations.delegate is added to the localizationsDelegates list, '
+        'and that the context has access to a MaterialApp or CupertinoApp.',
+      );
+    }
+    return localization;
   }
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'titleNöbetim': "Nobetim",
+      'appTitle': "Nobetim",
       'resetPassword': 'Reset Password',
       'resetPasswordEmailSent': 'Password reset email sent! Check your inbox.',
       'resetPasswordEmailFail': 'Failed to send reset email. Please try again.',
@@ -227,7 +238,7 @@ class AppLocalizations {
     },
     'tr': {
       'save': 'Kaydet',
-      'titleNöbetim': 'Nöbetim',
+      'appTitle': 'Nöbetim',
       'resetPassword': 'Parola Sıfırla',
       'resetPasswordEmailSent':
           'Parola sıfırlama e-postası gönderildi. E-postanı kontrol et!',
