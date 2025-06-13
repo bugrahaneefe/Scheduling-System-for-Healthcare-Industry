@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project491/utils/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class PreviewScheduleView extends StatefulWidget {
   final List<Map<String, dynamic>> participants;
@@ -317,21 +318,49 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
 
   // Helper method to convert month name to number
   int _getMonthNumber(String monthName) {
-    final months = {
-      AppLocalizations.of(context).get('January'): 1,
-      AppLocalizations.of(context).get('February'): 2,
-      AppLocalizations.of(context).get('March'): 3,
-      AppLocalizations.of(context).get('April'): 4,
-      AppLocalizations.of(context).get('May'): 5,
-      AppLocalizations.of(context).get('June'): 6,
-      AppLocalizations.of(context).get('July'): 7,
-      AppLocalizations.of(context).get('August'): 8,
-      AppLocalizations.of(context).get('September'): 9,
-      AppLocalizations.of(context).get('October'): 10,
-      AppLocalizations.of(context).get('November'): 11,
-      AppLocalizations.of(context).get('December'): 12,
-    };
-    return months[monthName] ?? 1;
+    final lower = monthName.toLowerCase();
+
+    // Hem İngilizce hem Türkçe ayları destekle
+    switch (lower) {
+      case 'january':
+      case 'ocak':
+        return 1;
+      case 'february':
+      case 'şubat':
+        return 2;
+      case 'march':
+      case 'mart':
+        return 3;
+      case 'april':
+      case 'nisan':
+        return 4;
+      case 'may':
+      case 'mayıs':
+        return 5;
+      case 'june':
+      case 'haziran':
+        return 6;
+      case 'july':
+      case 'temmuz':
+        return 7;
+      case 'august':
+      case 'ağustos':
+        return 8;
+      case 'september':
+      case 'eylül':
+        return 9;
+      case 'october':
+      case 'ekim':
+        return 10;
+      case 'november':
+      case 'kasım':
+        return 11;
+      case 'december':
+      case 'aralık':
+        return 12;
+      default:
+        return 1;
+    }
   }
 
   @override
@@ -482,21 +511,54 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                   itemBuilder: (context, index) {
                     String date = sortedDates[index];
                     List<Map<String, String>> names = _schedule[date]!;
-                    final isToday = date == todayStr;
+
+                    // Parse the date
+                    DateTime parsedDate;
+                    if (date.contains(' ')) {
+                      final parts = date.split(' ');
+                      final day = int.parse(parts[0]);
+                      final month = _getMonthNumber(parts[1]);
+                      final year = int.parse(parts[2]);
+                      parsedDate = DateTime(year, month, day);
+                    } else {
+                      final parts = date.split('.');
+                      parsedDate = DateTime(
+                        int.parse(parts[2]),
+                        int.parse(parts[1]),
+                        int.parse(parts[0]),
+                      );
+                    }
+
+                    // Check if it's today
+                    final now = DateTime.now();
+                    final isToday =
+                        parsedDate.year == now.year &&
+                        parsedDate.month == now.month &&
+                        parsedDate.day == now.day;
+
+                    // Localize the date string
+                    final locale = Localizations.localeOf(context).languageCode;
+                    final localizedDateStr = DateFormat.yMMMMEEEEd(
+                      locale,
+                    ).format(parsedDate);
+                    final todayLabel = AppLocalizations.of(
+                      context,
+                    ).get('today');
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
                       ),
-                      color: Colors.white, // All cards are now white
+                      color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              date + (isToday ? " (Today)" : ""),
+                              localizedDateStr +
+                                  (isToday ? " ($todayLabel)" : ""),
                               style: const TextStyle(
                                 // Black text for all dates
                                 color: Colors.black,

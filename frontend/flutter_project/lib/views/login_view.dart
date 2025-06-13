@@ -1,7 +1,6 @@
 // lib/views/login_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:project491/components/custom_button.dart';
 import 'package:project491/managers/auth_services.dart';
 import 'package:project491/utils/app_localizations.dart';
@@ -361,7 +360,7 @@ class _LoginViewState extends State<LoginView> {
                               if (mounted) {
                                 await _handleSuccessfulLogin(context);
                               }
-                            } on FirebaseAuthException catch (e) {
+                            } on FirebaseAuthException {
                               setState(() {
                                 _isLoading = false; // Hide loading
                               });

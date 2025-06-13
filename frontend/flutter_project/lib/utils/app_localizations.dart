@@ -246,9 +246,11 @@ class AppLocalizations {
       'selfAssignmentMessage':
           '{userName} assigned themselves to {participantName} in room "{roomName}".',
       'unknown': 'Unknown',
+      'today': 'Today',
       // ... add all other English strings
     },
     'tr': {
+      'today': 'Bugün',
       'unknown': 'Bilinmiyor',
       'selfAssignmentMessage':
           '{userName}, "{roomName}" odasında kendisini {participantName} olarak atadı.',
