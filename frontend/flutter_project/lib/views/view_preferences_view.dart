@@ -312,6 +312,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                                   ? const Color(
                                     0xFFCE5A57,
                                   ) // Red for unavailable
+                                  : value == -99999
+                                  ? Colors.purple // Purple for on leave
                                   : Colors.grey; // Grey for no preference
 
                           return Container(
@@ -342,6 +344,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                           const Color(0xFFCE5A57),
                           AppLocalizations.of(context).get('unavailable'),
                         ),
+                        _buildLegendItem(Colors.purple, AppLocalizations.of(context).get('onLeave')),
                         _buildLegendItem(Colors.grey, AppLocalizations.of(context).get('noPreferences')),
                       ],
                     ),

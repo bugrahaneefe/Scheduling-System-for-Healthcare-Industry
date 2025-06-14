@@ -119,7 +119,7 @@ class _HomeViewState extends State<HomeView>
                             Icons.privacy_tip,
                             color: Colors.black,
                           ),
-                          title: const Text('Privacy Policy'),
+                          title: Text(AppLocalizations.of(context).get('privacyPolicy')),
                         ),
                       ),
                       PopupMenuItem(

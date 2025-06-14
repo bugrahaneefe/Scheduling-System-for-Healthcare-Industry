@@ -32,6 +32,13 @@ class _SetDutiesViewState extends State<SetDutiesView> {
   late CalendarFormat _calendarFormat;
   late DateTime _focusedDay;
 
+  final Map<int, Color> _availabilityColors = {
+    1: Colors.green,        // Available
+    -1: Colors.red,        // Unavailable
+    -99999: Colors.purple, // On Leave
+    0: Colors.blue,        // No Preferences
+  };
+
   @override
   void initState() {
     super.initState();
@@ -164,8 +171,11 @@ class _SetDutiesViewState extends State<SetDutiesView> {
       } else if (newSelectedDays[normalizedDate] == 1) {
         // Available -> Unavailable (-1)
         newSelectedDays[normalizedDate] = -1;
+      } else if (newSelectedDays[normalizedDate] == -1) {
+        // Unavailable -> On Leave (-99999)
+        newSelectedDays[normalizedDate] = -99999;
       } else {
-        // Unavailable -> Not selected (remove)
+        // On Leave -> Not selected (remove)
         newSelectedDays.remove(normalizedDate);
       }
 
@@ -214,14 +224,15 @@ class _SetDutiesViewState extends State<SetDutiesView> {
     Map<DateTime, int> selectedDays,
   ) {
     final normalizedDate = DateTime(date.year, date.month, date.day);
-    final color =
-        isEnabled
-            ? (selectedDays.containsKey(normalizedDate)
-                ? selectedDays[normalizedDate] == 1
-                    ? const Color(0xFF5C9D5C) // Green for available
-                    : const Color(0xFFCE5A57) // Red for unavailable
-                : Colors.transparent)
-            : Colors.transparent;
+    final color = isEnabled
+        ? (selectedDays.containsKey(normalizedDate)
+            ? (selectedDays[normalizedDate] == 1
+                ? const Color(0xFF5C9D5C) // Available (+1)
+                : selectedDays[normalizedDate] == -1
+                    ? const Color(0xFFCE5A57) // Unavailable (-1)
+                    : Colors.purple)
+            : Colors.transparent)
+        : Colors.transparent;
 
     return Container(
       margin: const EdgeInsets.all(4.0),
@@ -313,6 +324,7 @@ class _SetDutiesViewState extends State<SetDutiesView> {
                 children: [
                   _buildLegendItem(const Color(0xFF5C9D5C), AppLocalizations.of(context).get('available')),
                   _buildLegendItem(const Color(0xFFCE5A57), AppLocalizations.of(context).get('unavailable')),
+                  _buildLegendItem(Colors.purple, AppLocalizations.of(context).get('onLeave')),
                   _buildLegendItem(Colors.transparent, AppLocalizations.of(context).get('noPreferences')),
                 ],
               ),
@@ -456,5 +468,35 @@ class _SetDutiesViewState extends State<SetDutiesView> {
         Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
+  }
+
+  String _getAvailabilityText(int value) {
+    switch (value) {
+      case 1:
+        return AppLocalizations.of(context).get('available');
+      case -1:
+        return AppLocalizations.of(context).get('unavailable');
+      case -99999:
+        return AppLocalizations.of(context).get('onLeave');
+      case 0:
+        return AppLocalizations.of(context).get('noPreferences');
+      default:
+        return '';
+    }
+  }
+
+  int _getNextAvailabilityValue(int current) {
+    switch (current) {
+      case 0:             // No Preferences -> Available
+        return 1;
+      case 1:             // Available -> Unavailable
+        return -1;
+      case -1:            // Unavailable -> On Leave
+        return -99999;
+      case -99999:        // On Leave -> No Preferences
+        return 0;
+      default:
+        return 0;         // Start with No Preferences by default
+    }
   }
 }

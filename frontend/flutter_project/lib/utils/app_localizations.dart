@@ -247,7 +247,8 @@ class AppLocalizations {
           '{userName} assigned themselves to {participantName} in room "{roomName}".',
       'unknown': 'Unknown',
       'today': 'Today',
-      // ... add all other English strings
+      'onLeave': 'On Leave',
+      'privacyPolicy': 'Privacy Policy',
     },
     'tr': {
       'today': 'Bugün',
@@ -478,6 +479,8 @@ class AppLocalizations {
       'requestedNumberOfShifts': 'Talep Edilen Nöbet Sayısı: ',
       'update': 'Güncelle',
       'availabilityCalendar': 'Müsaitlik Takvimi: ',
+      'onLeave': 'İzinli',
+      'privacyPolicy': 'Gizlilik Politikası',
       // ... add all other Turkish strings
     },
   };
