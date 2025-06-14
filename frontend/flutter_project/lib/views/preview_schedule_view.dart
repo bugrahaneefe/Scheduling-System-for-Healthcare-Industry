@@ -60,7 +60,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     String date,
     Map<String, String> assignment,
   ) async {
-    final message = AppLocalizations.of(context).get('removeAssignmentFor');
+    final message = AppLocalizations.of(context).translate('removeAssignmentFor', params: {'username': assignment['name'] ?? "", 'date': date});
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -74,7 +74,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
-              '$message\n\n${assignment['name']} -> $date',
+              message,
               style: const TextStyle(color: Colors.black87),
             ),
             actions: [

@@ -111,7 +111,7 @@ class AppLocalizations {
       'failedToAddAssignment': 'Failed to add assignment: ',
       'failedToApplySchedule': 'Failed to apply schedule: ',
       'addAssignmentFor': 'Add assignment for: ',
-      'removeAssignmentFor': 'Do you want to remove this assignment?',
+      'removeAssignmentFor': 'Do you want to remove "{username}" from the assignment on "{date}"?',
       'success': 'Success',
       'error': 'Error',
       'name': 'Name',
@@ -183,8 +183,8 @@ class AppLocalizations {
           'Changing room dates will reset:\n\n• All doctors\' duty preferences\n• Number of shifts for each doctor\n• Daily required shifts (will be set to 1)\n• Any existing schedule\n\nDo you want to continue?',
       'continue': 'Continue',
       'yourHostUpdatedStartEndDates':
-          'Your host updated start and end date. Please confirm your preferences.',
-      'youUpdatedStartEndDates': 'You updated start and end date',
+          'The host updated start and end date of your room "{roomName}". Please confirm your preferences.',
+      'youUpdatedStartEndDates': 'You updated start and end date of the room "{roomName}".',
       'roomUpdated': 'Room Updated',
       'roomDatesUpdated':
           'Room dates updated.\n\nAll preferences and schedules have been reset.\n\nPlease inform doctors to set their preferences again.',
@@ -236,15 +236,15 @@ class AppLocalizations {
       'failGoogleSignIn': 'Google sign-in was cancelled',
       'homeTitle': 'Nobetim',
       'aParticipant': 'A participant',
-      'leftRoomMessage': '{userName} has left your room "{roomName}".',
+      'leftRoomMessage': '"{userName}" has left your room "{roomName}".',
       'scheduleAppliedMessage':
           'A new schedule has been applied in "{roomName}". Please check your new schedule.',
       'aUser': 'A user',
       'unNamedRoom': 'Unnamed Room',
-      'roomJoinedOther': '{userName} joined the room "{roomName}" you are in.',
+      'roomJoinedOther': '"{userName}" joined the room "{roomName}" you are in.',
       'roomJoinedSelf': 'You joined "{roomName}"',
       'selfAssignmentMessage':
-          '{userName} assigned themselves to {participantName} in room "{roomName}".',
+          '"{userName}" assigned themselves to "{participantName}" in room "{roomName}".',
       'unknown': 'Unknown',
       'today': 'Today',
       'onLeave': 'On Leave',
@@ -257,15 +257,15 @@ class AppLocalizations {
       'today': 'Bugün',
       'unknown': 'Bilinmiyor',
       'selfAssignmentMessage':
-          '{userName}, "{roomName}" odasında kendisini {participantName} olarak atadı.',
+          '"{userName}", "{roomName}" odasında kendisini "{participantName}" olarak atadı.',
       'roomJoinedSelf': '"{roomName}" odasına katıldınız.',
       'roomJoinedOther':
-          '{userName}, sizin de içinde bulunduğunuz "{roomName}" odasına katıldı.',
+          '"{userName}", sizin de içinde bulunduğunuz "{roomName}" odasına katıldı.',
       'unNamedRoom': 'İsimsiz Oda',
       'aUser': 'Kullanıcı',
       'scheduleAppliedMessage':
           '"{roomName}" odasında yeni bir nöbet çizelgesi uygulanmıştır. Lütfen kontrol ediniz.',
-      'leftRoomMessage': '{userName} odanızdan ayrıldı: "{roomName}".',
+      'leftRoomMessage': '"{userName}" odanızdan ayrıldı: "{roomName}".',
       'aParticipant': 'Katılımcı',
       'homeTitle': 'Nöbetim',
       'save': 'Kaydet',
@@ -361,7 +361,7 @@ class AppLocalizations {
       'failedToAddAssignment': 'Atama eklenemedi: ',
       'failedToApplySchedule': 'Program uygulanamadı: ',
       'addAssignmentFor': 'Şu tarih için atama ekle: ',
-      'removeAssignmentFor': 'Bu atamayı kaldırmak istiyor musunuz?',
+      'removeAssignmentFor': '"{username}" kişisinin "{date}" tarihindeki atamasını kaldırmak istiyor musunuz?',
       'success': 'Başarılı',
       'error': 'Hata',
       'name': 'Ad',
@@ -433,9 +433,9 @@ class AppLocalizations {
           'Oda tarihlerini değiştirmeniz, aşağıdakileri sıfırlayacaktır:\n\n• Tüm doktorların nöbet tercihleri\n• Her doktor için nöbet sayıları\n• Günlük gerekli nöbet sayıları (1 olarak ayarlanacak)\n• Mevcut programlar\n\nDevam etmek istiyor musunuz?',
       'continue': 'Devam',
       'yourHostUpdatedStartEndDates':
-          'Yönetici başlangıç ve bitiş tarihlerini değiştirdi. Lütfen tercihlerinizi güncelleyin.',
+          'Yönetici, "{roomName}" odasının başlangıç ve bitiş tarihlerini değiştirdi. Lütfen tercihlerinizi güncelleyin.',
       'youUpdatedStartEndDates':
-          'Başlangıç ve bitiş tarihlerinizi güncellediniz.',
+          '"{roomName}" odasının başlangıç ve bitiş tarihlerinizi güncellediniz.',
       'roomUpdated': 'Oda Güncellendi',
       'roomDatesUpdated':
           'Oda tarihleri güncellendi.\n\nTüm tercih ve programlar sıfırlandı.\n\nLütfen doktorların tercihlerini tekrar ayarlamalarını bildirin.',

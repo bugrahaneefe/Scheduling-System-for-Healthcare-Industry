@@ -1353,7 +1353,7 @@ class _RoomViewState extends State<RoomView> {
     String date,
     Map<String, String> assignment,
   ) async {
-    final message = AppLocalizations.of(context).get('removeAssignmentFor');
+    final message = AppLocalizations.of(context).translate('removeAssignmentFor', params: {'username': assignment['name'] ?? "", 'date': date});
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -1367,7 +1367,7 @@ class _RoomViewState extends State<RoomView> {
               style: TextStyle(color: Colors.black),
             ),
             content: Text(
-              '$message\n\n${assignment['name']} -> $date',
+              message,
               style: const TextStyle(color: Colors.black87),
             ),
             actions: [
@@ -2017,15 +2017,15 @@ class _RoomViewState extends State<RoomView> {
         for (final user in assignedUsers) {
           final userId = user['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
-            final message = AppLocalizations.of(
-              context,
-            ).get('yourHostUpdatedStartEndDates');
+          
+            final message = AppLocalizations.of(context).translate('yourHostUpdatedStartEndDates', params: {'roomName': roomName});
+
             await FirebaseFirestore.instance
                 .collection('users')
                 .doc(userId)
                 .collection('notifications')
                 .add({
-                  'message': '"$roomName" -> $message',
+                  'message': message,
                   'roomId': widget.roomId,
                   'roomName': roomName,
                   'timestamp': now,
@@ -2035,15 +2035,14 @@ class _RoomViewState extends State<RoomView> {
         }
 
         if (hostUserId != null && hostUserId.toString().isNotEmpty) {
-          final message = AppLocalizations.of(
-            context,
-          ).get('youUpdatedStartEndDates');
+          final message = AppLocalizations.of(context).translate('youUpdatedStartEndDates', params: {'roomName': roomName});
+
           await FirebaseFirestore.instance
               .collection('users')
               .doc(hostUserId)
               .collection('notifications')
               .add({
-                'message': '"$roomName" -> $message',
+                'message': message,
                 'roomId': widget.roomId,
                 'roomName': roomName,
                 'timestamp': now,
