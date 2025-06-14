@@ -249,6 +249,9 @@ class AppLocalizations {
       'today': 'Today',
       'onLeave': 'On Leave',
       'privacyPolicy': 'Privacy Policy',
+      'exportExcel': 'Export to Excel',
+      'noScheduleToExport': 'No schedule available to export',
+      'failedToExportSchedule': 'Failed to export schedule',
     },
     'tr': {
       'today': 'Bugün',
@@ -481,7 +484,9 @@ class AppLocalizations {
       'availabilityCalendar': 'Müsaitlik Takvimi: ',
       'onLeave': 'İzinli',
       'privacyPolicy': 'Gizlilik Politikası',
-      // ... add all other Turkish strings
+      'exportExcel': 'Excel\'e Aktar',
+      'noScheduleToExport': 'Dışa aktarılacak program yok',
+      'failedToExportSchedule': 'Program dışa aktarılamadı',
     },
   };
 
