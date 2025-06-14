@@ -134,7 +134,7 @@ class AppLocalizations {
       'alreadyAssigned': 'Already Assigned',
       'assignedAlready': 'You are already joined to this room.',
       'assignParticipant': 'Assign Participant',
-      'wantToAssing': 'Do you want to assign yourself to: ',
+      'wantToAssign': 'Do you want to assign yourself to: ',
       'willNotAbleToUnassign': 'You won\'t be able to unassign yourself later.',
       'yes': 'Yes',
       'failedToAssign': 'Failed to assign participant: ',
@@ -380,7 +380,7 @@ class AppLocalizations {
       'alreadyAssigned': 'Zaten Atandınız',
       'assignedAlready': 'Bu odaya zaten katılmışsınız.',
       'assignParticipant': 'Katılımcı Ata',
-      'wantToAssing': 'Kendinizi şu kişiye atamak istiyor musunuz: ',
+      'wantToAssign': 'Kendinizi şu kişiye atamak istiyor musunuz: ',
       'willNotAbleToUnassign':
           'Daha sonra kendinizi atamadan çıkaramayacaksınız.',
       'yes': 'Evet',
@@ -483,6 +483,9 @@ class AppLocalizations {
   };
 
   String get(String key) {
+    if (!_localizedValues[locale.languageCode]!.containsKey(key)) {
+      debugPrint('❗Missing key "$key" for language ${locale.languageCode}');
+    }
     return _localizedValues[locale.languageCode]?[key] ??
         _localizedValues['en']![key]!;
   }

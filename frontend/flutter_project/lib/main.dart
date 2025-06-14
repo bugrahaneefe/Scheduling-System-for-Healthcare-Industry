@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:project491/managers/auth_services.dart';
 import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
@@ -16,6 +17,12 @@ import 'dart:ui' as ui;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  MobileAds.instance.initialize();
+
+  final configuration = RequestConfiguration(
+    testDeviceIds: ['00008030-00020C5021E8C02E'],
+  );
+  MobileAds.instance.updateRequestConfiguration(configuration);
 
   // Global error handler: log errors instead of crashing silently
   FlutterError.onError = (FlutterErrorDetails details) {

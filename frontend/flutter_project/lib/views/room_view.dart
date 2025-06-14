@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:project491/services/ad_test_service.dart';
 import 'package:project491/views/preview_schedule_view.dart';
 import 'package:project491/views/set_duties_view.dart';
 import 'package:project491/utils/app_localizations.dart';
@@ -2202,6 +2203,15 @@ class _RoomViewState extends State<RoomView> {
         print('Final schedule: $schedule'); // Debug print
 
         Navigator.pop(context); // Remove loading dialog
+
+        AdHelper.maybeShowRewardedAd(
+          chancePercent: 100,
+          onRewardEarned: () {
+            print("Kullanıcı ödüllü videoyu tamamladı!");
+            // İstersen ekstra hak vs tanımlayabilirsin
+          },
+        );
+
         final result = await Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder:

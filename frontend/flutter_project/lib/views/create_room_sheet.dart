@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project491/services/ad_test_service.dart';
 import 'package:project491/utils/app_localizations.dart';
 
 class CreateRoomSheet extends StatefulWidget {
@@ -429,6 +430,8 @@ class _CreateRoomSheetState extends State<CreateRoomSheet> {
           .update({
             'rooms': FieldValue.arrayUnion([roomRef.id]),
           });
+
+      AdHelper.maybeShowInterstitialAd(chancePercent: 100);
 
       if (mounted) {
         Navigator.pop(context, true);
