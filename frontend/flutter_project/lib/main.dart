@@ -93,6 +93,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false, // Add this line
         navigatorKey: navigatorKey,
         title: 'Nöbetim',
         localizationsDelegates: const [
