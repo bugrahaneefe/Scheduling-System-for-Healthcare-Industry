@@ -599,10 +599,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                             IconButton(
                               icon: Icon(
                                 Icons.add,
-                                color:
-                                    isToday
-                                        ? Colors.white
-                                        : const Color(0xFF1D61E7),
+                                color: const Color(0xFF1D61E7),
                               ),
                               onPressed: () => _showAddAssignmentDialog(date),
                             ),

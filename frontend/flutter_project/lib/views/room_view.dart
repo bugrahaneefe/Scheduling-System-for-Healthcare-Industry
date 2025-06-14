@@ -2176,7 +2176,9 @@ class _RoomViewState extends State<RoomView> {
 
       // Make API request
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/generate-schedule/'),
+        Uri.parse(
+          'https://django-cplex-app-156171440096.europe-west1.run.app/api/generate-schedule/',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(inputData),
       );
