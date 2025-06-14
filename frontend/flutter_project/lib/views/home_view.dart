@@ -8,6 +8,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import 'login_view.dart';
 import '../managers/auth_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -60,7 +61,7 @@ class _HomeViewState extends State<HomeView>
               PopupMenuButton<String>(
                 color: Colors.white,
                 icon: const Icon(Icons.menu),
-                onSelected: (choice) {
+                onSelected: (choice) async {
                   final authVM = Provider.of<AuthViewModel>(
                     context,
                     listen: false,
@@ -88,6 +89,16 @@ class _HomeViewState extends State<HomeView>
                     );
                     authVM.clearUserData();
                     authService.value.signOut();
+                  } else if (choice == 'privacy') {
+                    final url = Uri.parse(
+                      'https://infoappwide.github.io/nobetimPrivacyPolicy/',
+                    );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
                   }
                 },
                 itemBuilder:
@@ -99,6 +110,16 @@ class _HomeViewState extends State<HomeView>
                           title: Text(
                             AppLocalizations.of(context).get('editProfile'),
                           ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'privacy',
+                        child: ListTile(
+                          leading: const Icon(
+                            Icons.privacy_tip,
+                            color: Colors.black,
+                          ),
+                          title: const Text('Privacy Policy'),
                         ),
                       ),
                       PopupMenuItem(
