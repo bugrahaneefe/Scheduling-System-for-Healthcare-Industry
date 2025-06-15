@@ -962,28 +962,28 @@ class _RoomViewState extends State<RoomView> {
 
       final excel = excel_import.Excel.createExcel();
       final sheet = excel['Sheet1'];
-      
+
       // Create cell styles for alternating rows
       final blueStyle = excel_import.CellStyle(
         backgroundColorHex: '#1D61E7',
         fontColorHex: '#FFFFFF',
-        bold: true // Make text bold for better visibility on blue
+        bold: true, // Make text bold for better visibility on blue
       );
-      
+
       final whiteStyle = excel_import.CellStyle(
         backgroundColorHex: '#FFFFFF',
         fontColorHex: '#1D61E7',
-        bold: true // Keep text bold for consistency
+        bold: true, // Keep text bold for consistency
       );
 
       // Sort dates chronologically
-      final dates = _appliedSchedule!.keys.toList()
-        ..sort((a, b) {
-          final aDate = DateTime.parse(a.split('.').reversed.join('-'));
-          final bDate = DateTime.parse(b.split('.').reversed.join('-'));
-          return aDate.compareTo(bDate);
-        });
-      
+      final dates =
+          _appliedSchedule!.keys.toList()..sort((a, b) {
+            final aDate = DateTime.parse(a.split('.').reversed.join('-'));
+            final bDate = DateTime.parse(b.split('.').reversed.join('-'));
+            return aDate.compareTo(bDate);
+          });
+
       // Find the maximum number of doctors assigned on any day
       int maxDoctorsPerDay = 0;
       for (var date in dates) {
@@ -993,19 +993,25 @@ class _RoomViewState extends State<RoomView> {
         }
       }
 
-      int dateColumnWidth = 'DD.MM.YYYY'.length; // Minimum width for date column
-      int doctorColumnWidth = 'Doctor Name'.length; // Minimum width for doctor names
+      int dateColumnWidth =
+          'DD.MM.YYYY'.length; // Minimum width for date column
+      int doctorColumnWidth =
+          'Doctor Name'.length; // Minimum width for doctor names
 
       // First pass: calculate column widths
       for (var rowIndex = 0; rowIndex < dates.length; rowIndex++) {
         final date = dates[rowIndex];
         if (date.length > dateColumnWidth) dateColumnWidth = date.length;
-        
+
         final assignments = _appliedSchedule![date]!;
         final sortedAssignments = List<Map<String, String>>.from(assignments)
           ..sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
 
-        for (var colIndex = 0; colIndex < sortedAssignments.length; colIndex++) {
+        for (
+          var colIndex = 0;
+          colIndex < sortedAssignments.length;
+          colIndex++
+        ) {
           final doctorName = sortedAssignments[colIndex]['name'] ?? '';
           if (doctorName.length > doctorColumnWidth) {
             doctorColumnWidth = doctorName.length;
@@ -1018,10 +1024,15 @@ class _RoomViewState extends State<RoomView> {
       for (var rowIndex = 0; rowIndex < dates.length; rowIndex++) {
         final date = dates[rowIndex];
         final currentStyle = rowIndex % 2 == 0 ? blueStyle : whiteStyle;
-        
+
         try {
           // Write date in first column
-          final dateCell = sheet.cell(excel_import.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex));
+          final dateCell = sheet.cell(
+            excel_import.CellIndex.indexByColumnRow(
+              columnIndex: 0,
+              rowIndex: rowIndex,
+            ),
+          );
           dateCell.value = date;
           dateCell.cellStyle = currentStyle;
           sheet.setColWidth(0, dateColumnWidth.toDouble() + 2);
@@ -1033,14 +1044,19 @@ class _RoomViewState extends State<RoomView> {
 
           // Write doctor names and add empty cells with style for remaining columns
           for (var colIndex = 0; colIndex < maxDoctorsPerDay; colIndex++) {
-            final cell = sheet.cell(excel_import.CellIndex.indexByColumnRow(columnIndex: colIndex + 1, rowIndex: rowIndex));
-            
+            final cell = sheet.cell(
+              excel_import.CellIndex.indexByColumnRow(
+                columnIndex: colIndex + 1,
+                rowIndex: rowIndex,
+              ),
+            );
+
             if (colIndex < sortedAssignments.length) {
               cell.value = sortedAssignments[colIndex]['name'] ?? '';
             } else {
               cell.value = ''; // Empty cell but with style
             }
-            
+
             cell.cellStyle = currentStyle;
             sheet.setColWidth(colIndex + 1, doctorColumnWidth.toDouble() + 2);
           }
@@ -1052,20 +1068,26 @@ class _RoomViewState extends State<RoomView> {
 
       // Save and share file
       final directory = await getApplicationDocumentsDirectory();
-      final fileName = '${widget.roomName}_schedule_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      final fileName =
+          '${widget.roomName}_schedule_${DateTime.now().millisecondsSinceEpoch}.xlsx';
       final filePath = '${directory.path}/$fileName';
       final file = File(filePath);
-      
+
       try {
         await file.writeAsBytes(excel.encode() ?? []);
-        await Share.shareXFiles([XFile(filePath)], subject: '${widget.roomName} Schedule');
+        await Share.shareXFiles([
+          XFile(filePath),
+        ], subject: '${widget.roomName} Schedule');
       } catch (e) {
-        _showError('${AppLocalizations.of(context).get('failedToSaveExcel')}: $e');
+        _showError(
+          '${AppLocalizations.of(context).get('failedToSaveExcel')}: $e',
+        );
         return;
       }
-
     } catch (e) {
-      _showError('${AppLocalizations.of(context).get('failedToExportSchedule')}: $e');
+      _showError(
+        '${AppLocalizations.of(context).get('failedToExportSchedule')}: $e',
+      );
     }
   }
 
@@ -1131,7 +1153,8 @@ class _RoomViewState extends State<RoomView> {
               child: Text(
                 AppLocalizations.of(context).get('all'),
                 style: TextStyle(
-                  color: !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
+                  color:
+                      !_showOnlyMySchedule ? Color(0xFF1D61E7) : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1327,7 +1350,7 @@ class _RoomViewState extends State<RoomView> {
                   ),
         ),
         // Export button below schedule
-        if (_appliedSchedule != null) 
+        if (_appliedSchedule != null)
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: ElevatedButton.icon(
@@ -1353,7 +1376,10 @@ class _RoomViewState extends State<RoomView> {
     String date,
     Map<String, String> assignment,
   ) async {
-    final message = AppLocalizations.of(context).translate('removeAssignmentFor', params: {'username': assignment['name'] ?? "", 'date': date});
+    final message = AppLocalizations.of(context).translate(
+      'removeAssignmentFor',
+      params: {'username': assignment['name'] ?? "", 'date': date},
+    );
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -2017,8 +2043,10 @@ class _RoomViewState extends State<RoomView> {
         for (final user in assignedUsers) {
           final userId = user['userId'];
           if (userId != null && userId.toString().isNotEmpty) {
-          
-            final message = AppLocalizations.of(context).translate('yourHostUpdatedStartEndDates', params: {'roomName': roomName});
+            final message = AppLocalizations.of(context).translate(
+              'yourHostUpdatedStartEndDates',
+              params: {'roomName': roomName},
+            );
 
             await FirebaseFirestore.instance
                 .collection('users')
@@ -2035,7 +2063,10 @@ class _RoomViewState extends State<RoomView> {
         }
 
         if (hostUserId != null && hostUserId.toString().isNotEmpty) {
-          final message = AppLocalizations.of(context).translate('youUpdatedStartEndDates', params: {'roomName': roomName});
+          final message = AppLocalizations.of(context).translate(
+            'youUpdatedStartEndDates',
+            params: {'roomName': roomName},
+          );
 
           await FirebaseFirestore.instance
               .collection('users')
@@ -2538,7 +2569,7 @@ class _RoomViewState extends State<RoomView> {
                                   PopupMenuItem(
                                     value: 'delete',
                                     child: ListTile(
-                                                                           leading: Icon(
+                                      leading: Icon(
                                         Icons.delete,
                                         color: Colors.red,
                                       ),
@@ -2572,11 +2603,12 @@ class _RoomViewState extends State<RoomView> {
                             ),
                             child: const Center(
                               child: CircularProgressIndicator(
-                                                               valueColor: AlwaysStoppedAnimation(
+                                valueColor: AlwaysStoppedAnimation(
                                   Colors.white,
                                 ),
                               ),
-                            ));
+                            ),
+                          );
                         }
 
                         if (!snapshot.hasData || !snapshot.data!.exists) {

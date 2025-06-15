@@ -1,3 +1,4 @@
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -47,7 +48,20 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    requestTracking();
     initDeepLinks();
+  }
+
+  Future<void> requestTracking() async {
+    final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+
+    if (status == TrackingStatus.notDetermined) {
+      await AppTrackingTransparency.requestTrackingAuthorization();
+    }
+
+    // Optional: print the IDFA if needed
+    final idfa = await AppTrackingTransparency.getAdvertisingIdentifier();
+    debugPrint("IDFA: $idfa");
   }
 
   Future<void> initDeepLinks() async {
@@ -93,6 +107,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
         title: 'Nöbetim',
         localizationsDelegates: const [

@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.project491</string>
+	<string>com.nobetimapp.appwide</string>
 	<key>PROJECT_ID</key>
 	<string>scheduling-system-comp491</string>
 	<key>STORAGE_BUCKET</key>
