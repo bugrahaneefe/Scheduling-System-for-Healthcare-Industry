@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '801988041686',
     projectId: 'scheduling-system-comp491',
     storageBucket: 'scheduling-system-comp491.firebasestorage.app',
-    iosBundleId: 'com.example.project491',
+    iosBundleId: 'com.appwide.nobetimapp',
   );
 }

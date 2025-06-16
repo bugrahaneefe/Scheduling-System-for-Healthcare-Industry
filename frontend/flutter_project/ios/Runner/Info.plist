@@ -32,7 +32,7 @@
 		</dict>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.example.project491</string>
+			<string>com.appwide.nobetimapp</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>NobetimApp</string>

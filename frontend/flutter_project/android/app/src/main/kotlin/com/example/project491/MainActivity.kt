@@ -1,4 +1,4 @@
-package com.example.project491
+package com.appwide.nobetimapp
 
 import io.flutter.embedding.android.FlutterActivity
 

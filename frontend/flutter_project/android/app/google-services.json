@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:801988041686:android:59c8577fa9cc846f2fa277",
+        "mobilesdk_app_id": "1:801988041686:android:0eb577994ec892b62fa277",
         "android_client_info": {
-          "package_name": "com.example.project491"
+          "package_name": "com.appwide.nobetimapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "801988041686-60ujc59ndnc2a9anokkqa3k7mk0anf79.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD43AWyEteqHSbR2YtHTUrNSYMzkOSy0U0"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "801988041686-60ujc59ndnc2a9anokkqa3k7mk0anf79.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "801988041686-67lcg0lh1r9goqhiokq03ue9n3l7l2im.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.appwide.nobetimapp"
+              }
+            }
+          ]
         }
       }
     }
