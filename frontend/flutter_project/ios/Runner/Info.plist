@@ -27,7 +27,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.801988041686-67lcg0lh1r9goqhiokq03ue9n3l7l2im</string>
+				<string>com.googleusercontent.apps.801988041686-6n766mgk3hnongprar09ng8aud88no4k</string>
 			</array>
 		</dict>
 		<dict>
@@ -44,7 +44,7 @@
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>GIDClientID</key>
-	<string>801988041686-67lcg0lh1r9goqhiokq03ue9n3l7l2im.apps.googleusercontent.com</string>
+	<string>801988041686-6n766mgk3hnongprar09ng8aud88no4k.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>
