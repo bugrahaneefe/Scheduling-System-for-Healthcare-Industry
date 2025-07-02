@@ -60,7 +60,10 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     String date,
     Map<String, String> assignment,
   ) async {
-    final message = AppLocalizations.of(context).translate('removeAssignmentFor', params: {'username': assignment['name'] ?? "", 'date': date});
+    final message = AppLocalizations.of(context).translate(
+      'removeAssignmentFor',
+      params: {'username': assignment['name'] ?? "", 'date': date},
+    );
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -142,6 +145,14 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     }
 
     final message = AppLocalizations.of(context).get('addAssignmentFor');
+    final parts = date.split(' ');
+    final parsedDate = DateTime(
+      int.parse(parts[2]),
+      _getMonthNumber(parts[1]),
+      int.parse(parts[0]),
+    );
+    final locale = Localizations.localeOf(context).languageCode;
+    final localizedDate = DateFormat.yMMMMEEEEd(locale).format(parsedDate);
     final selectedParticipant = await showDialog<Map<String, dynamic>>(
       context: context,
       builder:
@@ -151,7 +162,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               borderRadius: BorderRadius.circular(8),
             ),
             title: Text(
-              '$message\n$date',
+              '$message\n$localizedDate',
               style: const TextStyle(color: Colors.black),
             ),
             content: SizedBox(
@@ -161,15 +172,21 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                 itemCount: availableParticipants.length,
                 itemBuilder: (context, index) {
                   final participant = availableParticipants[index];
+                  final assignedUserName = participant['assignedUserName'];
+
                   return ListTile(
                     title: Text(
                       participant['name'],
                       style: const TextStyle(color: Colors.black87),
                     ),
-                    subtitle: Text(
-                      participant['assignedUserName'] ?? 'Unassigned',
-                      style: const TextStyle(color: Colors.black54),
-                    ),
+                    subtitle:
+                        (assignedUserName != null &&
+                                assignedUserName.toString().trim().isNotEmpty)
+                            ? Text(
+                              assignedUserName,
+                              style: const TextStyle(color: Colors.black54),
+                            )
+                            : null,
                     onTap: () => Navigator.pop(context, participant),
                   );
                 },
@@ -198,8 +215,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
         );
         updatedSchedule[date]!.add({
           'name': selectedParticipant['name'],
-          'assignedUser':
-              selectedParticipant['assignedUserName'] ?? 'Unassigned',
+          'assignedUser': selectedParticipant['assignedUserName'] ?? '',
         });
 
         setState(() {
@@ -248,15 +264,12 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               final participant = widget.participants.firstWhere(
                 (p) => p['name'] == assignment['name'],
                 orElse:
-                    () => {
-                      'name': assignment['name'],
-                      'assignedUserName': 'Unassigned',
-                    },
+                    () => {'name': assignment['name'], 'assignedUserName': ''},
               );
 
               return {
                 'name': assignment['name'],
-                'assignedUser': participant['assignedUserName'] ?? 'Unassigned',
+                'assignedUser': participant['assignedUserName'] ?? '',
               };
             }).toList();
 
@@ -276,7 +289,9 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
               .collection('rooms')
               .doc(widget.roomId)
               .get();
-      final roomName = roomDoc.data()?['name'] ?? 'Unnamed Room';
+      final roomName =
+          roomDoc.data()?['name'] ??
+          AppLocalizations.of(context).get('unNamedRoom');
 
       final message = AppLocalizations.of(
         context,
@@ -576,7 +591,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        '• ${info['name']} (${info['assignedUser']})',
+                                        '• ${info['name']}',
                                         style: const TextStyle(
                                           color: Colors.black87,
                                           fontSize: 16,

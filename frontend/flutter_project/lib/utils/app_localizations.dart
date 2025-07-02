@@ -111,7 +111,8 @@ class AppLocalizations {
       'failedToAddAssignment': 'Failed to add assignment: ',
       'failedToApplySchedule': 'Failed to apply schedule: ',
       'addAssignmentFor': 'Add assignment for: ',
-      'removeAssignmentFor': 'Do you want to remove "{username}" from the assignment on "{date}"?',
+      'removeAssignmentFor':
+          'Do you want to remove "{username}" from the assignment on "{date}"?',
       'success': 'Success',
       'error': 'Error',
       'name': 'Name',
@@ -127,7 +128,7 @@ class AppLocalizations {
       'joiningAs': 'Joining as: ',
       'unknownUser': 'Unknown User',
       'noTitle': 'No Title',
-      'joinRoom': 'Join Room: ',
+      'joinRoom': 'Join Room',
       'unknownRoom': 'Unknown Room',
       'participantAssigned': 'Participant Assigned',
       'participantAssignedTo': 'This participant is already assigned to: ',
@@ -184,7 +185,8 @@ class AppLocalizations {
       'continue': 'Continue',
       'yourHostUpdatedStartEndDates':
           'The host updated start and end date of your room "{roomName}". Please confirm your preferences.',
-      'youUpdatedStartEndDates': 'You updated start and end date of the room "{roomName}".',
+      'youUpdatedStartEndDates':
+          'You updated start and end date of the room "{roomName}".',
       'roomUpdated': 'Room Updated',
       'roomDatesUpdated':
           'Room dates updated.\n\nAll preferences and schedules have been reset.\n\nPlease inform doctors to set their preferences again.',
@@ -241,7 +243,8 @@ class AppLocalizations {
           'A new schedule has been applied in "{roomName}". Please check your new schedule.',
       'aUser': 'A user',
       'unNamedRoom': 'Unnamed Room',
-      'roomJoinedOther': '"{userName}" joined the room "{roomName}" you are in.',
+      'roomJoinedOther':
+          '"{userName}" joined the room "{roomName}" you are in.',
       'roomJoinedSelf': 'You joined "{roomName}"',
       'selfAssignmentMessage':
           '"{userName}" assigned themselves to "{participantName}" in room "{roomName}".',
@@ -361,7 +364,8 @@ class AppLocalizations {
       'failedToAddAssignment': 'Atama eklenemedi: ',
       'failedToApplySchedule': 'Program uygulanamadı: ',
       'addAssignmentFor': 'Şu tarih için atama ekle: ',
-      'removeAssignmentFor': '"{username}" kişisinin "{date}" tarihindeki atamasını kaldırmak istiyor musunuz?',
+      'removeAssignmentFor':
+          '"{username}" kişisinin "{date}" tarihindeki atamasını kaldırmak istiyor musunuz?',
       'success': 'Başarılı',
       'error': 'Hata',
       'name': 'Ad',
@@ -377,7 +381,7 @@ class AppLocalizations {
       'joiningAs': 'Şu kişi olarak katılınıyor: ',
       'unknownUser': 'Bilinmeyen Kullanıcı',
       'noTitle': 'Ünvan Yok',
-      'joinRoom': 'Odaya Katıl: ',
+      'joinRoom': 'Odaya Katıl',
       'unknownRoom': 'Bilinmeyen Oda',
       'participantAssigned': 'Katılımcı Zaten Atandı',
       'participantAssignedTo': 'Bu katılımcı zaten şu kişiye atanmış: ',

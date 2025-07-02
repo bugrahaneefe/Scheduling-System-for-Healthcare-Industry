@@ -311,10 +311,19 @@ class _RoomInvitationViewState extends State<RoomInvitationView> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                '$message${_roomData?['name'] ?? AppLocalizations.of(context).get('unknownRoom')}',
+                                '$message',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${_roomData?['name'] ?? AppLocalizations.of(context).get('unknownRoom')}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
