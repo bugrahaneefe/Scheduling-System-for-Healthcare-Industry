@@ -1113,23 +1113,30 @@ class _RoomViewState extends State<RoomView> {
 
     // — 2) Build week groups only if we have data to show —
     final displaySchedule = filteredSchedule;
+    final sortedDates =
+        schedule.keys.toList()..sort((a, b) {
+          final da = DateTime.parse(a.split('.').reversed.join('-'));
+          final db = DateTime.parse(b.split('.').reversed.join('-'));
+          return da.compareTo(db);
+        });
+
+    final firstDate = DateTime.parse(
+      sortedDates.first.split('.').reversed.join('-'),
+    );
+
     final weeklySchedule = <int, Map<String, List<Map<String, String>>>>{};
-    if (displaySchedule.isNotEmpty) {
-      final sortedDates =
-          displaySchedule.keys.toList()..sort((a, b) {
-            final da = DateTime.parse(a.split('.').reversed.join('-'));
-            final db = DateTime.parse(b.split('.').reversed.join('-'));
-            return da.compareTo(db);
-          });
-      final firstDate = DateTime.parse(
-        sortedDates.first.split('.').reversed.join('-'),
-      );
-      for (var date in sortedDates) {
-        final dt = DateTime.parse(date.split('.').reversed.join('-'));
-        final weekIndex = dt.difference(firstDate).inDays ~/ 7;
-        weeklySchedule.putIfAbsent(weekIndex, () => {})[date] =
-            displaySchedule[date]!;
-      }
+    for (var date in sortedDates) {
+      final dt = DateTime.parse(date.split('.').reversed.join('-'));
+      final weekIndex = dt.difference(firstDate).inDays ~/ 7;
+
+      // Her haftayı ekle ama "me" filtresi varsa içeriğini filtrele
+      final entries = schedule[date]!;
+      final filteredEntries =
+          _showOnlyMySchedule
+              ? entries.where((a) => a['name'] == myName).toList()
+              : entries;
+
+      weeklySchedule.putIfAbsent(weekIndex, () => {})[date] = filteredEntries;
     }
 
     // — 3) Render —
@@ -1191,6 +1198,58 @@ class _RoomViewState extends State<RoomView> {
                     ),
                   )
                   // 3b-ii) Otherwise your existing PageView:
+                  : _showOnlyMySchedule
+                  ? ListView.builder(
+                    controller: _scheduleScrollController,
+                    itemCount: filteredSchedule.length,
+                    itemBuilder: (context, index) {
+                      final date = filteredSchedule.keys.toList()[index];
+                      final assignments =
+                          schedule[date]!; // ← tüm atamaları göster
+                      final parts = date.split('.');
+                      final dt = DateTime(
+                        int.parse(parts[2]),
+                        int.parse(parts[1]),
+                        int.parse(parts[0]),
+                      );
+                      final weekdayNames = [
+                        AppLocalizations.of(context).get('monday'),
+                        AppLocalizations.of(context).get('tuesday'),
+                        AppLocalizations.of(context).get('wednesday'),
+                        AppLocalizations.of(context).get('thursday'),
+                        AppLocalizations.of(context).get('friday'),
+                        AppLocalizations.of(context).get('saturday'),
+                        AppLocalizations.of(context).get('sunday'),
+                      ];
+
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text(
+                              '$date ${weekdayNames[dt.weekday - 1]}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children:
+                                  assignments.map((a) {
+                                    return Text(
+                                      '${a['name']}',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                          const Divider(color: Colors.white24, height: 1),
+                        ],
+                      );
+                    },
+                  )
                   : PageView.builder(
                     controller: _pageController,
                     itemCount: weeklySchedule.length,
@@ -1242,104 +1301,139 @@ class _RoomViewState extends State<RoomView> {
 
                           // Day‐by‐day list
                           Expanded(
-                            child: ListView.builder(
-                              itemCount: weekMap.length,
-                              itemBuilder: (context, dayIndex) {
-                                final date = weekMap.keys.toList()[dayIndex];
-                                final assignments = weekMap[date]!;
-                                final parts = date.split('.');
-                                final dt = DateTime(
-                                  int.parse(parts[2]),
-                                  int.parse(parts[1]),
-                                  int.parse(parts[0]),
-                                );
-                                final weekdayNames = [
-                                  AppLocalizations.of(context).get('monday'),
-                                  AppLocalizations.of(context).get('tuesday'),
-                                  AppLocalizations.of(context).get('wednesday'),
-                                  AppLocalizations.of(context).get('thursday'),
-                                  AppLocalizations.of(context).get('friday'),
-                                  AppLocalizations.of(context).get('saturday'),
-                                  AppLocalizations.of(context).get('sunday'),
-                                ];
+                            child:
+                                weekMap.isEmpty
+                                    ? Center(
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        ).get('doNotHaveDuty'),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      itemCount: weekMap.length,
+                                      itemBuilder: (context, dayIndex) {
+                                        final date =
+                                            weekMap.keys.toList()[dayIndex];
+                                        final assignments = weekMap[date]!;
+                                        final parts = date.split('.');
+                                        final dt = DateTime(
+                                          int.parse(parts[2]),
+                                          int.parse(parts[1]),
+                                          int.parse(parts[0]),
+                                        );
+                                        final weekdayNames = [
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('monday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('tuesday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('wednesday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('thursday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('friday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('saturday'),
+                                          AppLocalizations.of(
+                                            context,
+                                          ).get('sunday'),
+                                        ];
 
-                                return Column(
-                                  children: [
-                                    ListTile(
-                                      title: Row(
-                                        children: [
-                                          Text(
-                                            '$date ${weekdayNames[dt.weekday - 1]}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          if (_isHost) const Spacer(),
-                                          if (_isHost)
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.add,
-                                                color: Colors.white,
-                                              ),
-                                              onPressed:
-                                                  () =>
-                                                      _showAddAssignmentDialog(
-                                                        date,
-                                                      ),
-                                            ),
-                                        ],
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children:
-                                            assignments.map((a) {
-                                              return _isHost
-                                                  ? Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          '${a['name']}',
-                                                          style: const TextStyle(
-                                                            color:
-                                                                Colors.white70,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      IconButton(
-                                                        icon: const Icon(
-                                                          Icons.delete,
-                                                          color: Colors.red,
-                                                          size: 20,
-                                                        ),
-                                                        onPressed:
-                                                            () =>
-                                                                _removeAssignment(
-                                                                  date,
-                                                                  a,
-                                                                ),
-                                                      ),
-                                                    ],
-                                                  )
-                                                  : Text(
-                                                    '${a['name']}',
+                                        return Column(
+                                          children: [
+                                            ListTile(
+                                              title: Row(
+                                                children: [
+                                                  Text(
+                                                    '$date ${weekdayNames[dt.weekday - 1]}',
                                                     style: const TextStyle(
-                                                      color: Colors.white70,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
-                                                  );
-                                            }).toList(),
-                                      ),
+                                                  ),
+                                                  if (_isHost) const Spacer(),
+                                                  if (_isHost)
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.add,
+                                                        color: Colors.white,
+                                                      ),
+                                                      onPressed:
+                                                          () =>
+                                                              _showAddAssignmentDialog(
+                                                                date,
+                                                              ),
+                                                    ),
+                                                ],
+                                              ),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children:
+                                                    assignments.map((a) {
+                                                      return _isHost
+                                                          ? Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: Text(
+                                                                  '${a['name']}',
+                                                                  style: const TextStyle(
+                                                                    color:
+                                                                        Colors
+                                                                            .white70,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              IconButton(
+                                                                icon: const Icon(
+                                                                  Icons.delete,
+                                                                  color:
+                                                                      Colors
+                                                                          .red,
+                                                                  size: 20,
+                                                                ),
+                                                                onPressed:
+                                                                    () =>
+                                                                        _removeAssignment(
+                                                                          date,
+                                                                          a,
+                                                                        ),
+                                                              ),
+                                                            ],
+                                                          )
+                                                          : Text(
+                                                            '${a['name']}',
+                                                            style: const TextStyle(
+                                                              color:
+                                                                  Colors
+                                                                      .white70,
+                                                            ),
+                                                          );
+                                                    }).toList(),
+                                              ),
+                                            ),
+                                            if (dayIndex < weekMap.length - 1)
+                                              const Divider(
+                                                color: Colors.white24,
+                                                height: 1,
+                                              ),
+                                          ],
+                                        );
+                                      },
                                     ),
-                                    if (dayIndex < weekMap.length - 1)
-                                      const Divider(
-                                        color: Colors.white24,
-                                        height: 1,
-                                      ),
-                                  ],
-                                );
-                              },
-                            ),
                           ),
                         ],
                       );
