@@ -470,7 +470,12 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
     return Scaffold(
       backgroundColor: const Color(0x1E1E1E),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(
+          16.0,
+          8.0,
+          16.0,
+          24.0,
+        ), // Left, Top, Right, Bottom
         child: ElevatedButton(
           onPressed: () => _applySchedule(context, _schedule),
           style: ElevatedButton.styleFrom(
@@ -479,7 +484,7 @@ class _PreviewScheduleViewState extends State<PreviewScheduleView> {
           ),
           child: Text(
             AppLocalizations.of(context).get('applySchedule'),
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: const TextStyle(fontSize: 18, color: Colors.white),
           ),
         ),
       ),

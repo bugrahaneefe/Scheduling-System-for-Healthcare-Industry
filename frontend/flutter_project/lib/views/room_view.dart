@@ -1176,20 +1176,17 @@ class _RoomViewState extends State<RoomView> {
         // 3b) The blue schedule box
         Container(
           height: 300,
+          width: double.infinity, // optional but helps stretch background
           decoration: BoxDecoration(
             color: const Color(0xFF1D61E7),
             borderRadius: BorderRadius.circular(8),
           ),
           child:
               _showOnlyMySchedule && displaySchedule.isEmpty
-                  // 3b-i) “Me” but nothing to show:
                   ? Center(
                     child: Text(
                       AppLocalizations.of(context).get('doNotHaveDuty'),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                   )
@@ -1493,15 +1490,21 @@ class _RoomViewState extends State<RoomView> {
                 itemCount: availableParticipants.length,
                 itemBuilder: (context, index) {
                   final participant = availableParticipants[index];
+                  final assignedUserName = participant['assignedUserName'];
+
                   return ListTile(
                     title: Text(
                       participant['name'],
                       style: const TextStyle(color: Colors.black87),
                     ),
-                    subtitle: Text(
-                      participant['assignedUserName'] ?? 'Unassigned',
-                      style: const TextStyle(color: Colors.black54),
-                    ),
+                    subtitle:
+                        (assignedUserName != null &&
+                                assignedUserName.toString().trim().isNotEmpty)
+                            ? Text(
+                              assignedUserName,
+                              style: const TextStyle(color: Colors.black54),
+                            )
+                            : null,
                     onTap: () => Navigator.pop(context, participant),
                   );
                 },
