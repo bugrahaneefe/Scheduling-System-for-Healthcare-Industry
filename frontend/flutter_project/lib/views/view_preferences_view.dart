@@ -36,32 +36,38 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
   Future<void> _showMessage(String message, bool isError) async {
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: Text(
-          isError ? AppLocalizations.of(context).get('error') : AppLocalizations.of(context).get('shiftCountUpdate'),
-          style: const TextStyle(color: Colors.black),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF1D61E7),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context).get('ok'), style: TextStyle(color: Colors.white)),
+            title: Text(
+              isError
+                  ? AppLocalizations.of(context).get('error')
+                  : AppLocalizations.of(context).get('shiftCountUpdate'),
+              style: const TextStyle(color: Colors.black),
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF1D61E7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  AppLocalizations.of(context).get('ok'),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -79,7 +85,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
           .doc(widget.doctorName);
 
       final doc = await prefsRef.get();
-      
+
       if (doc.exists) {
         await prefsRef.update({'shiftsCount': newCount});
       } else {
@@ -87,9 +93,10 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
           'shiftsCount': newCount,
           'availability': List<int>.filled(
             DateTime.parse(widget.preferences['lastDay'])
-                .difference(DateTime.parse(widget.preferences['firstDay']))
-                .inDays + 1,
-            0
+                    .difference(DateTime.parse(widget.preferences['firstDay']))
+                    .inDays +
+                1,
+            0,
           ),
         });
       }
@@ -100,7 +107,10 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
       });
 
       if (mounted) {
-        await _showMessage(AppLocalizations.of(context).get('shiftCountUpdatedSuccessfully'), false);
+        await _showMessage(
+          AppLocalizations.of(context).get('shiftCountUpdatedSuccessfully'),
+          false,
+        );
         // Return with updated data
         Navigator.pop(context, {
           'shiftsCount': newCount,
@@ -110,7 +120,9 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
       }
     } catch (e) {
       if (mounted) {
-        final message = AppLocalizations.of(context).get('failedToUpdateShiftCount');
+        final message = AppLocalizations.of(
+          context,
+        ).get('failedToUpdateShiftCount');
         await _showMessage('$message$e', true);
       }
     } finally {
@@ -121,7 +133,9 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
   @override
   Widget build(BuildContext context) {
     final shiftsCount = widget.preferences['shiftsCount'] as int;
-    final availability = List<int>.from(widget.preferences['availability'] as List);
+    final availability = List<int>.from(
+      widget.preferences['availability'] as List,
+    );
 
     // Parse firstDay with null check and fallback
     final firstDay =
@@ -190,7 +204,9 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                AppLocalizations.of(context).get('requestedNumberOfShifts'),
+                                AppLocalizations.of(
+                                  context,
+                                ).get('requestedNumberOfShifts'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -205,37 +221,56 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                                       child: TextField(
                                         controller: _shiftsController,
                                         keyboardType: TextInputType.number,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
                                         cursorColor: const Color(0xFF1D61E7),
                                         decoration: const InputDecoration(
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white),
+                                            borderSide: BorderSide(
+                                              color: Colors.white,
+                                            ),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(color: Color(0xFF1D61E7)),
+                                            borderSide: BorderSide(
+                                              color: Color(0xFF1D61E7),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     ElevatedButton(
-                                      onPressed: _isLoading ? null : _updateShiftsCount,
+                                      onPressed:
+                                          _isLoading
+                                              ? null
+                                              : _updateShiftsCount,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF1D61E7),
+                                        backgroundColor: const Color(
+                                          0xFF1D61E7,
+                                        ),
                                       ),
-                                      child: _isLoading
-                                          ? const SizedBox(
-                                              width: 20,
-                                              height: 20,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      child:
+                                          _isLoading
+                                              ? const SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(Colors.white),
+                                                ),
+                                              )
+                                              : Text(
+                                                AppLocalizations.of(
+                                                  context,
+                                                ).get('update'),
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                            )
-                                          : Text(
-                                              AppLocalizations.of(context).get('update'),
-                                              style: TextStyle(color: Colors.white),
-                                            ),
                                     ),
                                   ],
                                 ),
@@ -262,7 +297,9 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          AppLocalizations.of(context).get('availabilityCalendar'),
+                          AppLocalizations.of(
+                            context,
+                          ).get('availabilityCalendar'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -313,7 +350,8 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                                     0xFFCE5A57,
                                   ) // Red for unavailable
                                   : value == -99999
-                                  ? Colors.purple // Purple for on leave
+                                  ? Colors
+                                      .purple // Purple for on leave
                                   : Colors.grey; // Grey for no preference
 
                           return Container(
@@ -334,18 +372,39 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     // Legend
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildLegendItem(const Color(0xFF5C9D5C), AppLocalizations.of(context).get('available')),
-                        _buildLegendItem(
-                          const Color(0xFFCE5A57),
-                          AppLocalizations.of(context).get('unavailable'),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _buildLegendItem(
+                            const Color(0xFF5C9D5C),
+                            AppLocalizations.of(context).get('available'),
+                          ),
                         ),
-                        _buildLegendItem(Colors.purple, AppLocalizations.of(context).get('onLeave')),
-                        _buildLegendItem(Colors.grey, AppLocalizations.of(context).get('noPreferences')),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _buildLegendItem(
+                            const Color(0xFFCE5A57),
+                            AppLocalizations.of(context).get('unavailable'),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _buildLegendItem(
+                            Colors.purple,
+                            AppLocalizations.of(context).get('onLeave'),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _buildLegendItem(
+                            Colors.grey,
+                            AppLocalizations.of(context).get('noPreferences'),
+                          ),
+                        ),
                       ],
                     ),
                   ],
