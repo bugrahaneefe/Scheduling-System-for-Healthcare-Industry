@@ -2530,6 +2530,8 @@ class _RoomViewState extends State<RoomView> {
         backgroundColor: const Color(0x1E1E1E),
         body: SafeArea(
           child: RefreshIndicator(
+            color: Color(0xFF1D61E7), // Spinner color
+            backgroundColor: Colors.white, // Background circle color
             onRefresh: () async {
               await _loadSchedules();
               await _refreshRoom();
