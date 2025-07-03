@@ -1203,7 +1203,18 @@ class _RoomViewState extends State<RoomView> {
                     controller: _scheduleScrollController,
                     itemCount: filteredSchedule.length,
                     itemBuilder: (context, index) {
-                      final date = filteredSchedule.keys.toList()[index];
+                      final sortedMyDates =
+                          filteredSchedule.keys.toList()..sort((a, b) {
+                            final da = DateTime.parse(
+                              a.split('.').reversed.join('-'),
+                            );
+                            final db = DateTime.parse(
+                              b.split('.').reversed.join('-'),
+                            );
+                            return da.compareTo(db);
+                          });
+
+                      final date = sortedMyDates[index];
                       final assignments =
                           schedule[date]!; // ← tüm atamaları göster
                       final parts = date.split('.');
