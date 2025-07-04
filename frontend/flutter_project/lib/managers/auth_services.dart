@@ -23,6 +23,9 @@ class AuthServices {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        throw Exception('Kullanıcı bulunamadı veya hesap silinmiş.');
+      }
       throw e;
     }
   }

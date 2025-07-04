@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'package:project491/views/login_view.dart';
 import 'package:provider/provider.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:project491/utils/app_localizations.dart';
 import '../models/user_model.dart';
 import '../managers/auth_services.dart';
 import '../viewmodels/auth_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileEditView extends StatefulWidget {
   final UserModel user;
@@ -78,6 +81,106 @@ class _ProfileEditViewState extends State<ProfileEditView> {
             ],
           ),
     );
+  }
+
+  Future<void> _deleteAccount() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white, // Popup arka planı beyaz
+        title: Text('Hesabı Sil'),
+        content: Text('Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              // Border kaldırıldı
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide.none,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: const Text(
+              'Vazgeç',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            child: const Text(
+              'Hesabı Sil',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final userId = user.uid;
+      final firestore = FirebaseFirestore.instance;
+
+      // 1. Kullanıcının rooms listesini çek
+      final userDoc = await firestore.collection('users').doc(userId).get();
+      final userRooms = List<String>.from(userDoc.data()?['rooms'] ?? []);
+
+      // 2. Her oda için host mu kontrol et
+      for (final roomId in userRooms) {
+        final roomDoc = await firestore.collection('rooms').doc(roomId).get();
+        if (!roomDoc.exists) continue;
+        final roomData = roomDoc.data()!;
+        final participants = List<Map<String, dynamic>>.from(roomData['participants'] ?? []);
+
+        // Host mu?
+        final isHost = participants.any((p) => p['isHost'] == true && p['userId'] == userId);
+
+        if (isHost) {
+          // Host ise odayı tamamen sil
+          await firestore.collection('rooms').doc(roomId).delete();
+        } else {
+          // Host değilse, assign olduğu participant'ı bul ve unassign et
+          final idx = participants.indexWhere((p) => p['userId'] == userId);
+          if (idx != -1) {
+            participants[idx]['userId'] = '';
+            participants[idx]['assignedUserName'] = null;
+            await firestore.collection('rooms').doc(roomId).update({'participants': participants});
+          }
+        }
+      }
+
+      // 3. Firestore'dan kullanıcı verisini sil
+      await firestore.collection('users').doc(userId).delete();
+
+      // Firebase Authentication'dan kullanıcıyı sil
+      await user.delete();
+
+      // Kullanıcı silindikten sonra login ekranına yönlendir
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => LoginView()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hesap silinirken hata oluştu: $e')),
+      );
+    }
   }
 
   @override
@@ -316,65 +419,86 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                 ),
               ),
               const SizedBox(height: 6),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.black, width: 1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Ortada hizala
+                children: [
+                  ElevatedButton(
+                    onPressed: _deleteAccount,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Değişiklikleri Uygula ile aynı köşe
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Hesabı Sil',
+                      style: TextStyle(color: Colors.white), // Yazı beyaz
+                    ),
                   ),
-                ),
-                onPressed:
-                    _isLoading
-                        ? null
-                        : () async {
-                          setState(() => _isLoading = true);
-                          try {
-                            // 1) Save
-                            await authService.value.updateUserProfile(
-                              name: _nameController.text,
-                              title: _titleController.text,
-                              phoneNumber: _completePhoneNumber,
-                              birthday: _selectedBirthday!,
-                            );
-                            // 2) Reload user data – same as your pull-to-refresh
-                            await Provider.of<AuthViewModel>(
-                              context,
-                              listen: false,
-                            ).loadCurrentUser();
-                            // 3) Show popup & close
-                            await _showPopup(
-                              AppLocalizations.of(
-                                context,
-                              ).get('profileUpdated'),
-                              true,
-                            );
-                          } catch (e) {
-                            await _showPopup(
-                              AppLocalizations.of(
-                                context,
-                              ).get('failedToUpdateProfile'),
-                              false,
-                            );
-                          } finally {
-                            setState(() => _isLoading = false);
-                          }
-                        },
-                child:
-                    _isLoading
-                        ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                  const SizedBox(width: 12), // Aradaki boşluk azaltıldı
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.black, width: 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onPressed:
+                        _isLoading
+                            ? null
+                            : () async {
+                              setState(() => _isLoading = true);
+                              try {
+                                // 1) Save
+                                await authService.value.updateUserProfile(
+                                  name: _nameController.text,
+                                  title: _titleController.text,
+                                  phoneNumber: _completePhoneNumber,
+                                  birthday: _selectedBirthday!,
+                                );
+                                // 2) Reload user data – same as your pull-to-refresh
+                                await Provider.of<AuthViewModel>(
+                                  context,
+                                  listen: false,
+                                ).loadCurrentUser();
+                                // 3) Show popup & close
+                                await _showPopup(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('profileUpdated'),
+                                  true,
+                                );
+                              } catch (e) {
+                                await _showPopup(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('failedToUpdateProfile'),
+                                  false,
+                                );
+                              } finally {
+                                setState(() => _isLoading = false);
+                              }
+                            },
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                            : Text(
+                              AppLocalizations.of(context).get('applyChanges'),
+                              style: TextStyle(color: Colors.black),
                             ),
-                          ),
-                        )
-                        : Text(
-                          AppLocalizations.of(context).get('applyChanges'),
-                          style: TextStyle(color: Colors.black),
-                        ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -340,14 +340,23 @@ class _HomeViewState extends State<HomeView>
                             setState(() {});
                           },
                           child: StreamBuilder<QuerySnapshot>(
-                            stream:
-                                FirebaseFirestore.instance
+                            stream: (authService.value.currentUser == null)
+                                ? null
+                                : FirebaseFirestore.instance
                                     .collection('users')
                                     .doc(authService.value.currentUser!.uid)
                                     .collection('notifications')
                                     .orderBy('timestamp', descending: true)
                                     .snapshots(),
                             builder: (context, snapshot) {
+                              if (authService.value.currentUser == null) {
+                                return Center(
+                                  child: Text(
+                                    AppLocalizations.of(context).get('notLoggedIn'),
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
                                 return const Center(
@@ -695,15 +704,15 @@ class _HomeViewState extends State<HomeView>
                           ),
                         ),
                       ],
+                     ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        } else {
-          invalidRoomIds.add(roomId);
-        }
+            );
+          } else {
+            invalidRoomIds.add(roomId);
+          }
       } catch (e) {
         invalidRoomIds.add(roomId);
       }

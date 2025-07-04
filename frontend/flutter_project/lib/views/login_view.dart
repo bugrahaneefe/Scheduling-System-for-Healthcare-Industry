@@ -360,6 +360,18 @@ class _LoginViewState extends State<LoginView> {
                               if (mounted) {
                                 await _handleSuccessfulLogin(context);
                               }
+                            } on Exception catch (e) {
+                              setState(() {
+                                _isLoading = false; // Hide loading
+                              });
+                              final msg = e.toString();
+                              if (msg.contains('Kullanıcı bulunamadı') || msg.contains('hesap silinmiş')) {
+                                _showError('Hesap bulunamadı veya silinmiş.');
+                              } else {
+                                _showError(
+                                  AppLocalizations.of(context).get('loginFailed'),
+                                );
+                              }
                             } on FirebaseAuthException {
                               setState(() {
                                 _isLoading = false; // Hide loading
