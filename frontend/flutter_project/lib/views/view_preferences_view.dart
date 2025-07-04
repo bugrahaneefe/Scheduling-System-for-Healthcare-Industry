@@ -176,7 +176,7 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -378,28 +378,28 @@ class _ViewPreferencesViewState extends State<ViewPreferencesView> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: _buildLegendItem(
                             const Color(0xFF5C9D5C),
                             AppLocalizations.of(context).get('available'),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: _buildLegendItem(
                             const Color(0xFFCE5A57),
                             AppLocalizations.of(context).get('unavailable'),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: _buildLegendItem(
                             Colors.purple,
                             AppLocalizations.of(context).get('onLeave'),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: _buildLegendItem(
                             Colors.grey,
                             AppLocalizations.of(context).get('noPreferences'),

@@ -20,9 +20,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   MobileAds.instance.initialize();
 
-  final configuration = RequestConfiguration(
-    testDeviceIds: ['00008030-00020C5021E8C02E'],
-  );
+  final configuration = RequestConfiguration(testDeviceIds: []);
   MobileAds.instance.updateRequestConfiguration(configuration);
 
   // Global error handler: log errors instead of crashing silently

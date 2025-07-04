@@ -20,7 +20,7 @@ class AdHelper {
 
     InterstitialAd.load(
       adUnitId:
-          'ca-app-pub-3940256099942544/4411468910', // TEST iOS interstitial
+          'ca-app-pub-4424526592569602/5504881576', // Real iOS interstitial
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
@@ -52,7 +52,7 @@ class AdHelper {
     if (!_shouldShowAd(chancePercent)) return;
 
     RewardedAd.load(
-      adUnitId: 'ca-app-pub-3940256099942544/1712485313', // TEST iOS rewarded
+      adUnitId: 'ca-app-pub-4424526592569602/5207985210', // Real iOS rewarded
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (RewardedAd ad) {
