@@ -8,6 +8,8 @@ import 'package:project491/utils/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'package:project491/components/custom_button.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 class SignupView extends StatefulWidget {
   const SignupView({Key? key}) : super(key: key);
@@ -31,6 +33,9 @@ class _SignupViewState extends State<SignupView> {
   bool _isSuccess = false;
 
   bool _isLoading = false;
+
+  // Add this variable to track the "Hide my email" checkbox
+  bool _hideEmail = false;
 
   bool isValidPassword(String password) {
     return password.length >= 6;
@@ -60,6 +65,11 @@ class _SignupViewState extends State<SignupView> {
         _isSuccess = false; // Reset success state
       });
     });
+  }
+
+  // Hash fonksiyonu
+  String _hashEmail(String email) {
+    return sha256.convert(utf8.encode(email.trim().toLowerCase())).toString();
   }
 
   @override
@@ -534,6 +544,40 @@ class _SignupViewState extends State<SignupView> {
                               ), // Updated cursor color
                               onChanged: authViewModel.updatePassword,
                             ),
+                            const SizedBox(height: 10),
+                            // Emailimi gizle checkboxı
+                            Row(
+                              children: [
+                                Theme(
+                                  data: Theme.of(context).copyWith(
+                                    unselectedWidgetColor: Colors.white, // kutu kenarı ve içi başta beyaz
+                                    checkboxTheme: CheckboxThemeData(
+                                      fillColor: MaterialStateProperty.resolveWith<Color>(
+                                        (states) =>
+                                            states.contains(MaterialState.selected)
+                                                ? Color(0xFF1D61E7) // tıklanınca mavi
+                                                : Colors.white, // başta beyaz
+                                      ),
+                                      checkColor: MaterialStateProperty.all<Color>(Colors.white),
+                                    ),
+                                  ),
+                                  child: Checkbox(
+                                    value: _hideEmail,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _hideEmail = val ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Text(
+                                  Localizations.localeOf(context).languageCode == 'tr'
+                                      ? "Emailimi gizle"
+                                      : "Hide my email",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -562,8 +606,43 @@ class _SignupViewState extends State<SignupView> {
                             });
 
                             try {
+                              // E-mail formatı kontrolü ekle
+                              final email = authViewModel.email.trim();
+                              final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+                              if (!_hideEmail && !emailRegex.hasMatch(email)) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                _showError(AppLocalizations.of(context).get('pleaseEnterValidEmail'));
+                                return;
+                              }
+
+                              // Hem normal email hem hashli email ile kayıtlı kullanıcı var mı kontrol et
+                              final hash = _hashEmail(authViewModel.email);
+                              final hashedEmail = "$hash@example.com";
+                              final normalEmail = authViewModel.email;
+
+                              final normalEmailQuery = await FirebaseAuth.instance.fetchSignInMethodsForEmail(normalEmail).catchError((_) => []);
+                              final hashedEmailQuery = await FirebaseAuth.instance.fetchSignInMethodsForEmail(hashedEmail).catchError((_) => []);
+
+                              if (normalEmailQuery.isNotEmpty || hashedEmailQuery.isNotEmpty) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                _showError(AppLocalizations.of(context).get('emailAlreadyInUse') ?? "Bu email zaten kullanılıyor.");
+                                return;
+                              }
+
+                              // Eğer email gizli ise hashle ve @example.com ekle
+                              String emailToSave;
+                              if (_hideEmail) {
+                                emailToSave = hashedEmail;
+                              } else {
+                                emailToSave = normalEmail;
+                              }
+
                               await authService.value.signUp(
-                                email: authViewModel.email,
+                                email: emailToSave,
                                 password: authViewModel.password,
                                 name: authViewModel.name,
                                 title: authViewModel.title.isNotEmpty ? authViewModel.title : "",

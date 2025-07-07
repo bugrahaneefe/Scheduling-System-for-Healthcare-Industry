@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import 'home_view.dart';
 import 'dart:async';
 import 'package:email_validator/email_validator.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 class LoginView extends StatefulWidget {
   final String? pendingRoomId;
@@ -108,6 +110,10 @@ class _LoginViewState extends State<LoginView> {
     _errorTimer?.cancel();
     _successTimer?.cancel();
     super.dispose();
+  }
+
+  String _hashEmail(String email) {
+    return sha256.convert(utf8.encode(email.trim().toLowerCase())).toString();
   }
 
   @override
@@ -363,22 +369,51 @@ class _LoginViewState extends State<LoginView> {
                                 await _handleSuccessfulLogin(context);
                               }
                             } on Exception catch (e) {
-                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
-                              setState(() {
-                                _isLoading = false; // Hide loading
-                              });
-                              final msg = e.toString();
-                              if (msg.contains('Kullanıcı bulunamadı') || msg.contains('hesap silinmiş')) {
-                                _showError('Hesap bulunamadı veya silinmiş.');
-                              } else {
-                                _showError(
-                                  AppLocalizations.of(context).get('loginFailed'),
+                              // Eğer hata aldıysan, hashli email ile tekrar dene
+                              try {
+                                final hash = _hashEmail(authViewModel.email);
+                                final hashedEmail = "$hash@example.com";
+                                await authService.value.signIn(
+                                  email: hashedEmail,
+                                  password: authViewModel.password,
                                 );
+
+                                if (!mounted) return;
+
+                                setState(() {
+                                  _isLoading = false;
+                                });
+
+                                _showSuccess(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('loginSuccessful'),
+                                );
+                                await Future.delayed(
+                                  const Duration(seconds: 1),
+                                );
+
+                                if (mounted) {
+                                  await _handleSuccessfulLogin(context);
+                                }
+                              } catch (_) {
+                                if (!mounted) return;
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                final msg = e.toString();
+                                if (msg.contains('Kullanıcı bulunamadı') || msg.contains('hesap silinmiş')) {
+                                  _showError('Hesap bulunamadı veya silinmiş.');
+                                } else {
+                                  _showError(
+                                    AppLocalizations.of(context).get('loginFailed'),
+                                  );
+                                }
                               }
                             } on FirebaseAuthException {
-                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
+                              if (!mounted) return;
                               setState(() {
-                                _isLoading = false; // Hide loading
+                                _isLoading = false;
                               });
                               _showError(
                                 AppLocalizations.of(context).get('loginFailed'),
