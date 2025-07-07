@@ -227,9 +227,8 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.work,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText: AppLocalizations.of(
-                                  context,
-                                ).get('jobDescription'),
+                                hintText: AppLocalizations.of(context).get('jobDescription') +
+                                    " (${Localizations.localeOf(context).languageCode == 'tr' ? 'İsteğe Bağlı' : 'Optional'})",
                                 hintStyle: TextStyle(color: Colors.grey),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -238,9 +237,7 @@ class _SignupViewState extends State<SignupView> {
                                 ),
                               ),
                               style: const TextStyle(color: Colors.black),
-                              cursorColor: Color(
-                                0xFF1D61E7,
-                              ), // Updated cursor color
+                              cursorColor: Color(0xFF1D61E7),
                               onChanged: authViewModel.updateTitle,
                             ),
                             const SizedBox(height: 10),
@@ -252,19 +249,22 @@ class _SignupViewState extends State<SignupView> {
                                   Icons.calendar_today,
                                   color: Color(0xFF1D61E7),
                                 ),
-                                hintText:
-                                    _selectedBirthday ??
-                                    AppLocalizations.of(
-                                      context,
-                                    ).get('selectBirthday'),
-                                hintStyle: const TextStyle(color: Colors.grey),
+                                hintText: _selectedBirthday == null
+                                    ? AppLocalizations.of(context).get('selectBirthday') +
+                                        " (${Localizations.localeOf(context).languageCode == 'tr' ? 'İsteğe Bağlı' : 'Optional'})"
+                                    : _selectedBirthday!,
+                                hintStyle: TextStyle(
+                                  color: _selectedBirthday == null ? Colors.grey : Colors.black,
+                                ),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
                                   vertical: 10.0,
                                   horizontal: 10.0,
                                 ),
                               ),
-                              style: const TextStyle(color: Colors.black),
+                              style: TextStyle(
+                                color: _selectedBirthday == null ? Colors.grey : Colors.black,
+                              ),
                               onTap: () async {
                                 DateTime? pickedDate = await showDatePicker(
                                   context: context,
@@ -337,46 +337,39 @@ class _SignupViewState extends State<SignupView> {
                               },
                             ),
                             const SizedBox(height: 10),
-                            // Phone number field  ⟵ PUT THIS INSTEAD OF THE OLD TextFormField
+                            // Phone number field
                             Theme(
-                              data: Theme.of(
-                                context,
-                              ).copyWith(canvasColor: Colors.white),
+                              data: Theme.of(context).copyWith(canvasColor: Colors.white),
                               child: IntlPhoneField(
                                 initialCountryCode: 'TR',
                                 style: const TextStyle(color: Colors.black),
                                 dropdownTextStyle: const TextStyle(
                                   color: Colors.black,
                                 ),
-                                cursorColor: const Color(
-                                  0xFF1D61E7,
-                                ), // Updated cursor color
+                                cursorColor: const Color(0xFF1D61E7),
                                 dropdownIcon: const Icon(
                                   Icons.arrow_drop_down,
-                                  color: const Color(0xFF1D61E7),
+                                  color: Color(0xFF1D61E7),
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(
-                                    context,
-                                  ).get('phoneNumber'),
+                                  labelText: AppLocalizations.of(context).get('phoneNumber') +
+                                      " (${Localizations.localeOf(context).languageCode == 'tr' ? 'İsteğe Bağlı' : 'Optional'})",
                                   labelStyle: const TextStyle(
                                     color: Colors.black,
                                   ),
                                   border: const OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: const Color(0xFF1D61E7),
+                                      color: Color(0xFF1D61E7),
                                     ),
                                   ),
                                   enabledBorder: const OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: const Color(0xFF1D61E7),
+                                      color: Color(0xFF1D61E7),
                                     ),
                                   ),
                                   focusedBorder: const OutlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: Color(
-                                        0xFF1D61E7,
-                                      ), // Updated border color when focused
+                                      color: Color(0xFF1D61E7),
                                       width: 2,
                                     ),
                                   ),
@@ -398,16 +391,14 @@ class _SignupViewState extends State<SignupView> {
                                   ),
                                   padding: const EdgeInsets.all(8),
                                   searchFieldCursorColor: Color(0xFF1D61E7),
-                                  searchFieldPadding:
-                                      const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
+                                  searchFieldPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
                                   width: MediaQuery.of(context).size.width * .9,
                                 ),
-                                onChanged:
-                                    (phone) => authViewModel.updatePhoneNumber(
-                                      phone.completeNumber,
-                                    ),
+                                onChanged: (phone) => authViewModel.updatePhoneNumber(
+                                  phone.completeNumber,
+                                ),
                               ),
                             ),
                             const Divider(color: Colors.black),
@@ -554,10 +545,9 @@ class _SignupViewState extends State<SignupView> {
                           if (_formKey.currentState!.validate() &&
                               authViewModel.email.isNotEmpty &&
                               authViewModel.password.isNotEmpty &&
-                              authViewModel.name.isNotEmpty &&
-                              authViewModel.title.isNotEmpty &&
-                              authViewModel.phoneNumber.isNotEmpty &&
-                              authViewModel.birthday != null) {
+                              authViewModel.name.isNotEmpty
+                              // title, phoneNumber, birthday artık zorunlu değil!
+                          ) {
                             if (!isValidPassword(authViewModel.password)) {
                               _showError(
                                 AppLocalizations.of(
@@ -576,9 +566,9 @@ class _SignupViewState extends State<SignupView> {
                                 email: authViewModel.email,
                                 password: authViewModel.password,
                                 name: authViewModel.name,
-                                title: authViewModel.title,
-                                birthday: authViewModel.birthday!,
-                                phoneNumber: authViewModel.phoneNumber,
+                                title: authViewModel.title.isNotEmpty ? authViewModel.title : "",
+                                birthday: authViewModel.birthday ?? DateTime(2000, 1, 1),
+                                phoneNumber: authViewModel.phoneNumber.isNotEmpty ? authViewModel.phoneNumber : "",
                               );
 
                               setState(() {
