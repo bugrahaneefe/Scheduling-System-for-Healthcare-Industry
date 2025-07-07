@@ -344,6 +344,8 @@ class _LoginViewState extends State<LoginView> {
                                 password: authViewModel.password,
                               );
 
+                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
+
                               setState(() {
                                 _isLoading = false; // Hide loading
                               });
@@ -361,6 +363,7 @@ class _LoginViewState extends State<LoginView> {
                                 await _handleSuccessfulLogin(context);
                               }
                             } on Exception catch (e) {
+                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
                               setState(() {
                                 _isLoading = false; // Hide loading
                               });
@@ -373,6 +376,7 @@ class _LoginViewState extends State<LoginView> {
                                 );
                               }
                             } on FirebaseAuthException {
+                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
                               setState(() {
                                 _isLoading = false; // Hide loading
                               });

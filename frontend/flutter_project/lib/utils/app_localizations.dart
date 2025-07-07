@@ -22,7 +22,7 @@ class AppLocalizations {
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'appTitle': "Nobetim",
+      'appTitle': "Nöbetim",
       'resetPassword': 'Reset Password',
       'resetPasswordEmailSent': 'Password reset email sent! Check your inbox.',
       'resetPasswordEmailFail': 'Failed to send reset email. Please try again.',
@@ -236,7 +236,7 @@ class AppLocalizations {
       'availabilityCalendar': 'Availability Calendar: ',
       'pleaseEnterValidEmail': 'Please enter a valid email address',
       'failGoogleSignIn': 'Google sign-in was cancelled',
-      'homeTitle': 'Nobetim',
+      'homeTitle': 'Nöbetim',
       'aParticipant': 'A participant',
       'leftRoomMessage': '"{userName}" has left your room "{roomName}".',
       'scheduleAppliedMessage':
