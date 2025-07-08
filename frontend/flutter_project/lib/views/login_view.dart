@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:email_validator/email_validator.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginView extends StatefulWidget {
   final String? pendingRoomId;
@@ -425,113 +426,116 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 16),
 
-                      ElevatedButton(
-                        onPressed: () async {
-                          FocusScope.of(context).unfocus();
-                          setState(() {
-                            _errorMessage = null;
-                            _isLoading = true;
-                          });
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Apple Sign In Button
+                          SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                FocusScope.of(context).unfocus();
+                                setState(() {
+                                  _errorMessage = null;
+                                  _isLoading = true;
+                                });
 
-                          try {
-                            final result =
-                                await authService.value.signInWithGoogle();
+                                try {
+                                  final appleCredential = await SignInWithApple.getAppleIDCredential(
+                                    scopes: [
+                                      AppleIDAuthorizationScopes.email,
+                                      AppleIDAuthorizationScopes.fullName,
+                                    ],
+                                  );
 
-                            if (!mounted) return;
-                            setState(() => _isLoading = false);
+                                  final oauthCredential = OAuthProvider("apple.com").credential(
+                                    idToken: appleCredential.identityToken,
+                                    accessToken: appleCredential.authorizationCode,
+                                  );
 
-                            if (result == null) {
-                              _showError(
-                                AppLocalizations.of(
-                                  context,
-                                ).get('failGoogleSignIn'),
-                              );
-                              return;
-                            }
-                            _showSuccess(
-                              AppLocalizations.of(
-                                context,
-                              ).get('loginSuccessful'),
-                            );
-                            await Future.delayed(const Duration(seconds: 1));
+                                  final result = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-                            if (mounted) await _handleSuccessfulLogin(context);
-                          } catch (e) {
-                            if (!mounted) return;
-                            setState(() => _isLoading = false);
-                            _showError(
-                              AppLocalizations.of(
-                                context,
-                              ).get('failGoogleSignIn'),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          padding: const EdgeInsets.all(
-                            12,
-                          ), // controls icon size and button space
-                          elevation: 2,
-                        ),
-                        child: Image.asset(
-                          'assets/images/google_icon.png',
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
+                                  if (!mounted) return;
+                                  setState(() => _isLoading = false);
 
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                  // Popup error message
-                  if (_showErrorPopup)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(10.0),
-                        margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                        decoration: BoxDecoration(
-                          color: _isSuccess ? Colors.green : Colors.red,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Text(
-                          _errorMessage ?? '',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  // Add this at the end of the Stack children list
-                  if (_isLoading)
-                    Positioned.fill(
-                      child: AbsorbPointer(
-                        child: Container(
-                          color: Colors.black.withOpacity(0.5),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                                  if (result.user == null) {
+                                    _showError(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).get('failAppleSignIn'),
+                                    );
+                                    return;
+                                  }
+                                  _showSuccess(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('loginSuccessful'),
+                                  );
+                                  await Future.delayed(const Duration(seconds: 1));
+
+                                  if (mounted) await _handleSuccessfulLogin(context);
+                                } on SignInWithAppleAuthorizationException catch (e) {
+                                  setState(() => _isLoading = false);
+                                  if (e.code == AuthorizationErrorCode.canceled) {
+                                    _showError(
+                                      Localizations.localeOf(context).languageCode == 'tr'
+                                          ? "Apple ile giriş iptal edildi."
+                                          : "Apple sign in cancelled.",
+                                    );
+                                  } else if (e.code == AuthorizationErrorCode.failed) {
+                                    _showError(
+                                      Localizations.localeOf(context).languageCode == 'tr'
+                                          ? "Apple ile giriş başarısız oldu. Lütfen iCloud hesabınızda oturum açtığınızdan emin olun."
+                                          : "Apple sign in failed. Please make sure you are signed in to your iCloud account.",
+                                    );
+                                  } else {
+                                    _showError(
+                                      "${AppLocalizations.of(context).get('failAppleSignIn')}\n${e.message ?? e.code.toString()}",
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  setState(() => _isLoading = false);
+                                  _showError(
+                                    "${AppLocalizations.of(context).get('failAppleSignIn')}\n${e.toString()}",
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                padding: EdgeInsets.zero,
+                                elevation: 2,
+                              ),
+                              child: Image.asset(
+                                'assets/images/apple_icon.png',
+                                height: 45,
+                                width: 45,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+                          const SizedBox(width: 16),
+                          // Google Sign In Button
+                          SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                FocusScope.of(context).unfocus();
+                                setState(() {
+                                  _errorMessage = null;
+                                  _isLoading = true;
+                                });
+
+                                try {
+                                  final result =
+                                      await authService.value.signInWithGoogle();
+
+                                  if (!mounted) return;
+                                  setState(() => _isLoading = false);
+
+                                  if
