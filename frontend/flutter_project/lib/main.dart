@@ -23,10 +23,8 @@ void main() async {
   final configuration = RequestConfiguration(testDeviceIds: []);
   MobileAds.instance.updateRequestConfiguration(configuration);
 
-  // Global error handler: log errors instead of crashing silently
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
-    // You can also report errors via your error logging service here.
   };
 
   L.init();
