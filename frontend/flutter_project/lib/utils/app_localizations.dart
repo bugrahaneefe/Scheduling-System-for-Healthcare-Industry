@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:project491/utils/app_localizations.dart';
 
 class AppLocalizations {
   final Locale locale;
@@ -255,8 +257,10 @@ class AppLocalizations {
       'exportExcel': 'Export to Excel',
       'noScheduleToExport': 'No schedule available to export',
       'failedToExportSchedule': 'Failed to export schedule',
+      'enterYourNamePrompt': 'Add your name',
     },
     'tr': {
+      'enterYourNamePrompt': 'İsminizi ekleyin',
       'today': 'Bugün',
       'unknown': 'Bilinmiyor',
       'selfAssignmentMessage':
@@ -536,4 +540,12 @@ class _AppLocalizationsDelegate
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+class L {
+  static late AppLocalizations instance;
+
+  static void init() {
+    instance = AppLocalizations(ui.window.locale);
+  }
 }

@@ -350,7 +350,8 @@ class _LoginViewState extends State<LoginView> {
                                 password: authViewModel.password,
                               );
 
-                              if (!mounted) return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
+                              if (!mounted)
+                                return; // <-- HATA BURADA OLABİLİR, KONTROL EKLE
 
                               setState(() {
                                 _isLoading = false; // Hide loading
@@ -402,11 +403,14 @@ class _LoginViewState extends State<LoginView> {
                                   _isLoading = false;
                                 });
                                 final msg = e.toString();
-                                if (msg.contains('Kullanıcı bulunamadı') || msg.contains('hesap silinmiş')) {
+                                if (msg.contains('Kullanıcı bulunamadı') ||
+                                    msg.contains('hesap silinmiş')) {
                                   _showError('Hesap bulunamadı veya silinmiş.');
                                 } else {
                                   _showError(
-                                    AppLocalizations.of(context).get('loginFailed'),
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('loginFailed'),
                                   );
                                 }
                               }
@@ -425,65 +429,142 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 16),
 
-                      ElevatedButton(
-                        onPressed: () async {
-                          FocusScope.of(context).unfocus();
-                          setState(() {
-                            _errorMessage = null;
-                            _isLoading = true;
-                          });
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Google Button
+                          ElevatedButton(
+                            onPressed: () async {
+                              FocusScope.of(context).unfocus();
+                              setState(() {
+                                _errorMessage = null;
+                                _isLoading = true;
+                              });
 
-                          try {
-                            final result =
-                                await authService.value.signInWithGoogle();
+                              try {
+                                final result =
+                                    await authService.value.signInWithGoogle();
 
-                            if (!mounted) return;
-                            setState(() => _isLoading = false);
+                                if (!mounted) return;
+                                setState(() => _isLoading = false);
 
-                            if (result == null) {
-                              _showError(
-                                AppLocalizations.of(
-                                  context,
-                                ).get('failGoogleSignIn'),
-                              );
-                              return;
-                            }
-                            _showSuccess(
-                              AppLocalizations.of(
-                                context,
-                              ).get('loginSuccessful'),
-                            );
-                            await Future.delayed(const Duration(seconds: 1));
+                                if (result == null) {
+                                  _showError(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('failGoogleSignIn'),
+                                  );
+                                  return;
+                                }
 
-                            if (mounted) await _handleSuccessfulLogin(context);
-                          } catch (e) {
-                            if (!mounted) return;
-                            setState(() => _isLoading = false);
-                            _showError(
-                              AppLocalizations.of(
-                                context,
-                              ).get('failGoogleSignIn'),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                                _showSuccess(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('loginSuccessful'),
+                                );
+                                await Future.delayed(
+                                  const Duration(seconds: 1),
+                                );
+
+                                if (mounted)
+                                  await _handleSuccessfulLogin(context);
+                              } catch (e) {
+                                if (!mounted) return;
+                                setState(() => _isLoading = false);
+                                _showError(
+                                  AppLocalizations.of(
+                                    context,
+                                  ).get('failGoogleSignIn'),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              padding: const EdgeInsets.all(12),
+                              elevation: 2,
+                            ),
+                            child: Image.asset(
+                              'assets/images/google_icon.png',
+                              height: 24,
+                              width: 24,
+                            ),
                           ),
-                          padding: const EdgeInsets.all(
-                            12,
-                          ), // controls icon size and button space
-                          elevation: 2,
-                        ),
-                        child: Image.asset(
-                          'assets/images/google_icon.png',
-                          height: 24,
-                          width: 24,
-                        ),
-                      ),
 
-                      const SizedBox(height: 16),
+                          const SizedBox(width: 16),
+
+                          // Apple Button (only on iOS)
+                          if (Theme.of(context).platform == TargetPlatform.iOS)
+                            ElevatedButton(
+                              onPressed: () async {
+                                FocusScope.of(context).unfocus();
+                                setState(() {
+                                  _errorMessage = null;
+                                  _isLoading = true;
+                                });
+
+                                try {
+                                  final result =
+                                      await authService.value.signInWithApple();
+
+                                  if (!mounted) return;
+                                  setState(() => _isLoading = false);
+
+                                  if (result == null) {
+                                    _showError(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).get('loginFailed'),
+                                    );
+                                    return;
+                                  }
+
+                                  _showSuccess(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('loginSuccessful'),
+                                  );
+                                  await Future.delayed(
+                                    const Duration(seconds: 1),
+                                  );
+
+                                  if (mounted)
+                                    await _handleSuccessfulLogin(context);
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  setState(() => _isLoading = false);
+                                  print(
+                                    "Apple Sign-In Error: $e",
+                                  ); // 👈 Add this line
+                                  _showError(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).get('loginFailed'),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  side: const BorderSide(
+                                    color: Colors.white,
+                                    width: 1.5,
+                                  ), // 👈 white border
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                elevation: 2,
+                              ),
+                              child: const Icon(
+                                Icons.apple,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                   // Popup error message

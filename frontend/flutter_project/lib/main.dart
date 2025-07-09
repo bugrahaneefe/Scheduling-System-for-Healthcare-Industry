@@ -29,6 +29,8 @@ void main() async {
     // You can also report errors via your error logging service here.
   };
 
+  L.init();
+
   runApp(const MyApp());
 }
 

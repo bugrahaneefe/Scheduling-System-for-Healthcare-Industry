@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:project491/utils/app_localizations.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 ValueNotifier<AuthServices> authService = ValueNotifier(AuthServices());
 
@@ -10,7 +16,6 @@ class AuthServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? get currentUser => firebaseAuth.currentUser;
-
   Stream<User?> get authStateChanges => firebaseAuth.authStateChanges();
 
   Future<UserCredential> signIn({
@@ -46,66 +51,128 @@ class AuthServices {
     required DateTime birthday,
     required String phoneNumber,
   }) async {
-    try {
-      final userCredential = await firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    final userCredential = await firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      // Create user document in Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'name': name,
-        'email': email,
-        'title': title,
-        'birthday': birthday,
-        'phoneNumber': phoneNumber,
-        'rooms': [], // Initialize empty rooms array
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      'name': name,
+      'email': email,
+      'title': title,
+      'birthday': birthday,
+      'phoneNumber': phoneNumber,
+      'rooms': [],
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
-      return userCredential;
-    } on FirebaseAuthException catch (e) {
-      throw e;
-    }
+    return userCredential;
   }
 
-  /// Google sign-in.
-  /// – Creates a Firestore user-document on first login
-  /// – Returns the same UserCredential object as e-mail/password sign-in
+  /// Google sign-in
   Future<UserCredential?> signInWithGoogle() async {
-    // 1. Interactive Google sign-in dialog
     final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
-    if (gUser == null) return null; // user closed the dialog
+    if (gUser == null) return null;
 
-    // 2. Credentials
     final gAuth = await gUser.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: gAuth.accessToken,
       idToken: gAuth.idToken,
     );
 
-    // 3. Firebase sign-in
     final userCredential = await firebaseAuth.signInWithCredential(credential);
+    await _createUserDocIfNeeded(userCredential.user);
+    return userCredential;
+  }
 
-    // 4. Create user-document on first login
+  /// Apple sign-in
+  Future<UserCredential?> signInWithApple() async {
+    final rawNonce = _generateNonce();
+    final nonce = _sha256ofString(rawNonce);
+
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: nonce,
+    );
+
+    if (appleCredential.identityToken == null) {
+      throw FirebaseAuthException(
+        code: 'MISSING_IDENTITY_TOKEN',
+        message: 'Apple Sign-In failed: No identity token returned.',
+      );
+    }
+
+    final oauthCredential = OAuthProvider("apple.com").credential(
+      idToken: appleCredential.identityToken,
+      rawNonce: rawNonce,
+      accessToken: appleCredential.authorizationCode,
+    );
+
+    final userCredential = await firebaseAuth.signInWithCredential(
+      oauthCredential,
+    );
     final user = userCredential.user;
+
     if (user != null) {
-      final doc = _firestore.collection('users').doc(user.uid);
-      final snap = await doc.get();
-      if (!snap.exists) {
-        await doc.set({
-          'name': user.displayName ?? '',
-          'email': user.email,
-          'title': '',
-          'birthday': DateTime(1900, 1, 1),
-          'phoneNumber': user.phoneNumber ?? '',
-          'rooms': [],
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      }
+      final fallbackEmail =
+          user.email ?? '${user.uid}@privaterelay.appleid.com';
+      final displayName =
+          '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'
+              .trim();
+
+      await _createUserDocIfNeeded(
+        user,
+        fallbackEmail: fallbackEmail,
+        fallbackName: displayName,
+      );
     }
 
     return userCredential;
+  }
+
+  /// Create user Firestore document if it doesn’t exist
+  Future<void> _createUserDocIfNeeded(
+    User? user, {
+    String? fallbackEmail,
+    String? fallbackName,
+  }) async {
+    if (user == null) return;
+
+    final doc = _firestore.collection('users').doc(user.uid);
+    final snap = await doc.get();
+    if (!snap.exists) {
+      await doc.set({
+        'name':
+            fallbackName ??
+            user.displayName ??
+            L.instance.get('enterYourNamePrompt'),
+        'email': fallbackEmail ?? user.email ?? '',
+        'title': '',
+        'birthday': DateTime(1900, 1, 1),
+        'phoneNumber': user.phoneNumber ?? '',
+        'rooms': [],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   Future<void> updateUserProfile({
@@ -114,31 +181,24 @@ class AuthServices {
     required String phoneNumber,
     required DateTime birthday,
   }) async {
-    try {
-      final user = firebaseAuth.currentUser;
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).update({
-          'name': name,
-          'title': title,
-          'phoneNumber': phoneNumber,
-          'birthday': birthday,
-        });
-      }
-    } catch (e) {
-      throw Exception('Failed to update profile: $e');
+    final user = firebaseAuth.currentUser;
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).update({
+        'name': name,
+        'title': title,
+        'phoneNumber': phoneNumber,
+        'birthday': birthday,
+      });
     }
   }
 
   Future<void> resetPassword(String email) async {
-    // Basic email validation
     if (email.isEmpty || !email.contains('@')) {
       throw Exception('Please enter a valid email address');
     }
 
     try {
-      await firebaseAuth.sendPasswordResetEmail(
-        email: email.trim(), // Remove any whitespace
-      );
+      await firebaseAuth.sendPasswordResetEmail(email: email.trim());
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':

@@ -86,44 +86,53 @@ class _ProfileEditViewState extends State<ProfileEditView> {
   Future<void> _deleteAccount() async {
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white, // Popup arka planı beyaz
-        title: Text('Hesabı Sil'),
-        content: Text('Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, false),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              // Border kaldırıldı
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide.none,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.white, // Popup arka planı beyaz
+            title: Text('Hesabı Sil'),
+            content: Text(
+              'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  elevation: 0,
+                  // Border kaldırıldı
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide.none,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Vazgeç',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            child: const Text(
-              'Vazgeç',
-              style: TextStyle(color: Colors.black),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Hesabı Sil',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            child: const Text(
-              'Hesabı Sil',
-              style: TextStyle(color: Colors.white),
-            ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirm != true) return;
@@ -144,10 +153,14 @@ class _ProfileEditViewState extends State<ProfileEditView> {
         final roomDoc = await firestore.collection('rooms').doc(roomId).get();
         if (!roomDoc.exists) continue;
         final roomData = roomDoc.data()!;
-        final participants = List<Map<String, dynamic>>.from(roomData['participants'] ?? []);
+        final participants = List<Map<String, dynamic>>.from(
+          roomData['participants'] ?? [],
+        );
 
         // Host mu?
-        final isHost = participants.any((p) => p['isHost'] == true && p['userId'] == userId);
+        final isHost = participants.any(
+          (p) => p['isHost'] == true && p['userId'] == userId,
+        );
 
         if (isHost) {
           // Host ise odayı tamamen sil
@@ -158,7 +171,9 @@ class _ProfileEditViewState extends State<ProfileEditView> {
           if (idx != -1) {
             participants[idx]['userId'] = '';
             participants[idx]['assignedUserName'] = null;
-            await firestore.collection('rooms').doc(roomId).update({'participants': participants});
+            await firestore.collection('rooms').doc(roomId).update({
+              'participants': participants,
+            });
           }
         }
       }
@@ -427,9 +442,14 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8), // Değişiklikleri Uygula ile aynı köşe
+                        borderRadius: BorderRadius.circular(
+                          8,
+                        ), // Değişiklikleri Uygula ile aynı köşe
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                     child: const Text(
                       'Hesabı Sil',
@@ -444,7 +464,10 @@ class _ProfileEditViewState extends State<ProfileEditView> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                     onPressed:
                         _isLoading
